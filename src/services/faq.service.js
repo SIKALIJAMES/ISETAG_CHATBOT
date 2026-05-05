@@ -95,17 +95,21 @@ async function pass2GPT(userText, history, faqs) {
     keywords: f.keywords,
   }));
 
-  const systemPrompt = `Tu es l'assistant de l'université ISETAG.
-Analyse la question de l'étudiant et retourne UNIQUEMENT un JSON:
+  const systemPrompt = `Tu es l'assistant intelligent de l'université ISETAG (Cameroun). 
+Ton rôle est d'aider les étudiants en français et en anglais.
+
+Analyse le message et retourne UNIQUEMENT un JSON:
 {
-  "intent": string,      // admission|frais|filieres|dates|contacts|autre
+  "intent": string,      // admission|frais|filieres|dates|contacts|salutation|cloture|autre
   "lang": string,        // fr|en
-  "faq_id": number|null, // ID de la FAQ correspondante, null si aucune
+  "faq_id": number|null, // ID de la FAQ correspondante si trouvée
   "confidence": float,   // 0.0 à 1.0
-  "needs_human": boolean // true si intervention humaine nécessaire
+  "answer": string|null, // REPONSE DIRECTE si c'est une salutation, un remerciement ou une question simple.
+  "needs_human": boolean // true seulement si la question est complexe et non listée dans les FAQs
 }
-FAQs disponibles: ${JSON.stringify(faqContext)}
-Réponds UNIQUEMENT avec du JSON valide. Aucun texte en dehors du JSON.`;
+
+IMPORTANT: Si l'étudiant dit "Bonjour", "Hello", "Merci", etc., réponds poliment dans sa langue dans le champ "answer" et mets "needs_human": false.
+FAQs disponibles pour référence: ${JSON.stringify(faqContext)}`;
 
   const messages = [
     { role: 'system', content: systemPrompt },
@@ -120,15 +124,15 @@ Réponds UNIQUEMENT avec du JSON valide. Aucun texte en dehors du JSON.`;
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages,
-      temperature: 0.1,
-      max_tokens: 200,
+      temperature: 0.3,
+      max_tokens: 300,
       response_format: { type: 'json_object' },
     });
 
     const raw = completion.choices[0]?.message?.content || '{}';
     const result = JSON.parse(raw);
 
-    logger.info(`Pass 2 GPT result: faq_id=${result.faq_id}, confidence=${result.confidence}`);
+    logger.info(`Pass 2 GPT result: intent=${result.intent}, confidence=${result.confidence}`);
     return result;
   } catch (err) {
     logger.error('GPT Pass 2 error:', err.message);
@@ -141,11 +145,10 @@ Réponds UNIQUEMENT avec du JSON valide. Aucun texte en dehors du JSON.`;
  * @returns {{ answer: string|null, faqId: number|null, confidence: number, needsHuman: boolean }}
  */
 async function runFAQEngine(userText, lang, history) {
-  // Pass 1: Local keyword matching
+  // Pass 1: Local keyword matching (Fast & Free)
   const { faq: p1Faq, score: p1Score } = await pass1Match(userText, lang);
 
   if (p1Faq) {
-    logger.info(`FAQ matched via Pass 1 (score=${p1Score.toFixed(2)}): FAQ#${p1Faq.id}`);
     return {
       answer: p1Faq.answer,
       faqId: p1Faq.id,
@@ -155,12 +158,12 @@ async function runFAQEngine(userText, lang, history) {
     };
   }
 
-  // Pass 2: GPT fallback
-  logger.info(`Pass 1 failed (score=${p1Score.toFixed(2)}) — calling GPT Pass 2`);
+  // Pass 2: GPT Intelligence (Natural language & Bilingualism)
   const faqs = await loadFAQs();
   const gptResult = await pass2GPT(userText, history, faqs);
 
-  if (gptResult.faq_id && gptResult.confidence >= 0.5) {
+  // If GPT found a matching FAQ
+  if (gptResult.faq_id && gptResult.confidence >= 0.6) {
     const matchedFaq = faqs.find(f => f.id === gptResult.faq_id);
     if (matchedFaq) {
       return {
@@ -173,9 +176,20 @@ async function runFAQEngine(userText, lang, history) {
     }
   }
 
-  // Both passes failed
+  // If GPT provided a direct conversational answer (Greetings, etc.)
+  if (gptResult.answer && !gptResult.needs_human) {
+    return {
+      answer: gptResult.answer,
+      faqId: null,
+      confidence: gptResult.confidence || 0.9,
+      needsHuman: false,
+      passUsed: 2,
+    };
+  }
+
+  // Both passes failed or human intervention needed
   return {
-    answer: null,
+    answer: gptResult.answer || null,
     faqId: null,
     confidence: gptResult.confidence || 0,
     needsHuman: true,

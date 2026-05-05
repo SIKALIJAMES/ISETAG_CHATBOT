@@ -29,8 +29,14 @@ function detectLang(text) {
   if (!mapped) {
     // Simple heuristic fallback for very short texts
     const lowerText = text.toLowerCase();
-    const frWords = ['je', 'le', 'la', 'les', 'de', 'du', 'un', 'une', 'est', 'sont', 'pour', 'avec', 'comment'];
-    const enWords = ['i', 'the', 'is', 'are', 'for', 'with', 'how', 'what', 'when', 'where', 'do', 'can'];
+    const frWords = [
+      'je', 'le', 'la', 'les', 'de', 'du', 'un', 'une', 'est', 'sont', 'pour', 'avec', 'comment', 
+      'bonjour', 'salut', 'ca', 'va', 'merci', 'svp', 'monsieur', 'madame', 'etudiant'
+    ];
+    const enWords = [
+      'i', 'the', 'is', 'are', 'for', 'with', 'how', 'what', 'when', 'where', 'do', 'can',
+      'hello', 'hi', 'thanks', 'thank', 'good', 'morning', 'please', 'student', 'sir'
+    ];
 
     const tokens = lowerText.split(/\s+/);
     const frScore = tokens.filter(t => frWords.includes(t)).length;
