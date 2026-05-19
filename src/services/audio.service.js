@@ -1,31 +1,16 @@
 'use strict';
-const { OpenAI } = require('openai');
-const fs = require('fs');
 const fetch = require('node-fetch');
-const logger = require('../utils/logger');
-
-let openaiClient;
-
-function getOpenAI() {
-  if (!openaiClient) {
-    openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  }
-  return openaiClient;
-}
 
 /**
- * Transcribe a WhatsApp voice note using OpenAI Whisper
+ * Transcribe a WhatsApp voice note using Google Gemini 2.5 Flash (Multimodal)
  * @param {string} mediaId - WhatsApp media ID
  * @param {string} accessToken - WhatsApp access token
  * @returns {string|null} Transcription text or null on failure
  */
 async function transcribeAudio(mediaId, accessToken) {
-  const tempPath = require('path').join(
-    require('os').tmpdir(),
-    `audio_${Date.now()}_${Math.random().toString(36).slice(2)}.ogg`
-  );
-
   try {
+    console.log(`[AUDIO] Fetching media metadata from Meta for ID: ${mediaId}`);
+    
     // Step 1: Get media download URL from Meta Graph API
     const metaRes = await fetch(
       `https://graph.facebook.com/v20.0/${mediaId}`,
@@ -33,7 +18,8 @@ async function transcribeAudio(mediaId, accessToken) {
     );
 
     if (!metaRes.ok) {
-      throw new Error(`Meta media URL fetch failed: ${metaRes.status}`);
+      const errText = await metaRes.text();
+      throw new Error(`Meta media URL fetch failed [${metaRes.status}]: ${errText}`);
     }
 
     const metaData = await metaRes.json();
@@ -43,45 +29,59 @@ async function transcribeAudio(mediaId, accessToken) {
       throw new Error('No download URL returned from Meta');
     }
 
-    // Step 2: Download the audio file
+    console.log('[AUDIO] Downloading audio file...');
+
+    // Step 2: Download the audio file directly into buffer
     const audioRes = await fetch(downloadUrl, {
       headers: { Authorization: `Bearer ${accessToken}` }
     });
 
     if (!audioRes.ok) {
-      throw new Error(`Audio download failed: ${audioRes.status}`);
+      throw new Error(`Audio download failed [${audioRes.status}]`);
     }
 
     const buffer = await audioRes.buffer();
-    fs.writeFileSync(tempPath, buffer);
+    console.log(`[AUDIO] Audio downloaded successfully: ${buffer.length} bytes`);
 
-    logger.info(`Audio downloaded: ${buffer.length} bytes → ${tempPath}`);
-
-    // Step 3: Transcribe with Whisper
-    const openai = getOpenAI();
-    const transcription = await openai.audio.transcriptions.create({
-      file: fs.createReadStream(tempPath),
-      model: 'whisper-1',
-      language: undefined, // Auto-detect language
+    // Step 3: Call Gemini 2.5 Flash to transcribe the audio natively (Multimodal)
+    console.log('[AUDIO] Calling Gemini for native audio transcription...');
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [
+            {
+              inlineData: {
+                mimeType: 'audio/ogg',
+                data: buffer.toString('base64')
+              }
+            },
+            {
+              text: "Transcris cette note vocale de manière très précise. Ne renvoie UNIQUEMENT que la transcription brute textuelle. N'ajoute aucune salutation, aucun commentaire, ni aucune introduction. Si l'audio est vide ou incompréhensible, réponds par '[incompréhensible]'."
+            }
+          ]
+        }]
+      })
     });
 
-    const text = transcription.text || '';
-    logger.info(`Whisper transcription: "${text.slice(0, 100)}..."`);
-    return text;
-  } catch (err) {
-    logger.error('Audio transcription error:', err.message);
-    return null;
-  } finally {
-    // Always clean up temp file
-    try {
-      if (fs.existsSync(tempPath)) {
-        fs.unlinkSync(tempPath);
-        logger.debug(`Temp audio file deleted: ${tempPath}`);
-      }
-    } catch (cleanupErr) {
-      logger.warn('Temp file cleanup failed:', cleanupErr.message);
+    const data = await response.json();
+    if (data.error) throw new Error(data.error.message);
+
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const cleanText = text.trim();
+    
+    if (cleanText.toLowerCase().includes('[incompréhensible]')) {
+      console.warn('[AUDIO] Audio marked as incomprehensible by Gemini.');
+      return null;
     }
+
+    console.log(`[AUDIO] Gemini native transcription: "${cleanText.slice(0, 100)}..."`);
+    return cleanText;
+  } catch (err) {
+    console.error('[AUDIO] Native transcription error:', err.message);
+    return null;
   }
 }
 
-module.exports = { transcribeAudio, getOpenAI };
+module.exports = { transcribeAudio };

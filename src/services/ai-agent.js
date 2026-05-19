@@ -4,7 +4,10 @@ const { searchRelevant } = require('./embeddings');
 const sessionService = require('./session');
 const { franc } = require('franc');
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAI({ 
+  apiKey: process.env.GEMINI_API_KEY,
+  baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/'
+});
 
 // Rate limiting (20 msgs/minute per phone) using in-memory counter
 const rateLimitMap = {};
@@ -57,38 +60,45 @@ async function processMessage(phone, userText) {
     }
 
     // 4. Build system prompt
-    const systemPrompt = `Tu es l'assistant virtuel officiel de l'ISETAG (Institut Supérieur d'Enseignement Technologique et de Gestion). Tu aides les étudiants et prospects 24h/24.
+    const systemPrompt = `Tu es l'agent de marketing et d'orientation virtuel officiel de l'ISETAG (Institut Supérieur Évangélique des Technologies Appliquées et de Gestion) à Douala, Cameroun.
+Ton rôle n'est pas seulement de donner des renseignements froids, mais d'agir comme un CONSEILLER EN ORIENTATION PERSUASIF ET ENGAGEANT. Ton objectif principal est d'enthousiasmer le prospect, de valoriser nos formations et de l'inciter activement à S'INSCRIRE ou à venir VISITER le campus !
 
-Ton comportement :
+Ton style de communication :
 - Tu réponds TOUJOURS dans la langue de l'étudiant (langue détectée: ${lang === 'en' ? 'Anglais 🇬🇧' : 'Français 🇫🇷'})
-- Tu es chaleureux, professionnel et jamais robotique
-- Tu utilises le contexte de la conversation pour ne jamais reposer les mêmes questions
-- Si on te salue, tu salues en retour et tu demandes comment tu peux aider
-- Si tu n'es vraiment pas sûr d'une information, tu le dis honnêtement
+- Ton ton est CHALEUREUX, DYNAMIQUE, RASSURANT et TRÈS CONVAINCANT (évite les tournures robotiques).
+- Tu mets constamment en valeur les atouts majeurs de l'ISETAG (corps enseignant hautement qualifié, insertion professionnelle ultra-rapide, équipements modernes, ambiance académique saine et dynamique, diplômes nationaux reconnus par l'État).
+- Tu structures tes messages avec des puces courtes et des emojis enthousiastes pour une lecture agréable sur WhatsApp.
+- Tu termines TOUJOURS tes réponses par un "Appel à l'action" (Call-To-Action) ou une question ouverte pour guider le prospect vers l'étape suivante (ex: réserver une visite de campus à Douala, parler à un conseiller physique, ou lancer son inscription).
+- Reste focalisé sur les objectifs d'avenir du candidat : demande-lui ses passions pour mieux l'orienter.
 
-Informations sur l'ISETAG (Garoua, Cameroun) :
-- Filières : Génie Logiciel, Réseaux & Télécoms, Gestion des Entreprises, Marketing Digital
-- Contact : +237 XXX XXX XXX
+Informations sur l'ISETAG (Douala, Cameroun) :
+- Filières phares : Génie Logiciel, Réseaux & Télécoms, Gestion des Entreprises, Marketing Digital (et autres formations professionnelles d'avenir).
 - Site : www.isetag.cm
 
-${context ? `\n📚 CONTEXTE DEPUIS LA BASE DE CONNAISSANCE (utilise uniquement si pertinent) :\n${context}` : ''}`;
+${context ? `\n📚 CONTEXTE DEPUIS LA BASE DE CONNAISSANCE (utilise ces informations pour répondre de manière convaincante et argumentée) :\n${context}` : ''}`;
 
-    // 5. Build messages array with history
-    const messages = [
-      { role: 'system', content: systemPrompt },
-      ...history.map(h => ({ role: h.role, content: h.content })),
-      { role: 'user', content: userText }
-    ];
+    // 5. Format messages for Gemini API
+    const fetch = require('node-fetch');
+    const contents = [];
+    for (const h of history) {
+      contents.push({ role: h.role === 'assistant' ? 'model' : 'user', parts: [{ text: h.content }] });
+    }
+    contents.push({ role: 'user', parts: [{ text: userText }] });
 
-    // 6. Call GPT-4o-mini
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages,
-      temperature: 0.7,
-      max_tokens: 600,
+    // 6. Call Gemini 2.5 Flash (using a separate quota pool to avoid Gemini 3 blockages)
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: systemPrompt }] },
+        contents,
+        generationConfig: { temperature: 0.7, maxOutputTokens: 2000 }
+      })
     });
-
-    const aiResponse = completion.choices[0]?.message?.content || '';
+    
+    const data = await response.json();
+    if (data.error) throw new Error(data.error.message);
+    const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
     console.log(`[AI-AGENT] ✅ Response generated (${aiResponse.length} chars)`);
 
     // 7. Save exchange to Redis session
@@ -106,9 +116,7 @@ ${context ? `\n📚 CONTEXTE DEPUIS LA BASE DE CONNAISSANCE (utilise uniquement 
 
     // Graceful fallback — don't crash, signal escalation needed
     return {
-      text: 'fr' === 'en'
-        ? '😔 I encountered an error. A human advisor will assist you shortly.'
-        : '😔 Une erreur est survenue. Un conseiller humain va vous assister très bientôt.',
+      text: `😔 Une erreur est survenue: ${err.message}`,
       lang: 'fr',
       needsEscalation: true,
     };

@@ -2,20 +2,25 @@
 const OpenAI = require('openai');
 const { query } = require('../config/database');
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const fetch = require('node-fetch');
 
 /**
  * Generate vector embedding for a text
  */
 async function generateEmbedding(text) {
   try {
-    const response = await openai.embeddings.create({
-      model: 'text-embedding-3-small',
-      input: text.replace(/\n/g, ' '),
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-2:embedContent?key=${process.env.GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'models/gemini-embedding-2',
+        content: { parts: [{ text: text.replace(/\n/g, ' ') }] },
+        outputDimensionality: 768
+      })
     });
-    return response.data[0].embedding;
+    const data = await response.json();
+    if (data.error) throw new Error(data.error.message);
+    return data.embedding.values;
   } catch (err) {
     console.error('[EMBEDDINGS] Generation error:', err.message);
     throw err;
@@ -35,6 +40,8 @@ function chunkText(text, size = 500, overlap = 50) {
   return chunks;
 }
 
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 /**
  * Upload and vectorise a document
  */
@@ -49,6 +56,8 @@ async function uploadKnowledge(text, source, category = 'general') {
        VALUES ($1, $2, $3, $4)`,
       [chunk, JSON.stringify(embedding), source, category]
     );
+    // Add 1s delay to prevent "Resource exhausted" API rate limits
+    await delay(1000);
   }
 }
 

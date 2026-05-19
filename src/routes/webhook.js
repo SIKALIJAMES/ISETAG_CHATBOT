@@ -44,13 +44,51 @@ router.post('/whatsapp', async (req, res) => {
       const changes = entry?.changes?.[0]?.value;
       const message = changes?.messages?.[0];
 
-      // Ignore non-text events (status updates, reactions, etc.)
-      if (!message || message.type !== 'text') return;
+      if (!message) return;
 
-      const phone    = message.from;
-      const userText = message.text.body.trim();
+      const phone = message.from;
+      let userText = '';
+
+      if (message.type === 'text') {
+        userText = message.text.body.trim();
+      } else if (message.type === 'audio') {
+        console.log(`[WEBHOOK] 🎙️ Voice message received from ...${phone.slice(-4)}. Transcribing...`);
+        const { transcribeAudio } = require('../services/audio.service');
+        const transcript = await transcribeAudio(message.audio.id, process.env.WHATSAPP_TOKEN);
+        
+        if (!transcript) {
+          console.warn('[WEBHOOK] ❌ Audio transcription failed.');
+          await sendTextMessage(phone, "🙏 Désolé, je n'ai pas pu comprendre votre message vocal. Pourriez-vous me l'écrire par texte ? / Sorry, I couldn't understand your voice note. Could you please type it?");
+          return;
+        }
+        
+        userText = transcript.trim();
+        console.log(`[WEBHOOK] 📝 Voice transcribed to: "${userText}"`);
+      } else {
+        // Ignore other types (reactions, status updates, etc.)
+        return;
+      }
+
+      if (!userText) return;
 
       console.log(`[WEBHOOK] 📨 Message from ...${phone.slice(-4)}: "${userText}"`);
+
+      // 0. Check if conversation is already escalated
+      const convCheck = await query('SELECT id, status, lang FROM conversations WHERE user_phone = $1 LIMIT 1', [phone]);
+      if (convCheck.rows.length > 0 && convCheck.rows[0].status === 'escalated') {
+        console.log(`[WEBHOOK] ⏩ Session is escalated for ...${phone.slice(-4)}. Saving message and skipping AI response.`);
+        
+        // Save user message to history so admin can see it in dashboard
+        const sessionService = require('../services/session');
+        await sessionService.addMessage(phone, 'user', userText);
+        
+        // Update database with latest message from student
+        await query(
+          `UPDATE conversations SET last_message = $2, updated_at = NOW() WHERE id = $1`,
+          [convCheck.rows[0].id, userText]
+        );
+        return;
+      }
 
       // 1. Call AI Agent (GPT-4o-mini + RAG)
       const result = await processMessage(phone, userText);
@@ -71,17 +109,22 @@ router.post('/whatsapp', async (req, res) => {
         noMatchCount[phone] = 0;
       }
 
-      // 3. Send AI reply
+      // 3. Send AI reply (Text)
       await sendTextMessage(phone, result.text);
 
-      // 4. Upsert conversation record in PostgreSQL
-      await query(
-        `INSERT INTO conversations (user_phone, last_message, lang, status, updated_at)
-         VALUES ($1, $2, $3, 'active', NOW())
-         ON CONFLICT (user_phone)
-         DO UPDATE SET last_message = $2, lang = $3, status = CASE WHEN conversations.status = 'escalated' THEN 'escalated' ELSE 'active' END, updated_at = NOW()`,
-        [phone, userText, result.lang]
-      );
+      // 4. Upsert conversation record in PostgreSQL (without ON CONFLICT to avoid schema issues)
+      const existing = await query('SELECT id, status FROM conversations WHERE user_phone = $1 LIMIT 1', [phone]);
+      if (existing.rows.length > 0) {
+        await query(
+          `UPDATE conversations SET last_message = $2, lang = $3, status = CASE WHEN status = 'escalated' THEN 'escalated' ELSE 'active' END, updated_at = NOW() WHERE id = $1`,
+          [existing.rows[0].id, userText, result.lang]
+        );
+      } else {
+        await query(
+          `INSERT INTO conversations (user_phone, last_message, lang, status, updated_at) VALUES ($1, $2, $3, 'active', NOW())`,
+          [phone, userText, result.lang]
+        );
+      }
 
     } catch (err) {
       console.error('[WEBHOOK] Background error:', err.message);

@@ -6,6 +6,9 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
+// Bypass local SSL certificate verification (useful for corporate networks like intern machines)
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
 const webhookRoutes = require('./src/routes/webhook');
 const adminRoutes = require('./src/routes/admin');
 const authRoutes = require('./src/routes/auth');
