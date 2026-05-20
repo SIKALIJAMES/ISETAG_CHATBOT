@@ -38,9 +38,16 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'healthy', version: '2.0.0', env: process.env.NODE_ENV });
 });
 
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({ error: 'Route not found' });
+// 404 handler for API routes
+app.use('/api', (req, res) => {
+  res.status(404).json({ error: 'API Route not found' });
+});
+
+// Serve frontend in production (Single Container deployment)
+const path = require('path');
+app.use(express.static(path.join(__dirname, 'frontend/dist')));
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'frontend/dist/index.html'));
 });
 
 // Global error handler
