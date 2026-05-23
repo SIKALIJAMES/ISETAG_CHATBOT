@@ -6,6 +6,7 @@ const nlpService = require('../services/nlp.service');
 const faqService = require('../services/faq.service');
 const audioService = require('../services/audio.service');
 const escalationService = require('../services/escalation.service');
+const { processMessage } = require('../services/ai-agent');
 const { hashPhone, shortHash } = require('../utils/crypto');
 const {
   buildTextMessage,
@@ -183,29 +184,23 @@ async function handleWebhook(req, res) {
       }
     }
 
-    // Step 13: Run FAQ engine
-    const result = await faqService.runFAQEngine(userText, session.lang, session.history);
+    // Step 13: Run AI Agent
+    const result = await processMessage(phone, userText, session.lang, session.history || []);
 
-    if (result.answer && !result.needsHuman) {
+    if (result.text && !result.needsEscalation) {
       const prefix = isFirstMessage ? welcomePrefix(session.lang) : '';
-      const responseText = prefix + result.answer;
+      const responseText = prefix + result.text;
       await sendMessage(buildTextMessage(phone, responseText));
-      sessionService.addToHistory(session, 'assistant', result.answer);
-      await logMessage(conversationId, 'out', result.answer, 'text', result.faqId, result.confidence);
+      sessionService.addToHistory(session, 'assistant', result.text);
+      await logMessage(conversationId, 'out', result.text, 'text', null, 1.0);
       session.consecutive_no_match = 0;
-      logger.info(`FAQ answered via Pass ${result.passUsed} for ${shortHash(phone)}`);
+      logger.info(`AI Agent answered for ${shortHash(phone)}`);
     } else {
-      // No match
-      session.consecutive_no_match = (session.consecutive_no_match || 0) + 1;
-      logger.info(`No match (${session.consecutive_no_match} consecutive) for ${shortHash(phone)}`);
-
-      if (session.consecutive_no_match >= 3 || result.needsHuman) {
-        await doEscalation({ phone, phoneHash, session, conversationId, lang: session.lang });
-      } else {
-        const noMatch = noMatchMessage(session.lang);
-        await sendMessage(buildTextMessage(phone, noMatch));
-        sessionService.addToHistory(session, 'assistant', noMatch);
-        await logMessage(conversationId, 'out', noMatch, 'text', null, 0);
+      // Escalation or error
+      await doEscalation({ phone, phoneHash, session, conversationId, lang: session.lang });
+      if (result.text && result.needsEscalation) {
+        // Optionnel: On peut loguer l'erreur envoyée
+        logger.error(`AI Agent Erreur ou Escalation requise`);
       }
     }
 

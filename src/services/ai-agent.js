@@ -1,7 +1,6 @@
 'use strict';
 const OpenAI = require('openai');
 const { searchRelevant } = require('./embeddings');
-const sessionService = require('./session');
 const { franc } = require('franc');
 
 const openai = new OpenAI({ 
@@ -29,7 +28,7 @@ function isRateLimited(phone) {
 /**
  * Main AI Agent — Processes a message and returns a reply
  */
-async function processMessage(phone, userText) {
+async function processMessage(phone, userText, lang, history = []) {
   // Rate limit check
   if (isRateLimited(phone)) {
     return {
@@ -40,13 +39,6 @@ async function processMessage(phone, userText) {
   }
 
   try {
-    // 1. Detect language
-    const langCode = franc(userText, { minLength: 3 });
-    const lang = langCode === 'eng' ? 'en' : 'fr';
-
-    // 2. Get conversation history from Redis (last 15 messages)
-    const history = await sessionService.getHistory(phone);
-
     // 3. RAG: Semantic search in knowledge base
     let context = '';
     try {
@@ -100,10 +92,6 @@ ${context ? `\n📚 CONTEXTE DEPUIS LA BASE DE CONNAISSANCE (utilise ces informa
     if (data.error) throw new Error(data.error.message);
     const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
     console.log(`[AI-AGENT] ✅ Response generated (${aiResponse.length} chars)`);
-
-    // 7. Save exchange to Redis session
-    await sessionService.addMessage(phone, 'user', userText);
-    await sessionService.addMessage(phone, 'assistant', aiResponse);
 
     return {
       text: aiResponse,

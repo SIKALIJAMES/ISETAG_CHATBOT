@@ -17,7 +17,7 @@ WORKDIR /app
 # Copier les fichiers du backend
 COPY package*.json ./
 # Installer uniquement les dépendances de production
-RUN npm ci --omit=dev
+RUN npm install --omit=dev
 
 # Copier le code source du backend
 COPY . .
