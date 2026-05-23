@@ -1,14 +1,122 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --isetag-yellow:    #EAE74A;
+  --isetag-yellow-dk: #C9C620;
+  --isetag-green:     #5DCB6A;
+  --isetag-green-dk:  #3BA848;
+  --isetag-black:     #0C0C0C;
+  --isetag-dark:      #141414;
+  --isetag-panel:     #1A1A1A;
+  --isetag-border:    rgba(255,255,255,0.07);
+}
+
+* {
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
-  @apply bg-slate-50 text-slate-900;
+  background-color: var(--isetag-black);
+  color: #f1f5f9;
 }
 
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--isetag-dark); }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(234,231,74,0.4); }
+
+/* Glass card — dark variant */
 .glass {
-  @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-xl;
+  background: rgba(26, 26, 26, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--isetag-border);
+  box-shadow: 0 4px 32px rgba(0,0,0,0.4);
+}
+
+/* Yellow glow button */
+.btn-yellow {
+  @apply font-bold text-isetag-black rounded-2xl px-6 py-3 transition-all duration-200 active:scale-95;
+  background: var(--isetag-yellow);
+  box-shadow: 0 4px 24px rgba(234,231,74,0.25);
+}
+.btn-yellow:hover {
+  background: var(--isetag-yellow-dk);
+  box-shadow: 0 6px 32px rgba(234,231,74,0.4);
+}
+
+/* Green glow button */
+.btn-green {
+  @apply font-bold text-isetag-black rounded-2xl px-6 py-3 transition-all duration-200 active:scale-95;
+  background: var(--isetag-green);
+  box-shadow: 0 4px 24px rgba(93,203,106,0.25);
+}
+.btn-green:hover {
+  background: var(--isetag-green-dk);
+  box-shadow: 0 6px 32px rgba(93,203,106,0.4);
+}
+
+/* Active nav item */
+.nav-active {
+  background: linear-gradient(135deg, rgba(234,231,74,0.15), rgba(93,203,106,0.1));
+  border-left: 3px solid var(--isetag-yellow);
+  color: var(--isetag-yellow);
+}
+
+/* Yellow gradient text */
+.text-brand {
+  background: linear-gradient(135deg, var(--isetag-yellow) 0%, var(--isetag-green) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Input dark */
+.input-dark {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #f1f5f9;
+  @apply rounded-xl px-4 py-3 w-full outline-none transition-all duration-200;
+}
+.input-dark:focus {
+  border-color: var(--isetag-yellow);
+  box-shadow: 0 0 0 3px rgba(234,231,74,0.12);
+}
+.input-dark::placeholder { color: rgba(255,255,255,0.3); }
+
+/* Stat card glow */
+.stat-card {
+  @apply glass rounded-3xl p-6 flex items-center gap-5 transition-all duration-300;
+}
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+}
+
+/* Badge */
+.badge-yellow {
+  background: rgba(234,231,74,0.15);
+  color: var(--isetag-yellow);
+  border: 1px solid rgba(234,231,74,0.3);
+  @apply text-xs font-bold px-2.5 py-1 rounded-full;
+}
+.badge-green {
+  background: rgba(93,203,106,0.15);
+  color: var(--isetag-green);
+  border: 1px solid rgba(93,203,106,0.3);
+  @apply text-xs font-bold px-2.5 py-1 rounded-full;
+}
+.badge-red {
+  background: rgba(248,113,113,0.15);
+  color: #f87171;
+  border: 1px solid rgba(248,113,113,0.3);
+  @apply text-xs font-bold px-2.5 py-1 rounded-full;
 }

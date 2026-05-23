@@ -1,26 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { MessageSquare, AlertCircle, Clock, User, Send, CheckCircle, Search, RefreshCw } from 'lucide-react';
+import { MessageSquare, AlertCircle, User, Send, CheckCircle, Search, RefreshCw } from 'lucide-react';
 
 const statusBadge = (status) => {
-  const map = {
-    active: 'bg-green-100 text-green-700 border border-green-200',
-    escalated: 'bg-red-100 text-red-700 border border-red-200',
-    bot: 'bg-blue-100 text-blue-700 border border-blue-200',
-  };
-  return map[status] || 'bg-slate-100 text-slate-600';
+  if (status === 'escalated') return 'badge-red';
+  if (status === 'active')    return 'badge-green';
+  return 'badge-yellow';
 };
 
 const Conversations = () => {
-  const [convos, setConvos] = useState([]);
-  const [filter, setFilter] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedId, setSelectedId] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [replyText, setReplyText] = useState('');
-  const [sending, setSending] = useState(false);
+  const [convos, setConvos]               = useState([]);
+  const [filter, setFilter]               = useState('all');
+  const [searchTerm, setSearchTerm]       = useState('');
+  const [selectedId, setSelectedId]       = useState(null);
+  const [messages, setMessages]           = useState([]);
+  const [replyText, setReplyText]         = useState('');
+  const [sending, setSending]             = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
-  
   const messagesEndRef = useRef(null);
 
   const fetchConvos = async (silent = false) => {
@@ -29,9 +25,7 @@ const Conversations = () => {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setConvos(res.data);
-    } catch (err) {
-      console.error('Failed to load conversations:', err.message);
-    }
+    } catch (err) { console.error('Failed to load conversations:', err.message); }
   };
 
   const fetchMessages = async (id, silent = false) => {
@@ -41,35 +35,24 @@ const Conversations = () => {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setMessages(res.data);
-    } catch (err) {
-      console.error('Failed to load messages:', err.message);
-    } finally {
-      if (!silent) setLoadingMessages(false);
-    }
+    } catch (err) { console.error('Failed to load messages:', err.message); }
+    finally { if (!silent) setLoadingMessages(false); }
   };
 
-  // Poll conversations and active chat messages
   useEffect(() => {
     fetchConvos();
     const interval = setInterval(() => {
       fetchConvos(true);
-      if (selectedId) {
-        fetchMessages(selectedId, true);
-      }
-    }, 4000); // Poll every 4 seconds for a live chat feel
-
+      if (selectedId) fetchMessages(selectedId, true);
+    }, 4000);
     return () => clearInterval(interval);
   }, [selectedId]);
 
-  // Scroll to bottom when messages load
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSelectConvo = (id) => {
-    setSelectedId(id);
-    fetchMessages(id);
-  };
+  const handleSelectConvo = (id) => { setSelectedId(id); fetchMessages(id); };
 
   const handleResolve = async (id, e) => {
     if (e) e.stopPropagation();
@@ -78,144 +61,121 @@ const Conversations = () => {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       fetchConvos();
-      // If resolving the active convo, reload messages to see system update
-      if (selectedId === id) {
-        fetchMessages(id);
-      }
-    } catch (err) {
-      console.error('Failed to resolve conversation:', err.message);
-    }
+      if (selectedId === id) fetchMessages(id);
+    } catch (err) { console.error('Failed to resolve:', err.message); }
   };
 
   const handleSendReply = async (e) => {
     e.preventDefault();
     if (!replyText.trim() || sending || !selectedId) return;
-
     setSending(true);
     const textToSend = replyText;
-    setReplyText(''); // Clear instantly for responsiveness
-
+    setReplyText('');
     try {
-      await axios.post(`/api/admin/conversations/${selectedId}/reply`, {
-        text: textToSend
-      }, {
+      await axios.post(`/api/admin/conversations/${selectedId}/reply`, { text: textToSend }, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
-      // Append manually for instant visual feedback
       setMessages(prev => [...prev, { role: 'assistant', content: textToSend, created_at: new Date() }]);
       fetchConvos(true);
     } catch (err) {
-      console.error('Failed to send reply:', err.message);
-      alert('Erreur lors de l\'envoi du message.');
-    } finally {
-      setSending(false);
-    }
+      console.error('Failed to send:', err.message);
+      alert("Erreur lors de l'envoi du message.");
+    } finally { setSending(false); }
   };
 
   const selectedConvo = convos.find(c => c.id === selectedId);
-
-  // Filter conversations
   const filteredConvos = convos.filter(c => {
-    const matchesSearch = c.user_phone?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          c.last_message?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    if (!matchesSearch) return false;
-    if (filter === 'all') return true;
+    const match = c.user_phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  c.last_message?.toLowerCase().includes(searchTerm.toLowerCase());
+    if (!match) return false;
     if (filter === 'escalated') return c.status === 'escalated';
-    if (filter === 'bot') return c.status === 'bot' || c.status === 'active';
+    if (filter === 'bot')       return c.status === 'active';
     return true;
   });
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50/50">
-      
-      {/* LEFT COLUMN: Conversation List */}
-      <div className="w-80 md:w-96 flex flex-col border-r border-slate-200 bg-white flex-shrink-0">
-        <header className="p-6 pb-4 border-b border-slate-100 space-y-4">
+    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--isetag-black)' }}>
+
+      {/* ── Left: Conversation List ─────────────────── */}
+      <div className="w-80 md:w-96 flex flex-col flex-shrink-0"
+        style={{ background: 'var(--isetag-dark)', borderRight: '1px solid var(--isetag-border)' }}>
+
+        <header className="p-5 pb-4 space-y-4" style={{ borderBottom: '1px solid var(--isetag-border)' }}>
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-black text-slate-800 tracking-tight">Messages</h1>
-            <button 
-              onClick={() => fetchConvos()} 
-              className="p-2 hover:bg-slate-100 rounded-xl active:scale-95 transition-all text-slate-500"
-              title="Rafraîchir"
-            >
-              <RefreshCw size={18} />
+            <h1 className="text-xl font-black text-brand">Conversations</h1>
+            <button onClick={() => fetchConvos()} title="Rafraîchir"
+              className="p-2 rounded-xl transition-all hover:bg-white/5 text-white/40 hover:text-white">
+              <RefreshCw size={17} />
             </button>
           </div>
-          
-          {/* Search bar */}
+
+          {/* Search */}
           <div className="relative">
-            <Search className="absolute left-3.5 top-3 text-slate-400" size={18} />
-            <input 
+            <Search size={16} className="absolute left-3.5 top-3 pointer-events-none" style={{ color: 'rgba(255,255,255,0.3)' }} />
+            <input
               type="text"
               placeholder="Rechercher un numéro..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+              className="input-dark pl-10 text-sm py-2.5"
             />
           </div>
 
-          {/* Filter badges */}
+          {/* Filters */}
           <div className="flex gap-2">
             {[
-              { id: 'all', label: 'Tous' },
+              { id: 'all',       label: 'Tous' },
               { id: 'escalated', label: '🚨 Escaladés' },
-              { id: 'bot', label: '🤖 Bot' }
+              { id: 'bot',       label: '🤖 Bot' },
             ].map(f => (
-              <button
-                key={f.id}
-                onClick={() => setFilter(f.id)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                  filter === f.id
-                    ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
-                    : 'bg-slate-50 text-slate-500 border border-slate-100 hover:bg-slate-100'
-                }`}
-              >
+              <button key={f.id} onClick={() => setFilter(f.id)}
+                className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
+                style={filter === f.id
+                  ? { background: 'var(--isetag-yellow)', color: 'var(--isetag-black)' }
+                  : { background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.07)' }
+                }>
                 {f.label}
               </button>
             ))}
           </div>
         </header>
 
-        {/* Scrollable list */}
-        <div className="flex-1 overflow-y-auto divide-y divide-slate-100">
+        {/* List */}
+        <div className="flex-1 overflow-y-auto divide-y" style={{ borderColor: 'var(--isetag-border)' }}>
           {filteredConvos.length === 0 ? (
-            <div className="p-8 text-center text-slate-400">
-              <MessageSquare size={40} className="mx-auto mb-3 opacity-30" />
+            <div className="p-8 text-center" style={{ color: 'rgba(255,255,255,0.3)' }}>
+              <MessageSquare size={40} className="mx-auto mb-3 opacity-20" />
               <p className="text-sm">Aucune discussion trouvée</p>
             </div>
           ) : (
-            filteredConvos.map((c) => {
+            filteredConvos.map(c => {
               const isActive = c.id === selectedId;
               return (
-                <div
-                  key={c.id}
-                  onClick={() => handleSelectConvo(c.id)}
-                  className={`p-4 flex items-center justify-between cursor-pointer transition-all duration-150 ${
-                    isActive ? 'bg-blue-50/55 border-l-4 border-blue-600' : 'hover:bg-slate-50/70'
-                  }`}
-                >
+                <div key={c.id} onClick={() => handleSelectConvo(c.id)}
+                  className="p-4 flex items-center justify-between cursor-pointer transition-all"
+                  style={{
+                    background: isActive ? 'rgba(234,231,74,0.05)' : 'transparent',
+                    borderLeft: isActive ? '3px solid var(--isetag-yellow)' : '3px solid transparent',
+                  }}>
                   <div className="flex items-center gap-3 overflow-hidden">
                     <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center ${
-                      c.status === 'escalated' ? 'bg-rose-100 text-rose-600 animate-pulse' : 'bg-slate-100 text-slate-500'
-                    }`}>
-                      <User size={20} />
+                      c.status === 'escalated' ? 'animate-pulse' : ''
+                    }`} style={{
+                      background: c.status === 'escalated' ? 'rgba(248,113,113,0.15)' : 'rgba(255,255,255,0.07)',
+                      color: c.status === 'escalated' ? '#f87171' : 'rgba(255,255,255,0.4)',
+                    }}>
+                      <User size={18} />
                     </div>
                     <div className="overflow-hidden">
-                      <p className="font-bold text-slate-800 text-sm">
-                        {c.user_phone}
-                      </p>
-                      <p className="text-xs text-slate-400 truncate max-w-[160px] md:max-w-[200px]">
-                        {c.last_message || 'Pas de message'}
+                      <p className="font-bold text-sm text-white truncate">{c.user_phone}</p>
+                      <p className="text-xs truncate max-w-[160px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                        {c.last_message || 'Aucun message'}
                       </p>
                     </div>
                   </div>
-
                   <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold capitalize ${statusBadge(c.status)}`}>
-                      {c.status}
-                    </span>
-                    <span className="text-[10px] text-slate-400">
+                    <span className={statusBadge(c.status)}>{c.status}</span>
+                    <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
                       {new Date(c.updated_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
@@ -226,63 +186,58 @@ const Conversations = () => {
         </div>
       </div>
 
-      {/* RIGHT COLUMN: Active Chat Panel */}
-      <div className="flex-1 flex flex-col bg-slate-50 overflow-hidden">
+      {/* ── Right: Chat Panel ──────────────────────── */}
+      <div className="flex-1 flex flex-col overflow-hidden" style={{ background: 'var(--isetag-black)' }}>
         {selectedId ? (
           <>
-            {/* Active chat header */}
-            <header className="p-4 bg-white border-b border-slate-200 flex items-center justify-between flex-shrink-0 shadow-sm z-10">
+            {/* Chat header */}
+            <header className="p-4 flex items-center justify-between flex-shrink-0 shadow-lg"
+              style={{ background: 'var(--isetag-dark)', borderBottom: '1px solid var(--isetag-border)' }}>
               <div className="flex items-center gap-3">
-                <div className={`w-11 h-11 rounded-full flex items-center justify-center ${
-                  selectedConvo?.status === 'escalated' ? 'bg-rose-100 text-rose-600' : 'bg-blue-100 text-blue-600'
-                }`}>
+                <div className="w-11 h-11 rounded-full flex items-center justify-center"
+                  style={{
+                    background: selectedConvo?.status === 'escalated' ? 'rgba(248,113,113,0.15)' : 'rgba(234,231,74,0.1)',
+                    color: selectedConvo?.status === 'escalated' ? '#f87171' : 'var(--isetag-yellow)',
+                  }}>
                   <User size={22} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-800">{selectedConvo?.user_phone}</h3>
+                  <h3 className="font-bold text-white">{selectedConvo?.user_phone}</h3>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${statusBadge(selectedConvo?.status)}`}>
-                      {selectedConvo?.status}
-                    </span>
+                    <span className={statusBadge(selectedConvo?.status)}>{selectedConvo?.status}</span>
                     {selectedConvo?.status === 'escalated' ? (
-                      <span className="text-xs text-rose-500 font-bold flex items-center gap-1">
-                        <AlertCircle size={12} /> Prise en main humaine requise
+                      <span className="text-xs font-bold flex items-center gap-1" style={{ color: '#f87171' }}>
+                        <AlertCircle size={11} /> Prise en main humaine requise
                       </span>
                     ) : (
-                      <span className="text-xs text-slate-400 font-medium">
-                        L'IA gère la discussion
-                      </span>
+                      <span className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>L'IA gère la discussion</span>
                     )}
                   </div>
                 </div>
               </div>
 
-              {/* Action buttons */}
-              <div>
-                {selectedConvo?.status === 'escalated' ? (
-                  <button
-                    onClick={(e) => handleResolve(selectedConvo.id, e)}
-                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-emerald-100 flex items-center gap-1.5"
-                  >
-                    <CheckCircle size={14} /> Réengager le Bot
-                  </button>
-                ) : (
-                  <span className="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1.5 rounded-xl">
-                    Mode Automatique
-                  </span>
-                )}
-              </div>
+              {selectedConvo?.status === 'escalated' ? (
+                <button onClick={(e) => handleResolve(selectedConvo.id, e)}
+                  className="btn-green px-4 py-2 text-xs flex items-center gap-1.5 rounded-xl">
+                  <CheckCircle size={14} /> Réengager le Bot
+                </button>
+              ) : (
+                <span className="text-xs font-bold px-3 py-1.5 rounded-xl"
+                  style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.35)' }}>
+                  Mode Automatique
+                </span>
+              )}
             </header>
 
-            {/* Scrollable messages area */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-100/35">
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-4"
+              style={{ background: 'rgba(255,255,255,0.01)' }}>
               {loadingMessages ? (
-                <div className="h-full flex items-center justify-center text-slate-400">
-                  <RefreshCw className="animate-spin mr-2" size={20} />
-                  Chargement des messages...
+                <div className="h-full flex items-center justify-center" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                  <RefreshCw className="animate-spin mr-2" size={18} /> Chargement...
                 </div>
               ) : messages.length === 0 ? (
-                <div className="h-full flex items-center justify-center text-slate-400">
+                <div className="h-full flex items-center justify-center" style={{ color: 'rgba(255,255,255,0.3)' }}>
                   Aucun message dans cette discussion.
                 </div>
               ) : (
@@ -290,13 +245,13 @@ const Conversations = () => {
                   const isUser = m.role === 'user';
                   return (
                     <div key={index} className={`flex ${isUser ? 'justify-start' : 'justify-end'}`}>
-                      <div className={`max-w-[70%] p-4 rounded-3xl text-sm shadow-sm ${
-                        isUser 
-                          ? 'bg-white text-slate-800 rounded-tl-none border border-slate-200/50' 
-                          : 'bg-blue-600 text-white rounded-tr-none'
-                      }`}>
+                      <div className="max-w-[70%] p-4 rounded-3xl text-sm shadow-lg"
+                        style={isUser
+                          ? { background: 'var(--isetag-panel)', border: '1px solid var(--isetag-border)', color: 'rgba(255,255,255,0.85)', borderTopLeftRadius: 4 }
+                          : { background: 'linear-gradient(135deg, var(--isetag-yellow), var(--isetag-yellow-dk))', color: 'var(--isetag-black)', borderTopRightRadius: 4 }
+                        }>
                         <p className="leading-relaxed whitespace-pre-wrap">{m.content}</p>
-                        <p className={`text-[10px] mt-1.5 text-right ${isUser ? 'text-slate-400' : 'text-blue-100'}`}>
+                        <p className="text-[10px] mt-1.5 text-right opacity-50">
                           {new Date(m.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                         </p>
                       </div>
@@ -307,36 +262,35 @@ const Conversations = () => {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Bottom input area */}
-            <form onSubmit={handleSendReply} className="p-4 bg-white border-t border-slate-200 flex-shrink-0 flex gap-3 shadow-md">
+            {/* Reply input */}
+            <form onSubmit={handleSendReply} className="p-4 flex gap-3 flex-shrink-0"
+              style={{ background: 'var(--isetag-dark)', borderTop: '1px solid var(--isetag-border)' }}>
               <input
                 type="text"
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
-                placeholder={selectedConvo?.status === 'escalated' ? "Répondre manuellement à l'étudiant (WhatsApp)..." : "Le bot est actif. Tapez un message pour prendre la main..."}
-                className="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                placeholder={selectedConvo?.status === 'escalated' ? "Répondre manuellement (WhatsApp)..." : "Tapez un message pour prendre la main..."}
+                className="input-dark flex-1 text-sm"
               />
-              <button
-                type="submit"
-                disabled={sending || !replyText.trim()}
-                className="p-3 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white rounded-2xl transition-all shadow-md shadow-blue-100 disabled:opacity-40 flex items-center justify-center"
-              >
+              <button type="submit" disabled={sending || !replyText.trim()}
+                className="btn-yellow p-3.5 rounded-2xl disabled:opacity-40 flex items-center justify-center flex-shrink-0">
                 <Send size={18} />
               </button>
             </form>
           </>
         ) : (
-          /* Empty state */
-          <div className="flex-1 flex flex-col items-center justify-center text-slate-400 p-8">
-            <MessageSquare size={64} className="opacity-20 mb-4 animate-bounce" />
-            <h3 className="text-lg font-bold text-slate-700 mb-1">Console de Live Chat</h3>
-            <p className="text-sm text-slate-400 text-center max-w-sm">
-              Sélectionnez un étudiant dans la liste de gauche pour lire sa conversation, réengager le bot, ou prendre la main manuellement.
+          <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+            <div className="w-20 h-20 rounded-3xl flex items-center justify-center mb-6 animate-bounce"
+              style={{ background: 'rgba(234,231,74,0.08)', border: '1px solid rgba(234,231,74,0.15)' }}>
+              <MessageSquare size={36} style={{ color: 'var(--isetag-yellow)' }} />
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">Console de Live Chat</h3>
+            <p className="text-sm max-w-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>
+              Sélectionnez un étudiant dans la liste pour lire sa conversation, réengager le bot ou répondre manuellement.
             </p>
           </div>
         )}
       </div>
-
     </div>
   );
 };
