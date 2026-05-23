@@ -1,9 +1,7 @@
 'use strict';
 const { sendTextMessage } = require('./whatsapp');
 const { query } = require('../config/database');
-const OpenAI = require('openai');
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const fetch = require('node-fetch');
 
 /**
  * Generate a concise summary of the conversation via GPT
@@ -18,19 +16,19 @@ async function generateSummary(history, lang) {
   ).join('\n');
 
   try {
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'system',
-          content: `Génère un résumé en 2-3 phrases MAX de cette conversation. Sois factuel et concis. Langue: ${lang === 'en' ? 'anglais' : 'français'}.`
-        },
-        { role: 'user', content: text }
-      ],
-      max_tokens: 150,
-      temperature: 0.3
-    });
-    return completion.choices[0]?.message?.content || 'Question non résolue.';
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [{ text: `Génère un résumé en 2-3 phrases MAX de cette conversation. Sois factuel et concis. Langue: ${lang === 'en' ? 'anglais' : 'français'}.\n\n${text}` }] }],
+          generationConfig: { maxOutputTokens: 150, temperature: 0.3 }
+        })
+      }
+    );
+    const data = await response.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || 'Question non résolue.';
   } catch (err) {
     console.error('[ESCALATION] Summary error:', err.message);
     return lang === 'en' ? 'Unresolved question.' : 'Question non résolue.';
