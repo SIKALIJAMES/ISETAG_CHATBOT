@@ -19,11 +19,11 @@ router.get('/whatsapp', (req, res) => {
   const token     = req.query['hub.verify_token'];
   const challenge = req.query['hub.challenge'];
 
-  if (mode === 'subscribe' && token === process.env.WHATSAPP_VERIFY_TOKEN) {
+  if (mode === 'subscribe' && token === process.env.WHATSAPP_VERIFY_TOKEN?.trim()) {
     console.log('[WEBHOOK] ✅ Verified by Meta');
     return res.status(200).send(challenge);
   }
-  console.warn('[WEBHOOK] ❌ Verification failed');
+  console.warn(`[WEBHOOK] ❌ Verification failed. Expected: '${process.env.WHATSAPP_VERIFY_TOKEN?.trim()}', Got: '${token}'`);
   res.status(403).send('Forbidden');
 });
 
