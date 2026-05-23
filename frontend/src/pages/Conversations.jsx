@@ -25,7 +25,7 @@ const Conversations = () => {
 
   const fetchConvos = async (silent = false) => {
     try {
-      const res = await axios.get('http://localhost:3000/api/admin/conversations', {
+      const res = await axios.get('/api/admin/conversations', {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setConvos(res.data);
@@ -37,7 +37,7 @@ const Conversations = () => {
   const fetchMessages = async (id, silent = false) => {
     if (!silent) setLoadingMessages(true);
     try {
-      const res = await axios.get(`http://localhost:3000/api/admin/conversations/${id}/messages`, {
+      const res = await axios.get(`/api/admin/conversations/${id}/messages`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setMessages(res.data);
@@ -74,7 +74,7 @@ const Conversations = () => {
   const handleResolve = async (id, e) => {
     if (e) e.stopPropagation();
     try {
-      await axios.post(`http://localhost:3000/api/admin/conversations/${id}/resolve`, {}, {
+      await axios.post(`/api/admin/conversations/${id}/resolve`, {}, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       fetchConvos();
@@ -96,7 +96,7 @@ const Conversations = () => {
     setReplyText(''); // Clear instantly for responsiveness
 
     try {
-      await axios.post(`http://localhost:3000/api/admin/conversations/${selectedId}/reply`, {
+      await axios.post(`/api/admin/conversations/${selectedId}/reply`, {
         text: textToSend
       }, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }

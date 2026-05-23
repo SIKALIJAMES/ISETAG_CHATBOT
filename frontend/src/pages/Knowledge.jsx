@@ -12,7 +12,7 @@ const Knowledge = () => {
 
   const fetchSources = async () => {
     try {
-      const res = await axios.get('http://localhost:3000/api/admin/knowledge', {
+      const res = await axios.get('/api/admin/knowledge', {
         headers: { 
           Authorization: `Bearer ${localStorage.getItem('token')}` 
         }
@@ -37,7 +37,7 @@ const Knowledge = () => {
     formData.append('category', 'general');
 
     try {
-      await axios.post('http://localhost:3000/api/admin/knowledge/upload', formData, {
+      await axios.post('/api/admin/knowledge/upload', formData, {
         headers: { 
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${localStorage.getItem('token')}` 
@@ -59,7 +59,7 @@ const Knowledge = () => {
 
     setUploading(true);
     try {
-      await axios.post('http://localhost:3000/api/admin/knowledge/text', {
+      await axios.post('/api/admin/knowledge/text', {
         text: rawText,
         title: title || 'Manual Entry',
         category: 'general'
@@ -84,7 +84,7 @@ const Knowledge = () => {
     
     setUploading(true);
     try {
-      await axios.delete('http://localhost:3000/api/admin/knowledge', {
+      await axios.delete('/api/admin/knowledge', {
         headers: { 
           Authorization: `Bearer ${localStorage.getItem('token')}` 
         }
@@ -103,7 +103,7 @@ const Knowledge = () => {
     
     setUploading(true);
     try {
-      await axios.delete(`http://localhost:3000/api/admin/knowledge/source?source=${encodeURIComponent(sourceName)}`, {
+      await axios.delete(`/api/admin/knowledge/source?source=${encodeURIComponent(sourceName)}`, {
         headers: { 
           Authorization: `Bearer ${localStorage.getItem('token')}` 
         }
@@ -120,7 +120,7 @@ const Knowledge = () => {
   const handleEditSource = async (sourceName) => {
     setUploading(true);
     try {
-      const res = await axios.get(`http://localhost:3000/api/admin/knowledge/content?source=${encodeURIComponent(sourceName)}`, {
+      const res = await axios.get(`/api/admin/knowledge/content?source=${encodeURIComponent(sourceName)}`, {
         headers: { 
           Authorization: `Bearer ${localStorage.getItem('token')}` 
         }
