@@ -1,12 +1,15 @@
 'use strict';
-const OpenAI = require('openai');
 const { searchRelevant } = require('./embeddings');
 const { franc } = require('franc');
 
-const openai = new OpenAI({ 
-  apiKey: process.env.GEMINI_API_KEY,
-  baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/'
-});
+// Lazy-init: only create the client when needed, avoids crash at startup
+function getGeminiClient() {
+  const OpenAI = require('openai');
+  return new OpenAI({
+    apiKey: process.env.GEMINI_API_KEY,
+    baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/'
+  });
+}
 
 // Rate limiting (20 msgs/minute per phone) using in-memory counter
 const rateLimitMap = {};
