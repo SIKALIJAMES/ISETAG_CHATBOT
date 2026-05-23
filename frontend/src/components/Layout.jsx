@@ -31,7 +31,7 @@ const Layout = () => {
             style={{ background: 'linear-gradient(135deg, var(--isetag-yellow), var(--isetag-green))' }}
           >
             <img
-              src="/logo.png"
+              src="/Logo.png"
               alt="ISETAG"
               className="w-full h-full object-contain p-1"
               onError={(e) => {

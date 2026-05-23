@@ -51,7 +51,7 @@ const Login = () => {
             >
               {/* If logo.png exists, it will show; otherwise shows initials */}
               <img
-                src="/logo.png"
+                src="/Logo.png"
                 alt="ISETAG"
                 className="w-full h-full object-contain p-2"
                 onError={(e) => {
