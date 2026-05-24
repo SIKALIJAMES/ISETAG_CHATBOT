@@ -4,7 +4,7 @@ const router = express.Router();
 const { processMessage } = require('../services/ai-agent');
 const { sendTextMessage } = require('../services/whatsapp');
 const { triggerEscalation } = require('../services/escalation');
-const { getHistory } = require('../services/session');
+const { getHistory, addMessage } = require('../services/session');
 const { verifyHmac } = require('../middleware/hmac');
 const { query } = require('../config/database');
 
@@ -90,8 +90,19 @@ router.post('/whatsapp', async (req, res) => {
         return;
       }
 
-      // 1. Call AI Agent (GPT-4o-mini + RAG)
-      const result = await processMessage(phone, userText);
+      // 1. Fetch conversation history AND saved language from DB
+      const history = await getHistory(phone);
+
+      // Get previously stored language for this phone (from DB)
+      const convRecord = await query('SELECT lang FROM conversations WHERE user_phone = $1 LIMIT 1', [phone]);
+      const storedLang = convRecord.rows[0]?.lang || null;
+
+      // 2. Call AI Agent with full history and stored language
+      const result = await processMessage(phone, userText, storedLang, history);
+
+      // 3. Save both messages to Redis session (for next message's memory)
+      await addMessage(phone, 'user', userText);
+      await addMessage(phone, 'assistant', result.text);
 
       // 2. Check confidence — escalate if too low AND repeated
       if (result.needsEscalation) {
