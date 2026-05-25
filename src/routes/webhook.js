@@ -1,14 +1,14 @@
 'use strict';
 const express = require('express');
-const router = express.Router();
-const { processMessage } = require('../services/ai-agent');
-const { sendTextMessage } = require('../services/whatsapp');
-const { triggerEscalation } = require('../services/escalation');
-const { getHistory, addMessage } = require('../services/session');
-const { verifyHmac } = require('../middleware/hmac');
-const { query } = require('../config/database');
+const router  = express.Router();
+const { processMessage }                    = require('../services/ai-agent');
+const { sendTextMessage }                   = require('../services/whatsapp');
+const { triggerEscalation }                 = require('../services/escalation');
+const { getHistory, addMessage, getLang, setLang } = require('../services/session');
+const { verifyHmac }                        = require('../middleware/hmac');
+const { query }                             = require('../config/database');
 
-// Track consecutive no-match per phone (in-memory, resets on restart)
+// Track consecutive AI errors per phone (in-memory is fine for this counter)
 const noMatchCount = {};
 
 /**
@@ -29,15 +29,14 @@ router.get('/whatsapp', (req, res) => {
 
 /**
  * POST — Receive messages from WhatsApp
- * CRITICAL V2 FIX: respond 200 immediately, process async
+ * FIX: respond 200 immediately, process async
  */
 router.post('/whatsapp', async (req, res) => {
   console.log('[WEBHOOK] 🔔 POST received!', JSON.stringify(req.body).slice(0, 200));
-  
-  // ✅ Respond to Meta immediately (prevents webhook timeout)
+
+  // ✅ Acknowledge Meta immediately (prevents retry storms)
   res.status(200).send('OK');
 
-  // ⚙️ Process in background
   setImmediate(async () => {
     try {
       const entry   = req.body?.entry?.[0];
@@ -52,20 +51,28 @@ router.post('/whatsapp', async (req, res) => {
       if (message.type === 'text') {
         userText = message.text.body.trim();
       } else if (message.type === 'audio') {
-        console.log(`[WEBHOOK] 🎙️ Voice message received from ...${phone.slice(-4)}. Transcribing...`);
+        console.log(`[WEBHOOK] 🎙️ Voice message from ...${phone.slice(-4)}. Transcribing...`);
         const { transcribeAudio } = require('../services/audio.service');
         const transcript = await transcribeAudio(message.audio.id, process.env.WHATSAPP_TOKEN);
-        
         if (!transcript) {
           console.warn('[WEBHOOK] ❌ Audio transcription failed.');
-          await sendTextMessage(phone, "🙏 Désolé, je n'ai pas pu comprendre votre message vocal. Pourriez-vous me l'écrire par texte ? / Sorry, I couldn't understand your voice note. Could you please type it?");
+          await sendTextMessage(phone,
+            "🙏 Désolé, je n'ai pas pu comprendre votre message vocal. Pouvez-vous écrire votre question ? / Sorry, I couldn't understand your voice note. Could you type your question?"
+          );
           return;
         }
-        
         userText = transcript.trim();
-        console.log(`[WEBHOOK] 📝 Voice transcribed to: "${userText}"`);
+        console.log(`[WEBHOOK] 📝 Voice transcribed: "${userText}"`);
+      } else if (message.type === 'image' || message.type === 'document' || message.type === 'video') {
+        // FIX #7: Inform user instead of silently ignoring media messages
+        const storedLang = await getLang(phone);
+        await sendTextMessage(phone, storedLang === 'en'
+          ? "🖼️ I can't read images or files yet. Please describe your question in text and I'll be happy to help!"
+          : "🖼️ Je ne peux pas encore lire les images ou fichiers. Décrivez votre question en texte et je serai ravi de vous aider !"
+        );
+        return;
       } else {
-        // Ignore other types (reactions, status updates, etc.)
+        // Ignore reactions, status updates, etc.
         return;
       }
 
@@ -73,66 +80,81 @@ router.post('/whatsapp', async (req, res) => {
 
       console.log(`[WEBHOOK] 📨 Message from ...${phone.slice(-4)}: "${userText}"`);
 
-      // 0. Check if conversation is already escalated
-      const convCheck = await query('SELECT id, status, lang FROM conversations WHERE user_phone = $1 LIMIT 1', [phone]);
-      if (convCheck.rows.length > 0 && convCheck.rows[0].status === 'escalated') {
-        console.log(`[WEBHOOK] ⏩ Session is escalated for ...${phone.slice(-4)}. Saving message and skipping AI response.`);
-        
-        // Save user message to history so admin can see it in dashboard
-        const sessionService = require('../services/session');
-        await sessionService.addMessage(phone, 'user', userText);
-        
-        // Update database with latest message from student
+      // ── FIX #2: Single SQL query (was 2 identical queries before) ──────
+      // Gets: id, status, lang — all we need in one round-trip
+      const convRow = await query(
+        'SELECT id, status, lang FROM conversations WHERE user_phone = $1 LIMIT 1',
+        [phone]
+      );
+      const convData   = convRow.rows[0] || null;
+      const dbLang     = convData?.lang || null;
+
+      // ── Check escalation ───────────────────────────────────────────────
+      if (convData?.status === 'escalated') {
+        console.log(`[WEBHOOK] ⏩ Escalated session for ...${phone.slice(-4)}. Saving message only.`);
+        await addMessage(phone, 'user', userText);
         await query(
-          `UPDATE conversations SET last_message = $2, updated_at = NOW() WHERE id = $1`,
-          [convCheck.rows[0].id, userText]
+          'UPDATE conversations SET last_message = $2, updated_at = NOW() WHERE id = $1',
+          [convData.id, userText]
         );
         return;
       }
 
-      // 1. Fetch conversation history AND saved language from DB
+      // ── FIX #1: Language from Redis (survives redeployments) ───────────
+      const redisLang  = await getLang(phone);
+      const storedLang = redisLang || dbLang || null;
+
+      // ── Fetch history ─────────────────────────────────────────────────
       const history = await getHistory(phone);
 
-      // Get previously stored language for this phone (from DB)
-      const convRecord = await query('SELECT lang FROM conversations WHERE user_phone = $1 LIMIT 1', [phone]);
-      const storedLang = convRecord.rows[0]?.lang || null;
-
-      // 2. Call AI Agent with full history and stored language
+      // ── Call AI agent ─────────────────────────────────────────────────
       const result = await processMessage(phone, userText, storedLang, history);
 
-      // 3. Save both messages to Redis session (for next message's memory)
-      await addMessage(phone, 'user', userText);
+      // ── FIX #1: Persist detected language to Redis for next messages ───
+      if (result.lang) {
+        await setLang(phone, result.lang);
+      }
+
+      // ── Save messages to Redis history ────────────────────────────────
+      await addMessage(phone, 'user',      userText);
       await addMessage(phone, 'assistant', result.text);
 
-      // 2. Check confidence — escalate if too low AND repeated
+      // ── FIX #4: Handle escalation BEFORE sending the AI error message ─
       if (result.needsEscalation) {
         noMatchCount[phone] = (noMatchCount[phone] || 0) + 1;
 
-        if (noMatchCount[phone] >= 2) {
-          // Escalate to human
+        if (noMatchCount[phone] >= 3) {
+          // FIX: threshold raised to 3 (was 2) to avoid false escalations on timeouts
           noMatchCount[phone] = 0;
-          const history = await getHistory(phone);
           await triggerEscalation({ phone, history, lang: result.lang });
-          return;
+          return; // ← Do NOT send the error text, escalation message is enough
+        } else {
+          // Not escalating yet — send a polite "retry" message instead of the raw error
+          const retryMsg = result.lang === 'en'
+            ? "🤔 I'm having a bit of trouble right now. Could you rephrase your question? I'll do my best to help!"
+            : "🤔 J'ai un peu de mal à répondre à ça. Pourriez-vous reformuler votre question ? Je ferai de mon mieux pour vous aider !";
+          await sendTextMessage(phone, retryMsg);
         }
       } else {
-        // Reset counter on successful answer
+        // ── Normal successful reply ───────────────────────────────────
         noMatchCount[phone] = 0;
+        await sendTextMessage(phone, result.text);
       }
 
-      // 3. Send AI reply (Text)
-      await sendTextMessage(phone, result.text);
-
-      // 4. Upsert conversation record in PostgreSQL (without ON CONFLICT to avoid schema issues)
-      const existing = await query('SELECT id, status FROM conversations WHERE user_phone = $1 LIMIT 1', [phone]);
-      if (existing.rows.length > 0) {
+      // ── Upsert conversation record in PostgreSQL ──────────────────────
+      if (convData) {
         await query(
-          `UPDATE conversations SET last_message = $2, lang = $3, status = CASE WHEN status = 'escalated' THEN 'escalated' ELSE 'active' END, updated_at = NOW() WHERE id = $1`,
-          [existing.rows[0].id, userText, result.lang]
+          `UPDATE conversations
+             SET last_message = $2, lang = $3,
+                 status = CASE WHEN status = 'escalated' THEN 'escalated' ELSE 'active' END,
+                 updated_at = NOW()
+           WHERE id = $1`,
+          [convData.id, userText, result.lang]
         );
       } else {
         await query(
-          `INSERT INTO conversations (user_phone, last_message, lang, status, updated_at) VALUES ($1, $2, $3, 'active', NOW())`,
+          `INSERT INTO conversations (user_phone, last_message, lang, status, updated_at)
+           VALUES ($1, $2, $3, 'active', NOW())`,
           [phone, userText, result.lang]
         );
       }
