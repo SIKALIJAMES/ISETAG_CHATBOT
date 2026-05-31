@@ -142,22 +142,35 @@ router.post('/whatsapp', async (req, res) => {
       }
 
       // ── Upsert conversation record in PostgreSQL ──────────────────────
+      let conversationId;
       if (convData) {
+        conversationId = convData.id;
         await query(
           `UPDATE conversations
              SET last_message = $2, lang = $3,
                  status = CASE WHEN status = 'escalated' THEN 'escalated' ELSE 'active' END,
                  updated_at = NOW()
            WHERE id = $1`,
-          [convData.id, userText, result.lang]
+          [conversationId, userText, result.lang]
         );
       } else {
-        await query(
+        const insertRes = await query(
           `INSERT INTO conversations (user_phone, last_message, lang, status, updated_at)
-           VALUES ($1, $2, $3, 'active', NOW())`,
+           VALUES ($1, $2, $3, 'active', NOW()) RETURNING id`,
           [phone, userText, result.lang]
         );
+        conversationId = insertRes.rows[0].id;
       }
+
+      // ── Save messages to PostgreSQL for Admin Dashboard ───────────────
+      await query(
+        'INSERT INTO messages (conversation_id, role, content) VALUES ($1, $2, $3)',
+        [conversationId, 'user', userText]
+      );
+      await query(
+        'INSERT INTO messages (conversation_id, role, content) VALUES ($1, $2, $3)',
+        [conversationId, 'assistant', result.text]
+      );
 
     } catch (err) {
       console.error('[WEBHOOK] Background error:', err.message);

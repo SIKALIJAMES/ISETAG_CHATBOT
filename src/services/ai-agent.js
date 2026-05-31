@@ -108,6 +108,10 @@ Warm, persuasive orientation counselor. Goals:
 - 🎓 Programs: Software Engineering, Networks & Telecoms, Business Management, Digital Marketing, Maritime & Port Management, Civil Engineering, Mechanical Engineering, QHSE, HR, Accounting
 - 📋 Admission: Open to Baccalauréat / GCE A-Level holders. No entrance exam (except Maritime). No minimum grade. Rolling admissions.
 - 🏅 Degrees: BTS → Licence → Master. All State-recognized (MINESUP), under University of Douala supervision.
+- 🕒 Schedules & Fees:
+  * BTS Level 1 & 2: Available in BOTH Day classes (Cours du jour) and Evening classes (Cours du soir). The tuition fees DIFFER between Day and Evening classes.
+  * Level 3 (Licence) & Master: Available ONLY in Evening classes (Cours du soir). Fees are fixed.
+  * Maritime & Port Programs: Available ONLY in Day classes (Cours du jour) for all levels.
 - ⚓ Maritime: Double degree (2 yrs Cameroon + 2 yrs in Ghana/China), 100% job placement, STCW 95, free English/Chinese courses.
 - 📞 Contacts: +237 676 079 849 / 690 609 511 / 659 855 800
 - 🌐 Website: www.isetag.cm

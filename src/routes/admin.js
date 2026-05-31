@@ -7,6 +7,7 @@ const { protect } = require('../middleware/auth');
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 const pdf = require('pdf-parse');
+const { sendTextMessage } = require('../services/whatsapp');
 
 /**
  * Dashboard Stats
@@ -171,7 +172,6 @@ router.post('/conversations/:id/reply', protect, async (req, res) => {
     const convo = convoResult.rows[0];
     
     // 2. Send via WhatsApp Service
-    const { sendTextMessage } = require('../services/whatsapp');
     await sendTextMessage(convo.user_phone, text);
     
     // 3. Save message to database

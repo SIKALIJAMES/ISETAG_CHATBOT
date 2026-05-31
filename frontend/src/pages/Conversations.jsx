@@ -78,8 +78,9 @@ const Conversations = () => {
       setMessages(prev => [...prev, { role: 'assistant', content: textToSend, created_at: new Date() }]);
       fetchConvos(true);
     } catch (err) {
-      console.error('Failed to send:', err.message);
-      alert("Erreur lors de l'envoi du message.");
+      console.error('Failed to send:', err.response?.data || err.message);
+      const serverError = err.response?.data?.error;
+      alert(`Erreur lors de l'envoi du message.\n${serverError ? 'Détail: ' + serverError : ''}`);
     } finally { setSending(false); }
   };
 
