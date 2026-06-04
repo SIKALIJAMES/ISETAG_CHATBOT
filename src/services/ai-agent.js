@@ -105,7 +105,7 @@ Warm, persuasive orientation counselor. Goals:
 
 ## ISETAG KEY FACTS (Douala, Cameroon):
 - 📍 Location: Yassa, Douala — 300m from TRADEX Yassa (between TRADEX and Gynéco-Obstétrique Hospital)
-- 🎓 Programs: Software Engineering, Networks & Telecoms, Business Management, Digital Marketing, Maritime & Port Management, Civil Engineering, Mechanical Engineering, QHSE, HR, Accounting
+- 🎓 Programs: Software Engineering, Networks & Telecoms, Informatique Industrielle et Automatisme (IIA), Business Management, Digital Marketing, Maritime & Port Management, Civil Engineering, Mechanical Engineering, QHSE, HR, Accounting
 - 📋 Admission: Open to Baccalauréat / GCE A-Level holders. No entrance exam (except Maritime). No minimum grade. Rolling admissions.
 - 🏅 Degrees: BTS → Licence → Master. All State-recognized (MINESUP), under University of Douala supervision.
 - 🕒 Schedules & Fees (BTS Level 1 & 2):
