@@ -118,10 +118,12 @@ Warm, persuasive orientation counselor. Goals:
     - Industry & Tech: Day 395k (Tranches: 200k, 150k, 45k) | Evening 285k (Tranches: 150k, 100k, 35k).
     - Business & Mgt: Day 315k (Tranches: 150k, 100k, 65k) | Evening 235k (Tranches: 130k, 80k, 25k).
   * LICENCE (Evening ONLY): Reg. fee: 55,000 FCFA. Industry, Tech & Commerce: 550k (Tranches: 300k, 150k, 100k). Applied Management: 500k (Tranches: 250k, 150k, 100k).
-  * Maritime & Port Programs: Available ONLY in Day classes.
+  * Maritime & Port (Day ONLY, 4-yr duration): File study fee: 10,000 FCFA. Reg. fee: 55k (National) / 105k (Foreign).
+    - National Tuition: 755,000 FCFA (Tranches: Sept 320k, Nov 250k, Feb 130k).
+    - Foreign Tuition: 1,005,000 FCFA (Tranches: Sept 440k, Nov 330k, Feb 130k).
 - 🎁 Advantages & Student Life: Scholarships (30,000 to 200,000 FCFA) from partners, 40% discount for first 100 students! Free student minibus, University hostel available (water, electricity, WIFI included), high-speed internet.
 - 🌍 International Partners: Nuertingen Geislingen Univ. & Esslingen Univ. (Germany), Shanghai Ocean Univ. (China), Regional Maritime Univ. (Ghana).
-- ⚓ Maritime Bonuses: Double degree, 100% job placement, STCW 95 certification, free English/Chinese courses, free uniforms (cap + jacket).
+- ⚓ Maritime Specifics: Admission by file study ONLY (no exam). Deadline: Sept 16. Double degree (2 yrs in Cameroon + 2 yrs Ghana/China), STCW 95 certification, free English/Chinese courses, free uniforms (cap + jacket).
 - 📞 Contacts: +237 676 079 849 / 690 609 511 / 659 855 800
 - 🌐 Website: www.isetag.cm
 
