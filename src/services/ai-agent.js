@@ -46,8 +46,9 @@ function detectLanguage(text) {
  * @param {string} userText     - The message they sent
  * @param {string} storedLang   - Language retrieved from Redis/DB (persists redeployments)
  * @param {Array}  history      - Last 15 messages from Redis
+ * @param {string} prospectName - Prospect's first name (from Redis), or null if unknown
  */
-async function processMessage(phone, userText, storedLang, history = []) {
+async function processMessage(phone, userText, storedLang, history = [], prospectName = null) {
   // Rate limit check
   if (isRateLimited(phone)) {
     return {
@@ -94,8 +95,19 @@ NEVER mix languages. NEVER switch. This overrides all other rules.
 
 ## 🚨 RULE #3 — GREETING:
 ${isFirstMessage
-  ? '- This is the FIRST message. Greet briefly (1 line max) then answer.'
-  : '- This is an ONGOING conversation. DO NOT say Bonjour/Hello again. Jump straight to the answer.'}
+  ? `- This is the FIRST message from this prospect. Their name is UNKNOWN.
+- Start with a warm 1-line welcome, then IMMEDIATELY ask for their first name before anything else.
+- Example: "Bienvenue à l'ISETAG ! Je suis votre conseiller virtuel. 😊 Pour mieux vous accompagner, puis-je avoir votre prénom ?"
+- Do NOT answer any other question yet. Wait for the name first.`
+  : prospectName
+    ? `- This is an ONGOING conversation. The prospect's name is: **${prospectName}**. Use their name naturally in your replies (not every sentence, but warmly). DO NOT say Bonjour/Hello again.`
+    : `- This is an ONGOING conversation. You do NOT yet know their name. If they just gave you their name in this message, extract it and use it immediately. Otherwise, weave in a polite request for their name at the end of your answer.`}
+
+## 🚨 RULE #4 — NAME EXTRACTION (CRITICAL):
+At the END of your response, on a new line, you MUST output a JSON tag like this:
+<NAME_DETECTED>null</NAME_DETECTED>  ← if you did not detect a name in the user's message
+<NAME_DETECTED>Jean</NAME_DETECTED>  ← if the user just told you their first name
+Only extract a first name (1-2 words max). If unsure, output null.
 
 ## YOUR ROLE:
 Warm, persuasive orientation counselor. Goals:
@@ -124,6 +136,7 @@ Warm, persuasive orientation counselor. Goals:
 - 🎁 Advantages & Student Life: Scholarships (30,000 to 200,000 FCFA) from partners, 40% discount for first 100 students! Free student minibus, University hostel available (water, electricity, WIFI included), high-speed internet.
 - 🌍 International Partners: Nuertingen Geislingen Univ. & Esslingen Univ. (Germany), Shanghai Ocean Univ. (China), Regional Maritime Univ. (Ghana).
 - ⚓ Maritime Specifics: Admission by file study ONLY (no exam). Deadline: Sept 16. Double degree (2 yrs in Cameroon + 2 yrs Ghana/China), STCW 95 certification, free English/Chinese courses, free uniforms (cap + jacket).
+- 🏆 Academic Excellence (Selling points): 89.23% Global Success Rate in 2024 (94.11% for HND, 88.93% for BTS). Officially ranked 4th National in its category & 5th National Overall by MINESUP (2021). 100% pass rate in Software Engineering, Networks, IIA, Accounting, Logistics, and Marketing!
 - 📞 Contacts: +237 676 079 849 / 690 609 511 / 659 855 800
 - 🌐 Website: www.isetag.cm
 
@@ -161,10 +174,19 @@ ${context ? `\n## 📚 KNOWLEDGE BASE (use this for precise answers):\n${context
     const data = await response.json();
     if (data.error) throw new Error(data.error.message);
 
-    const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    console.log(`[AI-AGENT] ✅ Response: ${aiResponse.length} chars | lang: ${lang}`);
+    const rawResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
-    return { text: aiResponse, lang, needsEscalation: false };
+    // ── Extract <NAME_DETECTED> tag from AI response ──────────────────
+    const nameMatch = rawResponse.match(/<NAME_DETECTED>(.*?)<\/NAME_DETECTED>/i);
+    const detectedName = (nameMatch && nameMatch[1] && nameMatch[1].trim() !== 'null')
+      ? nameMatch[1].trim()
+      : null;
+    // Strip the tag from the visible reply
+    const aiResponse = rawResponse.replace(/<NAME_DETECTED>.*?<\/NAME_DETECTED>/gi, '').trim();
+
+    console.log(`[AI-AGENT] ✅ Response: ${aiResponse.length} chars | lang: ${lang} | name: ${detectedName || '(none)'}`);
+
+    return { text: aiResponse, lang, needsEscalation: false, detectedName };
 
   } catch (err) {
     console.error('[AI-AGENT] Error:', err.message);
@@ -174,6 +196,7 @@ ${context ? `\n## 📚 KNOWLEDGE BASE (use this for precise answers):\n${context
         : '😔 Une erreur technique est survenue. Notre équipe vous contactera bientôt.',
       lang,
       needsEscalation: true,
+      detectedName: null,
     };
   }
 }

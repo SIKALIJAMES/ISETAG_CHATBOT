@@ -8,6 +8,7 @@ const redis = new Redis({
 
 const SESSION_TTL = 86400;     // 24 h pour l'historique
 const LANG_TTL    = 604800;    // 7 jours pour la langue (persiste les redéploiements)
+const NAME_TTL    = 2592000;   // 30 jours pour le prénom du prospect
 
 /**
  * Get last 15 messages from Redis (oldest first)
@@ -63,7 +64,30 @@ async function setLang(phone, lang) {
 }
 
 /**
- * Reset conversation history (but keep language preference)
+ * Get stored prospect name for a phone number
+ */
+async function getName(phone) {
+  try {
+    return await redis.get(`name:${phone}`) || null;
+  } catch (err) {
+    console.error('[REDIS] getName error:', err.message);
+    return null;
+  }
+}
+
+/**
+ * Persist prospect name for a phone number (30 days TTL)
+ */
+async function setName(phone, name) {
+  try {
+    await redis.set(`name:${phone}`, name, { ex: NAME_TTL });
+  } catch (err) {
+    console.error('[REDIS] setName error:', err.message);
+  }
+}
+
+/**
+ * Reset conversation history (but keep language preference and name)
  */
 async function clearSession(phone) {
   try {
@@ -78,5 +102,7 @@ module.exports = {
   addMessage,
   getLang,
   setLang,
+  getName,
+  setName,
   clearSession,
 };

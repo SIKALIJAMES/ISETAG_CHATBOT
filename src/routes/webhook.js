@@ -4,7 +4,7 @@ const router  = express.Router();
 const { processMessage }                    = require('../services/ai-agent');
 const { sendTextMessage }                   = require('../services/whatsapp');
 const { triggerEscalation }                 = require('../services/escalation');
-const { getHistory, addMessage, getLang, setLang } = require('../services/session');
+const { getHistory, addMessage, getLang, setLang, getName, setName } = require('../services/session');
 const { verifyHmac }                        = require('../middleware/hmac');
 const { query }                             = require('../config/database');
 
@@ -107,8 +107,17 @@ router.post('/whatsapp', async (req, res) => {
       // ── Fetch history ─────────────────────────────────────────────────
       const history = await getHistory(phone);
 
+      // ── Fetch prospect name from Redis ────────────────────────────────
+      const prospectName = await getName(phone);
+
       // ── Call AI agent ─────────────────────────────────────────────────
-      const result = await processMessage(phone, userText, storedLang, history);
+      const result = await processMessage(phone, userText, storedLang, history, prospectName);
+
+      // ── If agent extracted a name from this message, persist it ───────
+      if (result.detectedName) {
+        await setName(phone, result.detectedName);
+        console.log(`[WEBHOOK] 👤 Name saved for ...${phone.slice(-4)}: "${result.detectedName}"`);
+      }
 
       // ── FIX #1: Persist detected language to Redis for next messages ───
       if (result.lang) {
