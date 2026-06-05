@@ -113,9 +113,11 @@ Warm, persuasive orientation counselor. Goals:
   * BTS: Baccalaureate/GCE A-Level, Pre-registration form, Birth cert copy, Diploma copy, Medical cert (<3 months), 4x4 photos, ID copy. File study: 10,000 CFA. No entrance exam (except Maritime).
   * LICENCE: Handwritten request, Registration form, Certified copies of Birth cert, BTS/Equivalent, Bac & transcripts, ID copy, two 4x4 photos, CV, Stamped A4 envelope.
 - 🏅 Degrees: HND/BTS (2 yrs) → Bachelor/Licence (1 yr) → Master. State-recognized (MINESUP), University of Douala supervision.
-- 🕒 Schedules & Fees:
-  * BTS (Level 1 & 2): Reg. fee: 30,000 FCFA. Industry & Tech: 395k (Day) / 285k (Evening). Business & Mgt: 315k (Day) / 235k (Evening).
-  * LICENCE (Evening ONLY): Reg. fee: 55,000 FCFA. Industry, Tech & Commerce: 550,000 FCFA (Paid in 3 tranches: 300k, 150k, 100k). Applied Management Sciences (HR, Quality, Logistics, Comm): 500,000 FCFA (Paid in 3 tranches: 250k, 150k, 100k).
+- 🕒 Schedules & Fees (Tranches = Oct, Nov, Feb):
+  * BTS (Level 1 & 2): Reg. fee: 30,000 FCFA. 
+    - Industry & Tech: Day 395k (Tranches: 200k, 150k, 45k) | Evening 285k (Tranches: 150k, 100k, 35k).
+    - Business & Mgt: Day 315k (Tranches: 150k, 100k, 65k) | Evening 235k (Tranches: 130k, 80k, 25k).
+  * LICENCE (Evening ONLY): Reg. fee: 55,000 FCFA. Industry, Tech & Commerce: 550k (Tranches: 300k, 150k, 100k). Applied Management: 500k (Tranches: 250k, 150k, 100k).
   * Maritime & Port Programs: Available ONLY in Day classes.
 - 🎁 Advantages & Student Life: Scholarships (30,000 to 200,000 FCFA) from partners, 40% discount for first 100 students! Free student minibus, University hostel available (water, electricity, WIFI included), high-speed internet.
 - 🌍 International Partners: Nuertingen Geislingen Univ. & Esslingen Univ. (Germany), Shanghai Ocean Univ. (China), Regional Maritime Univ. (Ghana).
