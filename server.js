@@ -45,6 +45,10 @@ app.use('/api', (req, res) => {
 
 // Serve frontend in production (Single Container deployment)
 const path = require('path');
+
+// Serve public media files (flyers, tarifs, residence, etc.)
+app.use('/media', express.static(path.join(__dirname, 'public/media')));
+
 app.use(express.static(path.join(__dirname, 'frontend/dist')));
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'frontend/dist/index.html'));

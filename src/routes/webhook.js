@@ -1,12 +1,13 @@
 'use strict';
 const express = require('express');
-const router  = express.Router();
-const { processMessage }                    = require('../services/ai-agent');
-const { sendTextMessage }                   = require('../services/whatsapp');
-const { triggerEscalation }                 = require('../services/escalation');
+const router = express.Router();
+const { processMessage } = require('../services/ai-agent');
+const { sendTextMessage } = require('../services/whatsapp');
+const { triggerEscalation } = require('../services/escalation');
 const { getHistory, addMessage, getLang, setLang, getName, setName } = require('../services/session');
-const { verifyHmac }                        = require('../middleware/hmac');
-const { query }                             = require('../config/database');
+const { verifyHmac } = require('../middleware/hmac');
+const { query } = require('../config/database');
+const { sendContextualMedia } = require('../services/media-sender');
 
 // Track consecutive AI errors per phone (in-memory is fine for this counter)
 const noMatchCount = {};
@@ -15,8 +16,8 @@ const noMatchCount = {};
  * GET — Webhook Verification (Meta handshake)
  */
 router.get('/whatsapp', (req, res) => {
-  const mode      = req.query['hub.mode'];
-  const token     = req.query['hub.verify_token'];
+  const mode = req.query['hub.mode'];
+  const token = req.query['hub.verify_token'];
   const challenge = req.query['hub.challenge'];
 
   if (mode === 'subscribe' && token === process.env.WHATSAPP_VERIFY_TOKEN?.trim()) {
@@ -39,7 +40,7 @@ router.post('/whatsapp', async (req, res) => {
 
   setImmediate(async () => {
     try {
-      const entry   = req.body?.entry?.[0];
+      const entry = req.body?.entry?.[0];
       const changes = entry?.changes?.[0]?.value;
       const message = changes?.messages?.[0];
 
@@ -86,8 +87,8 @@ router.post('/whatsapp', async (req, res) => {
         'SELECT id, status, lang FROM conversations WHERE user_phone = $1 LIMIT 1',
         [phone]
       );
-      const convData   = convRow.rows[0] || null;
-      const dbLang     = convData?.lang || null;
+      const convData = convRow.rows[0] || null;
+      const dbLang = convData?.lang || null;
 
       // ── Check escalation ───────────────────────────────────────────────
       if (convData?.status === 'escalated') {
@@ -101,7 +102,7 @@ router.post('/whatsapp', async (req, res) => {
       }
 
       // ── FIX #1: Language from Redis (survives redeployments) ───────────
-      const redisLang  = await getLang(phone);
+      const redisLang = await getLang(phone);
       const storedLang = redisLang || dbLang || null;
 
       // ── Fetch history ─────────────────────────────────────────────────
@@ -125,7 +126,7 @@ router.post('/whatsapp', async (req, res) => {
       }
 
       // ── Save messages to Redis history ────────────────────────────────
-      await addMessage(phone, 'user',      userText);
+      await addMessage(phone, 'user', userText);
       await addMessage(phone, 'assistant', result.text);
 
       // ── FIX #4: Handle escalation BEFORE sending the AI error message ─
@@ -145,9 +146,11 @@ router.post('/whatsapp', async (req, res) => {
           await sendTextMessage(phone, retryMsg);
         }
       } else {
-        // ── Normal successful reply ───────────────────────────────────
+        // ── Normal successful reply ───────────────────────────────────────────
         noMatchCount[phone] = 0;
         await sendTextMessage(phone, result.text);
+        // ── Automatically send relevant flyers/tarifs/images ─────────────
+        await sendContextualMedia(phone, userText, result.text, result.lang);
       }
 
       // ── Upsert conversation record in PostgreSQL ──────────────────────

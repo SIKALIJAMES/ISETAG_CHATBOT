@@ -1,6 +1,6 @@
 'use strict';
 const { searchRelevant } = require('./embeddings');
-const { franc }          = require('franc');
+const { franc } = require('franc');
 
 // Rate limiting — 20 msgs/minute per phone
 const rateLimitMap = {};
@@ -95,13 +95,13 @@ NEVER mix languages. NEVER switch. This overrides all other rules.
 
 ## 🚨 RULE #3 — GREETING:
 ${isFirstMessage
-  ? `- This is the FIRST message from this prospect. Their name is UNKNOWN.
+        ? `- This is the FIRST message from this prospect. Their name is UNKNOWN.
 - Start with a warm 1-line welcome, then IMMEDIATELY ask for their first name before anything else.
 - Example: "Bienvenue à l'ISETAG ! Je suis votre conseiller virtuel. 😊 Pour mieux vous accompagner, puis-je avoir votre prénom ?"
 - Do NOT answer any other question yet. Wait for the name first.`
-  : prospectName
-    ? `- This is an ONGOING conversation. The prospect's name is: **${prospectName}**. Use their name naturally in your replies (not every sentence, but warmly). DO NOT say Bonjour/Hello again.`
-    : `- This is an ONGOING conversation. You do NOT yet know their name. If they just gave you their name in this message, extract it and use it immediately. Otherwise, weave in a polite request for their name at the end of your answer.`}
+        : prospectName
+          ? `- This is an ONGOING conversation. The prospect's name is: **${prospectName}**. Use their name naturally in your replies (not every sentence, but warmly). DO NOT say Bonjour/Hello again.`
+          : `- This is an ONGOING conversation. You do NOT yet know their name. If they just gave you their name in this message, extract it and use it immediately. Otherwise, weave in a polite request for their name at the end of your answer.`}
 
 ## 🚨 RULE #4 — NAME EXTRACTION (CRITICAL):
 At the END of your response, on a new line, you MUST output a JSON tag like this:
@@ -143,11 +143,11 @@ Warm, persuasive orientation counselor. Goals:
 ${context ? `\n## 📚 KNOWLEDGE BASE (use this for precise answers):\n${context}` : ''}`;
 
     // ── Build conversation for Gemini ─────────────────────────────────
-    const fetch    = require('node-fetch');
+    const fetch = require('node-fetch');
     const contents = [];
     for (const h of history) {
       contents.push({
-        role:  h.role === 'assistant' ? 'model' : 'user',
+        role: h.role === 'assistant' ? 'model' : 'user',
         parts: [{ text: h.content }]
       });
     }
@@ -164,8 +164,8 @@ ${context ? `\n## 📚 KNOWLEDGE BASE (use this for precise answers):\n${context
           systemInstruction: { parts: [{ text: systemPrompt }] },
           contents,
           generationConfig: {
-            temperature:      0.6,  // Slightly lower = more consistent, less "creative" off-topic
-            maxOutputTokens:  700,  // Was 1500 → now 700 for WhatsApp-friendly length
+            temperature: 0.6,  // Slightly lower = more consistent, less "creative" off-topic
+            maxOutputTokens: 700,  // Was 1500 → now 700 for WhatsApp-friendly length
           }
         })
       }

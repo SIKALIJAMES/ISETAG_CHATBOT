@@ -116,4 +116,58 @@ async function sendAudioMessage(to, audioBuffer) {
   }
 }
 
-module.exports = { sendTextMessage, sendAudioMessage };
+/**
+ * Send an image from a public URL
+ */
+async function sendImageMessage(to, imageUrl, caption = '') {
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  const token = process.env.WHATSAPP_TOKEN;
+  if (!phoneNumberId || !token) return;
+  try {
+    const response = await fetch(`${WA_BASE_URL}/${phoneNumberId}/messages`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        recipient_type: 'individual',
+        to,
+        type: 'image',
+        image: { link: imageUrl, caption },
+      }),
+    });
+    const result = await response.json();
+    if (!response.ok) console.error('[WHATSAPP] Image send error:', JSON.stringify(result));
+    return result;
+  } catch (err) {
+    console.error('[WHATSAPP] sendImageMessage error:', err.message);
+  }
+}
+
+/**
+ * Send a document (PDF) from a public URL
+ */
+async function sendDocumentMessage(to, docUrl, filename, caption = '') {
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  const token = process.env.WHATSAPP_TOKEN;
+  if (!phoneNumberId || !token) return;
+  try {
+    const response = await fetch(`${WA_BASE_URL}/${phoneNumberId}/messages`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        recipient_type: 'individual',
+        to,
+        type: 'document',
+        document: { link: docUrl, filename, caption },
+      }),
+    });
+    const result = await response.json();
+    if (!response.ok) console.error('[WHATSAPP] Document send error:', JSON.stringify(result));
+    return result;
+  } catch (err) {
+    console.error('[WHATSAPP] sendDocumentMessage error:', err.message);
+  }
+}
+
+module.exports = { sendTextMessage, sendAudioMessage, sendImageMessage, sendDocumentMessage };
