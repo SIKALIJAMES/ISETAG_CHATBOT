@@ -153,10 +153,10 @@ ${context ? `\n## 📚 KNOWLEDGE BASE (use this for precise answers):\n${context
     }
     contents.push({ role: 'user', parts: [{ text: userText }] });
 
-    // ── Call Gemini 2.5 Flash ─────────────────────────────────────────
+    // ── Call Gemini 2.0 Flash ─────────────────────────────────────────
     // FIX #3: maxOutputTokens reduced from 1500 → 700 for shorter, focused WhatsApp responses
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

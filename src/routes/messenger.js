@@ -55,13 +55,31 @@ router.post('/messenger', async (req, res) => {
       if (messagingEvent.message.text) {
         userText = messagingEvent.message.text.trim();
       } else if (messagingEvent.message.attachments) {
-        // Inform user about media files
-        const storedLang = await getLang(dbIdentifier);
-        await sendTextMessage(senderPsid, storedLang === 'en'
-          ? "🖼️ I can't read images or files yet. Please describe your question in text and I'll be happy to help!"
-          : "🖼️ Je ne peux pas encore lire les images ou fichiers. Décrivez votre question en texte et je serai ravi de vous aider !"
-        );
-        return;
+        const audioAttachment = messagingEvent.message.attachments.find(att => att.type === 'audio');
+        if (audioAttachment && audioAttachment.payload && audioAttachment.payload.url) {
+          console.log(`[MESSENGER] 🎙️ Voice message from ...${senderPsid.slice(-4)}. Transcribing...`);
+          const { transcribeMessengerAudio } = require('../services/audio.service');
+          const transcript = await transcribeMessengerAudio(audioAttachment.payload.url);
+          if (!transcript) {
+            console.warn('[MESSENGER] ❌ Audio transcription failed.');
+            const storedLang = await getLang(dbIdentifier);
+            await sendTextMessage(senderPsid, storedLang === 'en'
+              ? "🙏 Sorry, I couldn't understand your voice note. Could you type your question?"
+              : "🙏 Désolé, je n'ai pas pu comprendre votre message vocal. Pouvez-vous écrire votre question ?"
+            );
+            return;
+          }
+          userText = transcript.trim();
+          console.log(`[MESSENGER] 📝 Voice transcribed: "${userText}"`);
+        } else {
+          // Inform user about other media files
+          const storedLang = await getLang(dbIdentifier);
+          await sendTextMessage(senderPsid, storedLang === 'en'
+            ? "🖼️ I can't read images or files yet. Please describe your question in text and I'll be happy to help!"
+            : "🖼️ Je ne peux pas encore lire les images ou fichiers. Décrivez votre question en texte et je serai ravi de vous aider !"
+          );
+          return;
+        }
       }
 
       if (!userText) return;
