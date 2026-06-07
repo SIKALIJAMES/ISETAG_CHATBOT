@@ -98,6 +98,10 @@ router.post('/whatsapp', async (req, res) => {
           'UPDATE conversations SET last_message = $2, updated_at = NOW() WHERE id = $1',
           [convData.id, userText]
         );
+        await query(
+          'INSERT INTO messages (conversation_id, role, content) VALUES ($1, $2, $3)',
+          [convData.id, 'user', userText]
+        );
         return;
       }
 

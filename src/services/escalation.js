@@ -1,5 +1,6 @@
 'use strict';
-const { sendTextMessage } = require('./whatsapp');
+const whatsapp = require('./whatsapp');
+const messenger = require('./messenger');
 const { query } = require('../config/database');
 const fetch = require('node-fetch');
 
@@ -59,13 +60,19 @@ async function triggerEscalation({ phone, history, lang }) {
       ? `🙏 Your question has been forwarded to an ISETAG advisor.\n\n📝 Summary: ${summary}\n\nWe'll get back to you shortly!`
       : `🙏 Votre question a été transmise à un conseiller ISETAG.\n\n📝 Résumé: ${summary}\n\nNous vous répondrons très bientôt !`;
 
-    await sendTextMessage(phone, userMsg);
+    const isMessenger = phone.startsWith('messenger:');
+    if (isMessenger) {
+      const recipientId = phone.split(':')[1];
+      await messenger.sendTextMessage(recipientId, userMsg);
+    } else {
+      await whatsapp.sendTextMessage(phone, userMsg);
+    }
 
     // 3. Notify admin
     const adminPhone = process.env.ADMIN_WHATSAPP_NUMBER;
     if (adminPhone) {
       const adminMsg = `🚨 ISETAG — Escalade Requise\n${'─'.repeat(25)}\n📱 Étudiant: ...${phone.slice(-6)}\n🌐 Langue: ${lang}\n📝 Résumé: ${summary}\n🕐 ${new Date().toLocaleString('fr-FR')}\n${'─'.repeat(25)}\n↩️ Répondre manuellement sur WhatsApp`;
-      await sendTextMessage(adminPhone, adminMsg);
+      await whatsapp.sendTextMessage(adminPhone, adminMsg);
       console.log('[ESCALATION] Admin notified');
     }
 
