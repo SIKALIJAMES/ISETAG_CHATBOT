@@ -168,7 +168,9 @@ const Conversations = () => {
                       <User size={18} />
                     </div>
                     <div className="overflow-hidden">
-                      <p className="font-bold text-sm text-white truncate">{c.user_phone}</p>
+                      <p className="font-bold text-sm text-white truncate">
+                        {c.user_phone.startsWith('messenger:') ? `Messenger (ID: ${c.user_phone.split(':')[1]})` : c.user_phone}
+                      </p>
                       <p className="text-xs truncate max-w-[160px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
                         {c.last_message || 'Aucun message'}
                       </p>
@@ -203,7 +205,11 @@ const Conversations = () => {
                   <User size={22} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-white">{selectedConvo?.user_phone}</h3>
+                  <h3 className="font-bold text-white">
+                    {selectedConvo?.user_phone.startsWith('messenger:')
+                      ? `Messenger (ID: ${selectedConvo.user_phone.split(':')[1]})`
+                      : selectedConvo?.user_phone}
+                  </h3>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className={statusBadge(selectedConvo?.status)}>{selectedConvo?.status}</span>
                     {selectedConvo?.status === 'escalated' ? (
@@ -270,7 +276,11 @@ const Conversations = () => {
                 type="text"
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
-                placeholder={selectedConvo?.status === 'escalated' ? "Répondre manuellement (WhatsApp)..." : "Tapez un message pour prendre la main..."}
+                placeholder={
+                  selectedConvo?.status === 'escalated'
+                    ? `Répondre manuellement (${selectedConvo.user_phone.startsWith('messenger:') ? 'Messenger' : 'WhatsApp'})...`
+                    : "Tapez un message pour prendre la main..."
+                }
                 className="input-dark flex-1 text-sm"
               />
               <button type="submit" disabled={sending || !replyText.trim()}

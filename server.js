@@ -10,6 +10,7 @@ dotenv.config();
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 const webhookRoutes = require('./src/routes/webhook');
+const messengerRoutes = require('./src/routes/messenger');
 const adminRoutes = require('./src/routes/admin');
 const authRoutes = require('./src/routes/auth');
 
@@ -30,6 +31,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/webhook', webhookRoutes);
+app.use('/webhook', messengerRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoutes);
 

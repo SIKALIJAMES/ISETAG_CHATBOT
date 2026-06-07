@@ -1,5 +1,5 @@
-'use strict';
-const { sendImageMessage, sendDocumentMessage } = require('./whatsapp');
+const whatsapp = require('./whatsapp');
+const messenger = require('./messenger');
 
 // Base public URL of your Railway deployment
 const BASE_URL = process.env.APP_URL || 'https://isetag-chatbot-production.up.railway.app';
@@ -164,7 +164,10 @@ async function sendContextualMedia(phone, userText, aiResponse, lang) {
   const keys = detectMediaKeys(userText, aiResponse, lang);
   if (keys.length === 0) return;
 
-  console.log(`[MEDIA] 📎 Sending ${keys.length} media file(s) to ...${phone.slice(-4)}: [${keys.join(', ')}]`);
+  const isMessenger = phone.startsWith('messenger:');
+  const recipientId = isMessenger ? phone.split(':')[1] : phone;
+
+  console.log(`[MEDIA] 📎 Sending ${keys.length} media file(s) to ...${recipientId.slice(-4)} (${isMessenger ? 'Messenger' : 'WhatsApp'}): [${keys.join(', ')}]`);
 
   for (const key of keys) {
     const media = MEDIA[key];
@@ -172,10 +175,18 @@ async function sendContextualMedia(phone, userText, aiResponse, lang) {
 
     const url = `${BASE_URL}/media/${encodeURIComponent(media.file)}`;
     try {
-      if (media.type === 'image') {
-        await sendImageMessage(phone, url, media.caption);
+      if (isMessenger) {
+        if (media.type === 'image') {
+          await messenger.sendImageMessage(recipientId, url);
+        } else {
+          await messenger.sendDocumentMessage(recipientId, url);
+        }
       } else {
-        await sendDocumentMessage(phone, url, media.file, media.caption);
+        if (media.type === 'image') {
+          await whatsapp.sendImageMessage(recipientId, url, media.caption);
+        } else {
+          await whatsapp.sendDocumentMessage(recipientId, url, media.file, media.caption);
+        }
       }
       console.log(`[MEDIA] ✅ Sent: ${media.file}`);
     } catch (err) {

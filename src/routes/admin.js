@@ -7,7 +7,8 @@ const { protect } = require('../middleware/auth');
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 const pdf = require('pdf-parse');
-const { sendTextMessage } = require('../services/whatsapp');
+const whatsapp = require('../services/whatsapp');
+const messenger = require('../services/messenger');
 
 /**
  * Dashboard Stats
@@ -171,8 +172,14 @@ router.post('/conversations/:id/reply', protect, async (req, res) => {
     }
     const convo = convoResult.rows[0];
     
-    // 2. Send via WhatsApp Service
-    await sendTextMessage(convo.user_phone, text);
+    // 2. Send via appropriate service (WhatsApp or Messenger)
+    const isMessenger = convo.user_phone.startsWith('messenger:');
+    if (isMessenger) {
+      const recipientId = convo.user_phone.split(':')[1];
+      await messenger.sendTextMessage(recipientId, text);
+    } else {
+      await whatsapp.sendTextMessage(convo.user_phone, text);
+    }
     
     // 3. Save message to database
     await query(
