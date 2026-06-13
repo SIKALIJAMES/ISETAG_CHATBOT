@@ -146,3 +146,34 @@ Veuillez agréer, Monsieur le Directeur, l'expression de notre profond respect.
 
 **TENEFO SIKALI YVAN JAMES**  
 *Fondateur & CEO — CreatrixDev*
+
+
+**Oui, tout à fait.** 
+
+Si vous créez un nouveau compte Google avec une autre adresse e-mail et générez une nouvelle clé API sur Google AI Studio, vous obtiendrez **un ensemble de quotas gratuits tout neuf** pour cette clé. 
+
+Voici ce que vous devez savoir pour gérer cela au mieux :
+
+### 1. Quotas du Plan Gratuit (par compte Google) :
+Chaque compte gratuit a les limites suivantes :
+*   **Pour Gemini 2.0 Flash / 1.5 Flash :** 15 requêtes par minute (RPM) et **1 500 requêtes par jour (RPD)**. C'est généralement suffisant pour les tests et la mise en route.
+*   **Pour Gemini 1.5 Pro :** Seulement 2 requêtes par minute (RPM) et **50 requêtes par jour (RPD)**. C'est extrêmement bas (votre bot s'arrêtera après seulement 50 messages dans la journée).
+
+---
+
+### 2. Comment changer la clé API sur Railway :
+Une fois votre nouvelle clé créée :
+1. Allez sur votre tableau de bord **Railway**.
+2. Dans votre service, allez dans l'onglet **Variables**.
+3. Remplacez la valeur de la variable `GEMINI_API_KEY` par votre nouvelle clé API.
+4. Railway redémarrera automatiquement et utilisera le nouveau quota.
+
+---
+
+### 💡 Recommandation pour la production (ISETAG) :
+Recréer des adresses e-mail est une solution temporaire pour le développement. Dès que le bot sera en ligne avec de vrais étudiants :
+*   Le plan gratuit de **Gemini 2.0 Flash** (1500 messages/jour) peut suffire au début.
+*   Si vous utilisez un modèle **Pro** ou si vous dépassez les 1500 messages/jour, la meilleure solution est d'activer la facturation (**Pay-as-you-go**) sur Google AI Studio. 
+*   **Bonne nouvelle :** Gemini 2.0 Flash est extrêmement peu coûteux (environ **0,07 € pour 1 million de mots**). Pour 10 € par mois, vous pouvez gérer des dizaines de milliers de discussions d'étudiants sans aucune interruption ni limite journalière. turn-off-free-tier-limits. Nouveau quota : **2000 requêtes par minute** !__
+
+Vous pouvez donc recréer un compte pour vos tests immédiats, puis envisager le Pay-as-you-go pour le lancement officiel. Pour l'instant, créez votre clé, mettez-la dans Railway, et tout fonctionnera à nouveau._
