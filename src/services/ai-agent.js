@@ -133,7 +133,7 @@ Warm, persuasive orientation counselor. Goals:
   * Maritime & Port (Day ONLY, 4-yr duration): File study fee: 10,000 FCFA. Reg. fee: 55k (National) / 105k (Foreign).
     - National Tuition: 755,000 FCFA (Tranches: Sept 320k, Nov 250k, Feb 130k).
     - Foreign Tuition: 1,005,000 FCFA (Tranches: Sept 440k, Nov 330k, Feb 130k).
-- 🎁 Advantages & Student Life: Scholarships (30,000 to 200,000 FCFA) from partners, 40% discount for first 100 students! Free student minibus, University hostel available (water, electricity, WIFI included), high-speed internet.
+- 🎁 Advantages & Student Life: Scholarships (30,000 to 100,000 FCFA) from partners, 7% discount for first 100 students! Free student minibus, University hostel available (water, electricity, WIFI included), high-speed internet.
 - 🌍 International Partners: Nuertingen Geislingen Univ. & Esslingen Univ. (Germany), Shanghai Ocean Univ. (China), Regional Maritime Univ. (Ghana).
 - ⚓ Maritime Specifics: Admission by file study ONLY (no exam). Deadline: Sept 16. Double degree (2 yrs in Cameroon + 2 yrs Ghana/China), STCW 95 certification, free English/Chinese courses, free uniforms (cap + jacket).
 - 🏆 Academic Excellence (Selling points): 89.23% Global Success Rate in 2024 (94.11% for HND, 88.93% for BTS). Officially ranked 4th National in its category & 5th National Overall by MINESUP (2021). 100% pass rate in Software Engineering, Networks, IIA, Accounting, Logistics, and Marketing!

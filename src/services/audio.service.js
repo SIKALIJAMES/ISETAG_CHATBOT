@@ -42,13 +42,20 @@ async function transcribeAudio(mediaId, accessToken) {
 
     const buffer = await audioRes.buffer();
     const contentType = audioRes.headers.get('content-type') || 'audio/ogg';
-    const cleanMimeType = contentType.split(';')[0];
+    // Normalize mime type: strip codec params and force 'audio/ogg' for WhatsApp voice notes
+    // WhatsApp sends 'audio/ogg; codecs=opus' — Gemini only needs 'audio/ogg'
+    let cleanMimeType = contentType.split(';')[0].trim().toLowerCase();
+    if (!cleanMimeType || cleanMimeType === 'application/octet-stream') {
+      cleanMimeType = 'audio/ogg';
+    }
     
-    console.log(`[AUDIO] Audio downloaded successfully: ${buffer.length} bytes (${cleanMimeType})`);
+    console.log(`[AUDIO] Audio downloaded successfully: ${buffer.length} bytes | MIME: ${cleanMimeType}`);
 
     // Step 3: Call Gemini to transcribe the audio natively (Multimodal)
-    console.log('[AUDIO] Calling Gemini for native audio transcription...');
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${process.env.GEMINI_MODEL || 'gemini-1.5-flash'}:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+    // ⚠️ Always use gemini-1.5-flash for audio — gemini-2.5-flash preview may not support audio/ogg inline
+    const audioModel = 'gemini-1.5-flash';
+    console.log(`[AUDIO] Calling Gemini (${audioModel}) for native audio transcription...`);
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${audioModel}:generateContent?key=${process.env.GEMINI_API_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -69,7 +76,10 @@ async function transcribeAudio(mediaId, accessToken) {
     });
 
     const data = await response.json();
-    if (data.error) throw new Error(data.error.message);
+    if (data.error) {
+      console.error('[AUDIO] Gemini API error:', JSON.stringify(data.error));
+      throw new Error(data.error.message);
+    }
 
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
     const cleanText = text.trim();
@@ -79,7 +89,7 @@ async function transcribeAudio(mediaId, accessToken) {
       return null;
     }
 
-    console.log(`[AUDIO] Gemini native transcription: "${cleanText.slice(0, 100)}..."`);
+    console.log(`[AUDIO] Gemini transcription: "${cleanText.slice(0, 100)}..."`);
     return cleanText;
   } catch (err) {
     console.error('[AUDIO] Native WhatsApp transcription error:', err.message);
@@ -103,13 +113,17 @@ async function transcribeMessengerAudio(downloadUrl) {
 
     const buffer = await audioRes.buffer();
     const contentType = audioRes.headers.get('content-type') || 'audio/mp4';
-    const cleanMimeType = contentType.split(';')[0];
+    let cleanMimeType = contentType.split(';')[0].trim().toLowerCase();
+    if (!cleanMimeType || cleanMimeType === 'application/octet-stream') {
+      cleanMimeType = 'audio/mp4';
+    }
     
-    console.log(`[AUDIO] Audio downloaded successfully: ${buffer.length} bytes (${cleanMimeType})`);
+    console.log(`[AUDIO] Audio downloaded successfully: ${buffer.length} bytes | MIME: ${cleanMimeType}`);
 
-    // Call Gemini to transcribe
-    console.log('[AUDIO] Calling Gemini for native audio transcription...');
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${process.env.GEMINI_MODEL || 'gemini-1.5-flash'}:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+    // Always use gemini-1.5-flash for audio transcription
+    const audioModel = 'gemini-1.5-flash';
+    console.log(`[AUDIO] Calling Gemini (${audioModel}) for native audio transcription...`);
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${audioModel}:generateContent?key=${process.env.GEMINI_API_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -130,7 +144,10 @@ async function transcribeMessengerAudio(downloadUrl) {
     });
 
     const data = await response.json();
-    if (data.error) throw new Error(data.error.message);
+    if (data.error) {
+      console.error('[AUDIO] Gemini API error:', JSON.stringify(data.error));
+      throw new Error(data.error.message);
+    }
 
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
     const cleanText = text.trim();
@@ -140,7 +157,7 @@ async function transcribeMessengerAudio(downloadUrl) {
       return null;
     }
 
-    console.log(`[AUDIO] Gemini native transcription: "${cleanText.slice(0, 100)}..."`);
+    console.log(`[AUDIO] Gemini transcription: "${cleanText.slice(0, 100)}..."`);
     return cleanText;
   } catch (err) {
     console.error('[AUDIO] Native Messenger transcription error:', err.message);
