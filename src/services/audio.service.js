@@ -2,7 +2,52 @@
 const fetch = require('node-fetch');
 
 /**
- * Transcribe a WhatsApp voice note using Google Gemini
+ * Transcribe audio using Groq Whisper API
+ * @param {Buffer} buffer - Audio buffer
+ * @param {string} filename - Filename with extension (e.g. 'audio.ogg')
+ * @returns {string|null} Transcription text or null on failure
+ */
+async function transcribeWithGroq(buffer, filename) {
+  try {
+    const groqKey = process.env.GROQ_API_KEY;
+    if (!groqKey) throw new Error('GROQ_API_KEY not configured');
+
+    // Use native Node.js 20 FormData + Blob (no extra package needed)
+    const blob = new Blob([buffer], { type: 'audio/ogg' });
+    const formData = new FormData();
+    formData.append('file', blob, filename);
+    formData.append('model', 'whisper-large-v3-turbo');
+    // No language hint — Whisper auto-detects FR/EN perfectly
+
+    console.log(`[AUDIO] Calling Groq Whisper (whisper-large-v3-turbo)...`);
+
+    const res = await globalThis.fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${groqKey}` },
+      body: formData,
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      console.error('[AUDIO] Groq Whisper error:', JSON.stringify(data));
+      throw new Error(data.error?.message || `Groq error ${res.status}`);
+    }
+
+    const text = (data.text || '').trim();
+    if (!text) return null;
+
+    console.log(`[AUDIO] Groq transcription: "${text.slice(0, 100)}"`);
+    return text;
+
+  } catch (err) {
+    console.error('[AUDIO] Groq Whisper transcription error:', err.message);
+    return null;
+  }
+}
+
+/**
+ * Transcribe a WhatsApp voice note using Groq Whisper
  * @param {string} mediaId - WhatsApp media ID
  * @param {string} accessToken - WhatsApp access token
  * @returns {string|null} Transcription text or null on failure
@@ -10,7 +55,7 @@ const fetch = require('node-fetch');
 async function transcribeAudio(mediaId, accessToken) {
   try {
     console.log(`[AUDIO] Fetching media metadata from Meta for ID: ${mediaId}`);
-    
+
     // Step 1: Get media download URL from Meta Graph API
     const metaRes = await fetch(
       `https://graph.facebook.com/v20.0/${mediaId}`,
@@ -25,142 +70,49 @@ async function transcribeAudio(mediaId, accessToken) {
     const metaData = await metaRes.json();
     const downloadUrl = metaData.url;
 
-    if (!downloadUrl) {
-      throw new Error('No download URL returned from Meta');
-    }
+    if (!downloadUrl) throw new Error('No download URL returned from Meta');
 
     console.log('[AUDIO] Downloading WhatsApp audio file...');
 
-    // Step 2: Download the audio file directly into buffer
+    // Step 2: Download the audio file
     const audioRes = await fetch(downloadUrl, {
       headers: { Authorization: `Bearer ${accessToken}` }
     });
 
-    if (!audioRes.ok) {
-      throw new Error(`Audio download failed [${audioRes.status}]`);
-    }
+    if (!audioRes.ok) throw new Error(`Audio download failed [${audioRes.status}]`);
 
     const buffer = await audioRes.buffer();
-    const contentType = audioRes.headers.get('content-type') || 'audio/ogg';
-    // Normalize mime type: strip codec params and force 'audio/ogg' for WhatsApp voice notes
-    // WhatsApp sends 'audio/ogg; codecs=opus' — Gemini only needs 'audio/ogg'
-    let cleanMimeType = contentType.split(';')[0].trim().toLowerCase();
-    if (!cleanMimeType || cleanMimeType === 'application/octet-stream') {
-      cleanMimeType = 'audio/ogg';
-    }
-    
-    console.log(`[AUDIO] Audio downloaded successfully: ${buffer.length} bytes | MIME: ${cleanMimeType}`);
+    console.log(`[AUDIO] Audio downloaded: ${buffer.length} bytes`);
 
-    // Step 3: Call Gemini to transcribe the audio natively (Multimodal)
-    // Use the configured Gemini model for audio — gemini-2.5-flash is the only available model with this API key
-    const audioModel = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
-    console.log(`[AUDIO] Calling Gemini (${audioModel}) for native audio transcription...`);
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${audioModel}:generateContent?key=${process.env.GEMINI_API_KEY}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{
-          parts: [
-            {
-              inlineData: {
-                mimeType: cleanMimeType,
-                data: buffer.toString('base64')
-              }
-            },
-            {
-              text: "Transcris cette note vocale de manière très précise. Ne renvoie UNIQUEMENT que la transcription brute textuelle. N'ajoute aucune salutation, aucun commentaire, ni aucune introduction. Si l'audio est vide ou incompréhensible, réponds par '[incompréhensible]'."
-            }
-          ]
-        }]
-      })
-    });
+    // Step 3: Transcribe with Groq Whisper
+    return await transcribeWithGroq(buffer, 'audio.ogg');
 
-    const data = await response.json();
-    if (data.error) {
-      console.error('[AUDIO] Gemini API error:', JSON.stringify(data.error));
-      throw new Error(data.error.message);
-    }
-
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    const cleanText = text.trim();
-    
-    if (cleanText.toLowerCase().includes('[incompréhensible]')) {
-      console.warn('[AUDIO] Audio marked as incomprehensible by Gemini.');
-      return null;
-    }
-
-    console.log(`[AUDIO] Gemini transcription: "${cleanText.slice(0, 100)}..."`);
-    return cleanText;
   } catch (err) {
-    console.error('[AUDIO] Native WhatsApp transcription error:', err.message);
+    console.error('[AUDIO] WhatsApp transcription error:', err.message);
     return null;
   }
 }
 
 /**
- * Transcribe a Facebook Messenger voice note using Google Gemini
- * @param {string} downloadUrl - Messenger audio attachment direct payload URL
+ * Transcribe a Facebook Messenger voice note using Groq Whisper
+ * @param {string} downloadUrl - Messenger audio attachment direct URL
  * @returns {string|null} Transcription text or null on failure
  */
 async function transcribeMessengerAudio(downloadUrl) {
   try {
     console.log('[AUDIO] Downloading Messenger audio file...');
-    
+
     const audioRes = await fetch(downloadUrl);
-    if (!audioRes.ok) {
-      throw new Error(`Audio download failed [${audioRes.status}]`);
-    }
+    if (!audioRes.ok) throw new Error(`Audio download failed [${audioRes.status}]`);
 
     const buffer = await audioRes.buffer();
-    const contentType = audioRes.headers.get('content-type') || 'audio/mp4';
-    let cleanMimeType = contentType.split(';')[0].trim().toLowerCase();
-    if (!cleanMimeType || cleanMimeType === 'application/octet-stream') {
-      cleanMimeType = 'audio/mp4';
-    }
-    
-    console.log(`[AUDIO] Audio downloaded successfully: ${buffer.length} bytes | MIME: ${cleanMimeType}`);
+    console.log(`[AUDIO] Audio downloaded: ${buffer.length} bytes`);
 
-    // Use the configured Gemini model for audio transcription
-    const audioModel = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
-    console.log(`[AUDIO] Calling Gemini (${audioModel}) for native audio transcription...`);
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${audioModel}:generateContent?key=${process.env.GEMINI_API_KEY}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{
-          parts: [
-            {
-              inlineData: {
-                mimeType: cleanMimeType,
-                data: buffer.toString('base64')
-              }
-            },
-            {
-              text: "Transcris cette note vocale de manière très précise. Ne renvoie UNIQUEMENT que la transcription brute textuelle. N'ajoute aucune salutation, aucun commentaire, ni aucune introduction. Si l'audio est vide ou incompréhensible, réponds par '[incompréhensible]'."
-            }
-          ]
-        }]
-      })
-    });
+    // Transcribe with Groq Whisper
+    return await transcribeWithGroq(buffer, 'audio.mp4');
 
-    const data = await response.json();
-    if (data.error) {
-      console.error('[AUDIO] Gemini API error:', JSON.stringify(data.error));
-      throw new Error(data.error.message);
-    }
-
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    const cleanText = text.trim();
-    
-    if (cleanText.toLowerCase().includes('[incompréhensible]')) {
-      console.warn('[AUDIO] Audio marked as incomprehensible by Gemini.');
-      return null;
-    }
-
-    console.log(`[AUDIO] Gemini transcription: "${cleanText.slice(0, 100)}..."`);
-    return cleanText;
   } catch (err) {
-    console.error('[AUDIO] Native Messenger transcription error:', err.message);
+    console.error('[AUDIO] Messenger transcription error:', err.message);
     return null;
   }
 }
