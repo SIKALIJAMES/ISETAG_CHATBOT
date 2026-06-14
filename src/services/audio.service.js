@@ -52,8 +52,8 @@ async function transcribeAudio(mediaId, accessToken) {
     console.log(`[AUDIO] Audio downloaded successfully: ${buffer.length} bytes | MIME: ${cleanMimeType}`);
 
     // Step 3: Call Gemini to transcribe the audio natively (Multimodal)
-    // Use gemini-2.0-flash for audio — stable model with audio/ogg support
-    const audioModel = 'gemini-2.0-flash';
+    // Use the configured Gemini model for audio — gemini-2.5-flash is the only available model with this API key
+    const audioModel = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
     console.log(`[AUDIO] Calling Gemini (${audioModel}) for native audio transcription...`);
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${audioModel}:generateContent?key=${process.env.GEMINI_API_KEY}`, {
       method: 'POST',
@@ -120,8 +120,8 @@ async function transcribeMessengerAudio(downloadUrl) {
     
     console.log(`[AUDIO] Audio downloaded successfully: ${buffer.length} bytes | MIME: ${cleanMimeType}`);
 
-    // Use gemini-2.0-flash for audio transcription — stable model with audio/ogg support
-    const audioModel = 'gemini-2.0-flash';
+    // Use the configured Gemini model for audio transcription
+    const audioModel = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
     console.log(`[AUDIO] Calling Gemini (${audioModel}) for native audio transcription...`);
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${audioModel}:generateContent?key=${process.env.GEMINI_API_KEY}`, {
       method: 'POST',
