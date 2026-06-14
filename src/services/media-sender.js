@@ -40,7 +40,7 @@ const MEDIA = {
   },
   residence: {
     type: 'image',
-    file: 'residence.jpg',
+    file: 'residence.jpeg',
     caption: '🏠 Résidence universitaire ISETAG — chambre meublée avec WIFI, eau & électricité inclus !',
   },
 };
@@ -128,29 +128,44 @@ function detectMediaKeys(userText, aiResponse, lang) {
   // Scanning the AI reply is intentionally excluded to avoid false positives.
   const userAsksFees = /tarif|scolarit[eé]|frais|paiement|tranche|combien[^\w]|co[uû]te|fee|tuition|payment|pricing|cost|price/i.test(userText);
 
-  if (userAsksFees) {
-    // Determine domain from BOTH userText and aiResponse
-    // (ai may have echoed back the speciality name to confirm it)
+  // KEY FIX: If user is asking about rooms/residence, do not send general tuition sheets
+  // unless they also explicitly mention tuition/studies/school fees.
+  let userAsksTuitionFees = userAsksFees;
+  if (residenceInUser) {
+    userAsksTuitionFees = /scolarit[eé]|bts|hnd|fili[eè]re/i.test(userText);
+  }
+
+  if (userAsksTuitionFees) {
     const domainContext = userText + ' ' + aiResponse;
 
-    const isGestion = matchesAny(domainContext, GESTION_TERMS);
-    const isTech    = matchesAny(domainContext, TECH_TERMS);
+    // KEY FIX: If context is maritime/portuary, do not send BTS sheets (no maritime sheet available yet)
+    const MARITIME_TERMS = [
+      'maritime', 'portuaire', 'navigation', 'marine', 'peche', 'aquaculture', 'nautique', 'ocean'
+    ];
+    const isMaritime = matchesAny(domainContext, MARITIME_TERMS);
 
-    // Priority: if both match (edge case), prefer domain that appears in userText alone
-    const userGestion = matchesAny(userText, GESTION_TERMS);
-    const userTech    = matchesAny(userText, TECH_TERMS);
+    if (!isMaritime) {
+      const isGestion = matchesAny(domainContext, GESTION_TERMS);
+      const isTech    = matchesAny(domainContext, TECH_TERMS);
 
-    if (userGestion || (isGestion && !userTech)) {
-      keys.push(isEn ? 'tarif_bts_gestion_en' : 'tarif_bts_gestion_fr');
-    }
-    if (userTech || (isTech && !userGestion)) {
-      keys.push(isEn ? 'tarif_bts_tech_en' : 'tarif_bts_tech_fr');
-    }
+      // Priority: if both match (edge case), prefer domain that appears in userText alone
+      const userGestion = matchesAny(userText, GESTION_TERMS);
+      const userTech    = matchesAny(userText, TECH_TERMS);
 
-    // If domain is ambiguous and user just said "frais"/"tarif" without specifying → send both
-    if (!isGestion && !isTech) {
-      keys.push(isEn ? 'tarif_bts_gestion_en' : 'tarif_bts_gestion_fr');
-      keys.push(isEn ? 'tarif_bts_tech_en'    : 'tarif_bts_tech_fr');
+      if (userGestion || (isGestion && !userTech)) {
+        keys.push(isEn ? 'tarif_bts_gestion_en' : 'tarif_bts_gestion_fr');
+      }
+      if (userTech || (isTech && !userGestion)) {
+        keys.push(isEn ? 'tarif_bts_tech_en' : 'tarif_bts_tech_fr');
+      }
+
+      // If domain is ambiguous and user just said "frais"/"tarif" without specifying → send both
+      if (!isGestion && !isTech) {
+        keys.push(isEn ? 'tarif_bts_gestion_en' : 'tarif_bts_gestion_fr');
+        keys.push(isEn ? 'tarif_bts_tech_en'    : 'tarif_bts_tech_fr');
+      }
+    } else {
+      console.log('[MEDIA-SENDER] ⚓ Maritime request detected. Skipping BTS general tuition sheets.');
     }
   }
 
