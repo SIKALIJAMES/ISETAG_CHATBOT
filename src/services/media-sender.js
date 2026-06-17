@@ -11,37 +11,37 @@ const MEDIA = {
   tarif_bts_gestion_fr: {
     type: 'document',
     file: 'Fiche tarifaire BTS – Gestion.pdf',
-    caption: '💼 Fiche tarifaire BTS — Commerce & Gestion (toutes filières)',
+    caption: '💼 Fiche tarifaire BTS — Commerce & Gestion (toutes filières)\n🌐 Site web : https://www.isetag.cm',
   },
   tarif_bts_gestion_en: {
     type: 'document',
     file: 'pricing sheet HND (Management and Commercial).pdf',
-    caption: '💼 HND Pricing Sheet — Management & Commercial (all fields)',
+    caption: '💼 HND Pricing Sheet — Management & Commercial (all fields)\n🌐 Website: https://www.isetag.cm',
   },
   tarif_bts_tech_fr: {
     type: 'document',
     file: 'Fiche tarifaire BTS – Ingénierie et TIC.pdf',
-    caption: '🏭 Fiche tarifaire BTS — Ingénierie & TIC (toutes filières)',
+    caption: '🏭 Fiche tarifaire BTS — Ingénierie & TIC (toutes filières)\n🌐 Site web : https://www.isetag.cm',
   },
   tarif_bts_tech_en: {
     type: 'document',
     file: 'pricing sheet HND (engeneering and technology).pdf',
-    caption: '🏭 HND Pricing Sheet — Engineering & Technology (all fields)',
+    caption: '🏭 HND Pricing Sheet — Engineering & Technology (all fields)\n🌐 Website: https://www.isetag.cm',
   },
   flyer_fr: {
     type: 'document',
     file: 'flyer_general_français.pdf',
-    caption: '📋 Brochure ISETAG — Toutes les formations',
+    caption: '📋 Brochure ISETAG — Toutes les formations\n🌐 Visitez notre site : https://www.isetag.cm',
   },
   flyer_en: {
     type: 'document',
     file: 'flyer_general_anglais.pdf',
-    caption: '📋 ISETAG Brochure — All Programs',
+    caption: '📋 ISETAG Brochure — All Programs\n🌐 Visit our website: https://www.isetag.cm',
   },
   residence: {
     type: 'image',
     file: 'residence.jpeg',
-    caption: '🏠 Résidence universitaire ISETAG — chambre meublée avec WIFI, eau & électricité inclus !',
+    caption: '🏠 Résidence universitaire ISETAG — chambre meublée avec WIFI, eau & électricité inclus !\n🌐 Plus d\'infos : https://www.isetag.cm',
   },
 };
 
@@ -118,8 +118,11 @@ function detectMediaKeys(userText, aiResponse, lang) {
   }
 
   // ── 2. FLYER GÉNÉRAL ───────────────────────────────────────────────
-  // Only if the user explicitly asks for a brochure/flyer
-  if (/brochure|flyer|d[eé]pliant|voir toutes les fili[eè]res|all programs|envoyez.moi|send me/i.test(userText)) {
+  // If the user explicitly asks for a brochure/flyer OR asks generally about available formations/programs
+  if (
+    /brochure|flyer|d[eé]pliant|voir toutes les fili[eè]res|all programs|envoyez.moi|send me/i.test(userText) ||
+    /\b(formations|fili[eè]res|programmes|programs|courses|fields)\b/i.test(userText)
+  ) {
     keys.push(isEn ? 'flyer_en' : 'flyer_fr');
   }
 
