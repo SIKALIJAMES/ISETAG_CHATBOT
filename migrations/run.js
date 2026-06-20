@@ -19,7 +19,7 @@ async function runMigrations() {
       await pool.query(sql);
       console.log(`✅ Migration ${file} completed successfully`);
     } catch (err) {
-      console.error(`❌ Migration ${file} failed:`, err.message);
+      console.error(`❌ Migration ${file} failed:`, err);
       process.exit(1);
     }
   }
