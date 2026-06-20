@@ -4,6 +4,10 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
+if (!process.env.DATABASE_URL) {
+  console.error('[DB] ❌ FATAL ERROR: DATABASE_URL environment variable is not defined!');
+}
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
@@ -22,9 +26,12 @@ pool.on('connect', () => {
 });
 
 /**
- * Keepalive ping to prevent Neon cold starts
- * Runs every 4 minutes
+ * NOTE: Keepalive ping is disabled to avoid exhausting Neon's free tier quota.
+ * Neon's free tier offers 190 compute hours/month. Keeping the database awake 24/7
+ * consumes ~720 hours/month, which leads to quota suspension.
+ * Leaving the database to sleep when inactive is highly recommended for free tier.
  */
+/*
 if (process.env.NODE_ENV !== 'test') {
   setInterval(async () => {
     try {
@@ -39,6 +46,7 @@ if (process.env.NODE_ENV !== 'test') {
     }
   }, 4 * 60 * 1000);
 }
+*/
 
 module.exports = {
   query: (text, params) => pool.query(text, params),
