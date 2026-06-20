@@ -73,6 +73,31 @@ async function processMessage(phone, userText, storedLang, history = [], prospec
 
     // System prompt
     const isFirstMessage = history.length === 0;
+    const cleanedText = userText.trim().toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g,"");
+    const isGreeting = /^(bonjour|bonsoir|salut|hello|hi|hey|yo|salutations)$/i.test(cleanedText) || 
+                       (cleanedText.length < 25 && /^(bonjour|bonsoir|salut|hello|hi|hey|yo|salutations)\b/i.test(cleanedText));
+
+    let greetingRule = '';
+    if (isGreeting) {
+      if (prospectName) {
+        greetingRule = `- The user has sent a simple greeting. Respond with a simple, polite greeting back using their name: **${prospectName}** (e.g., "Bonjour ${prospectName} ! Comment puis-je vous aider aujourd'hui ?").
+- DO NOT list programs, do NOT pitch the school strengths, and do NOT include any links (such as the website link) in your response. Keep it strictly to the greeting and a simple, friendly question.`;
+      } else {
+        greetingRule = `- The user has sent a simple greeting. Respond with a simple, polite greeting and ask for their first name.
+- Example: "Bonjour ! Je suis votre conseiller virtuel. Pour mieux vous accompagner, puis-je avoir votre prenom ?"
+- DO NOT list programs, do NOT pitch the school strengths, and do NOT include any links (such as the website link) in your response. Keep it strictly to the greeting and asking for their first name.`;
+      }
+    } else if (isFirstMessage) {
+      greetingRule = `- This is the FIRST message from this prospect. Their name is UNKNOWN.
+- Start with a warm 1-line welcome, then IMMEDIATELY ask for their first name before anything else.
+- Example: "Bienvenue a l'ISETAG ! Je suis votre conseiller virtuel. Pour mieux vous accompagner, puis-je avoir votre prenom ?"
+- Do NOT answer any other question yet. Wait for the name first.`;
+    } else if (prospectName) {
+      greetingRule = `- This is an ONGOING conversation. The prospect's name is: **${prospectName}**. Use their name naturally. DO NOT say Bonjour/Hello again.`;
+    } else {
+      greetingRule = `- This is an ONGOING conversation. You do NOT yet know their name. If they just gave it, extract and use it. Otherwise, weave in a polite request at the end.`;
+    }
+
     const systemPrompt = `You are the official virtual orientation advisor for ISETAG (Institut Superieur Evangelique des Technologies Appliquees et de Gestion) in Douala, Cameroon.
 
 ## RULE #1 — LANGUAGE (NON-NEGOTIABLE):
@@ -86,14 +111,7 @@ NEVER mix languages. NEVER switch. This overrides all other rules.
 - If asked something simple, answer simply.
 
 ## RULE #3 — GREETING:
-${isFirstMessage
-    ? `- This is the FIRST message from this prospect. Their name is UNKNOWN.
-- Start with a warm 1-line welcome, then IMMEDIATELY ask for their first name before anything else.
-- Example: "Bienvenue a l'ISETAG ! Je suis votre conseiller virtuel. Pour mieux vous accompagner, puis-je avoir votre prenom ?"
-- Do NOT answer any other question yet. Wait for the name first.`
-    : prospectName
-      ? `- This is an ONGOING conversation. The prospect's name is: **${prospectName}**. Use their name naturally. DO NOT say Bonjour/Hello again.`
-      : `- This is an ONGOING conversation. You do NOT yet know their name. If they just gave it, extract and use it. Otherwise, weave in a polite request at the end.`}
+${greetingRule}
 
 ## RULE #4 — NAME EXTRACTION (CRITICAL):
 At the END of your response, on a new line, you MUST output:

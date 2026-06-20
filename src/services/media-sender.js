@@ -118,11 +118,14 @@ function detectMediaKeys(userText, aiResponse, lang) {
   }
 
   // ── 2. FLYER GÉNÉRAL ───────────────────────────────────────────────
-  // If the user explicitly asks for a brochure/flyer OR asks generally about available formations/programs
-  if (
-    /brochure|flyer|d[eé]pliant|voir toutes les fili[eè]res|all programs|envoyez.moi|send me/i.test(userText) ||
-    /\b(formations|fili[eè]res|programmes|programs|courses|fields)\b/i.test(userText)
-  ) {
+  // Send the flyer if:
+  // - The user explicitly asks for a brochure/flyer/pdf/document AND uses request verbs (envoyer, voir, send, etc.)
+  // - OR the bot's response indicates it is sending or sharing the brochure/flyer
+  const userAsksFlyer = /brochure|flyer|d[eé]pliant|affiche|pdf|document/i.test(userText) && 
+                        /envoy|partag|envoi|donn|voir|recev|send|show|get|receive|look/i.test(userText);
+  const botMentionsSendingFlyer = /je vous envoie (la |notre )?(brochure|dépliant|flyer)|voici (la |notre )?(brochure|dépliant|flyer)|i am sending (you )?(the |our )?(brochure|flyer|booklet)|here is (the |our )?(brochure|flyer|booklet)/i.test(aiResponse);
+
+  if (userAsksFlyer || botMentionsSendingFlyer) {
     keys.push(isEn ? 'flyer_en' : 'flyer_fr');
   }
 
