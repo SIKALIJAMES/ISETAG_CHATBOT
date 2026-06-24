@@ -119,9 +119,10 @@ router.post('/whatsapp', async (req, res) => {
       const result = await processMessage(phone, userText, storedLang, history, prospectName);
 
       // ── If agent extracted a name from this message, persist it ───────
-      if (result.detectedName) {
-        await setName(phone, result.detectedName);
-        console.log(`[WEBHOOK] 👤 Name saved for ...${phone.slice(-4)}: "${result.detectedName}"`);
+      const nameToSave = result.detectedName || null;
+      if (nameToSave) {
+        await setName(phone, nameToSave);
+        console.log(`[WEBHOOK] 👤 Name saved for ...${phone.slice(-4)}: "${nameToSave}"`);
       }
 
       // ── FIX #1: Persist detected language to Redis for next messages ───
@@ -159,21 +160,25 @@ router.post('/whatsapp', async (req, res) => {
 
       // ── Upsert conversation record in PostgreSQL ──────────────────────
       let conversationId;
+      // Resolve final prospect name: newly detected takes priority, else keep existing
+      const finalName = nameToSave || prospectName || null;
+
       if (convData) {
         conversationId = convData.id;
         await query(
           `UPDATE conversations
              SET last_message = $2, lang = $3,
                  status = CASE WHEN status = 'escalated' THEN 'escalated' ELSE 'active' END,
+                 prospect_name = COALESCE($4, prospect_name),
                  updated_at = NOW()
            WHERE id = $1`,
-          [conversationId, userText, result.lang]
+          [conversationId, userText, result.lang, finalName]
         );
       } else {
         const insertRes = await query(
-          `INSERT INTO conversations (user_phone, last_message, lang, status, updated_at)
-           VALUES ($1, $2, $3, 'active', NOW()) RETURNING id`,
-          [phone, userText, result.lang]
+          `INSERT INTO conversations (user_phone, last_message, lang, status, prospect_name, updated_at)
+           VALUES ($1, $2, $3, 'active', $4, NOW()) RETURNING id`,
+          [phone, userText, result.lang, finalName]
         );
         conversationId = insertRes.rows[0].id;
       }

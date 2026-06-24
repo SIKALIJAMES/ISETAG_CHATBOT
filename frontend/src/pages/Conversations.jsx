@@ -86,13 +86,22 @@ const Conversations = () => {
 
   const selectedConvo = convos.find(c => c.id === selectedId);
   const filteredConvos = convos.filter(c => {
-    const match = c.user_phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                  c.last_message?.toLowerCase().includes(searchTerm.toLowerCase());
+    const searchLower = searchTerm.toLowerCase();
+    const match = c.user_phone?.toLowerCase().includes(searchLower) ||
+                  c.last_message?.toLowerCase().includes(searchLower) ||
+                  c.prospect_name?.toLowerCase().includes(searchLower);
     if (!match) return false;
     if (filter === 'escalated') return c.status === 'escalated';
     if (filter === 'bot')       return c.status === 'active';
     return true;
   });
+
+  // Helper: display label for a conversation
+  const displayName = (c) => {
+    if (c.prospect_name) return `Prospect ${c.prospect_name}`;
+    if (c.user_phone?.startsWith('messenger:')) return `Messenger (ID: ${c.user_phone.split(':')[1]})`;
+    return c.user_phone;
+  };
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: 'var(--isetag-black)' }}>
@@ -115,7 +124,7 @@ const Conversations = () => {
             <Search size={16} className="absolute left-3.5 top-3 pointer-events-none" style={{ color: 'rgba(255,255,255,0.3)' }} />
             <input
               type="text"
-              placeholder="Rechercher un numéro..."
+              placeholder="Rechercher un nom ou numéro..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="input-dark pl-10 text-sm py-2.5"
@@ -169,8 +178,13 @@ const Conversations = () => {
                     </div>
                     <div className="overflow-hidden">
                       <p className="font-bold text-sm text-white truncate">
-                        {c.user_phone.startsWith('messenger:') ? `Messenger (ID: ${c.user_phone.split(':')[1]})` : c.user_phone}
+                        {displayName(c)}
                       </p>
+                      {c.prospect_name && (
+                        <p className="text-[10px] truncate" style={{ color: 'rgba(255,255,255,0.25)' }}>
+                          {c.user_phone.startsWith('messenger:') ? `Messenger` : c.user_phone}
+                        </p>
+                      )}
                       <p className="text-xs truncate max-w-[160px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
                         {c.last_message || 'Aucun message'}
                       </p>
@@ -206,10 +220,15 @@ const Conversations = () => {
                 </div>
                 <div>
                   <h3 className="font-bold text-white">
-                    {selectedConvo?.user_phone.startsWith('messenger:')
-                      ? `Messenger (ID: ${selectedConvo.user_phone.split(':')[1]})`
-                      : selectedConvo?.user_phone}
+                    {displayName(selectedConvo)}
                   </h3>
+                  {selectedConvo?.prospect_name && (
+                    <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                      {selectedConvo.user_phone.startsWith('messenger:')
+                        ? `Messenger — ${selectedConvo.user_phone.split(':')[1]}`
+                        : selectedConvo.user_phone}
+                    </p>
+                  )}
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className={statusBadge(selectedConvo?.status)}>{selectedConvo?.status}</span>
                     {selectedConvo?.status === 'escalated' ? (
