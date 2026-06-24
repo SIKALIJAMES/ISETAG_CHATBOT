@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { MessageSquare, AlertCircle, User, Send, CheckCircle, Search, RefreshCw } from 'lucide-react';
+import { MessageSquare, AlertCircle, User, Send, CheckCircle, Search, RefreshCw, UserCheck } from 'lucide-react';
 
 const statusBadge = (status) => {
   if (status === 'escalated') return 'badge-red';
@@ -17,7 +17,23 @@ const Conversations = () => {
   const [replyText, setReplyText]         = useState('');
   const [sending, setSending]             = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
+  const [syncing, setSyncing]             = useState(false);
   const messagesEndRef = useRef(null);
+
+  const syncNames = async () => {
+    setSyncing(true);
+    try {
+      const res = await axios.post('/api/admin/conversations/sync-names', {}, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      alert(res.data.message);
+      fetchConvos();
+    } catch (err) {
+      alert('Erreur lors de la synchronisation des noms.');
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const fetchConvos = async (silent = false) => {
     try {
@@ -97,10 +113,23 @@ const Conversations = () => {
   });
 
   // Helper: display label for a conversation
+  // Format: "Prospect James (+237640797559)" or "Messenger (ID: xxx)" or raw phone
   const displayName = (c) => {
-    if (c.prospect_name) return `Prospect ${c.prospect_name}`;
+    if (c.prospect_name) {
+      const phone = c.user_phone?.startsWith('messenger:')
+        ? `Messenger`
+        : `+${c.user_phone}`;
+      return `Prospect ${c.prospect_name} (${phone})`;
+    }
     if (c.user_phone?.startsWith('messenger:')) return `Messenger (ID: ${c.user_phone.split(':')[1]})`;
-    return c.user_phone;
+    return `+${c.user_phone}`;
+  };
+
+  // Short version for the chat header title only
+  const displayNameShort = (c) => {
+    if (c?.prospect_name) return `Prospect ${c.prospect_name}`;
+    if (c?.user_phone?.startsWith('messenger:')) return `Messenger (ID: ${c.user_phone.split(':')[1]})`;
+    return `+${c?.user_phone}`;
   };
 
   return (
@@ -113,10 +142,17 @@ const Conversations = () => {
         <header className="p-5 pb-4 space-y-4" style={{ borderBottom: '1px solid var(--isetag-border)' }}>
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-black text-brand">Conversations</h1>
-            <button onClick={() => fetchConvos()} title="Rafraîchir"
-              className="p-2 rounded-xl transition-all hover:bg-white/5 text-white/40 hover:text-white">
-              <RefreshCw size={17} />
-            </button>
+            <div className="flex items-center gap-1">
+              <button onClick={syncNames} disabled={syncing} title="Synchroniser les noms depuis Redis"
+                className="p-2 rounded-xl transition-all hover:bg-white/5 text-white/40 hover:text-white disabled:opacity-40"
+                style={syncing ? { color: 'var(--isetag-yellow)' } : {}}>
+                <UserCheck size={17} />
+              </button>
+              <button onClick={() => fetchConvos()} title="Rafraîchir"
+                className="p-2 rounded-xl transition-all hover:bg-white/5 text-white/40 hover:text-white">
+                <RefreshCw size={17} />
+              </button>
+            </div>
           </div>
 
           {/* Search */}
@@ -177,14 +213,9 @@ const Conversations = () => {
                       <User size={18} />
                     </div>
                     <div className="overflow-hidden">
-                      <p className="font-bold text-sm text-white truncate">
+                      <p className="font-bold text-sm text-white truncate" title={c.user_phone}>
                         {displayName(c)}
                       </p>
-                      {c.prospect_name && (
-                        <p className="text-[10px] truncate" style={{ color: 'rgba(255,255,255,0.25)' }}>
-                          {c.user_phone.startsWith('messenger:') ? `Messenger` : c.user_phone}
-                        </p>
-                      )}
                       <p className="text-xs truncate max-w-[160px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
                         {c.last_message || 'Aucun message'}
                       </p>
@@ -220,15 +251,13 @@ const Conversations = () => {
                 </div>
                 <div>
                   <h3 className="font-bold text-white">
-                    {displayName(selectedConvo)}
+                    {displayNameShort(selectedConvo)}
                   </h3>
-                  {selectedConvo?.prospect_name && (
-                    <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                      {selectedConvo.user_phone.startsWith('messenger:')
-                        ? `Messenger — ${selectedConvo.user_phone.split(':')[1]}`
-                        : selectedConvo.user_phone}
-                    </p>
-                  )}
+                  <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                    {selectedConvo?.user_phone?.startsWith('messenger:')
+                      ? `Messenger — ${selectedConvo.user_phone.split(':')[1]}`
+                      : `+${selectedConvo?.user_phone}`}
+                  </p>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className={statusBadge(selectedConvo?.status)}>{selectedConvo?.status}</span>
                     {selectedConvo?.status === 'escalated' ? (

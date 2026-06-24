@@ -9,6 +9,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 const pdf = require('pdf-parse');
 const whatsapp = require('../services/whatsapp');
 const messenger = require('../services/messenger');
+const { getName } = require('../services/session');
 
 /**
  * Dashboard Stats
@@ -252,6 +253,57 @@ router.delete('/knowledge/source', protect, async (req, res) => {
   try {
     await query('DELETE FROM knowledge_chunks WHERE source = $1', [source]);
     res.json({ message: `Source "${source}" deleted successfully` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * POST /api/admin/conversations/sync-names
+ * Backfill: reads all conversations without a prospect_name in DB,
+ * looks up Redis for a saved name, and writes it to the DB.
+ * Call this once after deploy to recover names for existing conversations.
+ */
+router.post('/conversations/sync-names', protect, async (req, res) => {
+  try {
+    const result = await query(
+      'SELECT id, user_phone FROM conversations WHERE prospect_name IS NULL'
+    );
+
+    let updated = 0;
+    for (const convo of result.rows) {
+      const name = await getName(convo.user_phone);
+      if (name) {
+        await query(
+          'UPDATE conversations SET prospect_name = $1 WHERE id = $2',
+          [name, convo.id]
+        );
+        updated++;
+      }
+    }
+
+    res.json({ message: `✅ Sync completed. ${updated} name(s) recovered from Redis.`, updated });
+  } catch (err) {
+    console.error('[ADMIN] sync-names error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * PATCH /api/admin/conversations/:id/name
+ * Manually set or correct a prospect's name
+ */
+router.patch('/conversations/:id/name', protect, async (req, res) => {
+  const { id } = req.params;
+  const { name } = req.body;
+  if (!name) return res.status(400).json({ error: 'No name provided' });
+
+  try {
+    await query(
+      'UPDATE conversations SET prospect_name = $1 WHERE id = $2',
+      [name.trim(), id]
+    );
+    res.json({ message: `Name updated to "${name.trim()}"` });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
