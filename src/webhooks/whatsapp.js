@@ -288,24 +288,26 @@ async function sendWelcomeMenu(phone, lang) {
 }
 
 /**
- * Get or create conversation for this phone hash
+ * Get or create conversation for this phone hash.
+ * Uses an atomic upsert to prevent duplicate key errors
+ * caused by Meta's parallel/retry webhook deliveries.
  */
 async function getOrCreateConversation(phoneHash, lang) {
+  // Atomic upsert: insert if no active 'bot' conversation exists,
+  // otherwise do nothing — then fetch the existing row.
+  await query(
+    `INSERT INTO conversations (user_phone_hash, lang_detected, status)
+     VALUES ($1, $2, 'bot')
+     ON CONFLICT (user_phone_hash) DO NOTHING`,
+    [phoneHash, lang]
+  );
+
   const res = await query(
     `SELECT id FROM conversations WHERE user_phone_hash = $1 AND status = 'bot' ORDER BY created_at DESC LIMIT 1`,
     [phoneHash]
   );
 
-  if (res.rows.length > 0) {
-    return res.rows[0].id;
-  }
-
-  const newConv = await query(
-    `INSERT INTO conversations (user_phone_hash, lang_detected, status) VALUES ($1, $2, 'bot') RETURNING id`,
-    [phoneHash, lang]
-  );
-
-  return newConv.rows[0].id;
+  return res.rows[0].id;
 }
 
 /**

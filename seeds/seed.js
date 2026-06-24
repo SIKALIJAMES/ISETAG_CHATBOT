@@ -7,16 +7,19 @@ async function seed() {
 
   try {
     // 1. Create Admin User
-    const email = process.env.ADMIN_EMAIL || 'admin@isetag.cm';
+    const email = (process.env.ADMIN_EMAIL || 'admin@isetag.cm').toLowerCase().trim();
     // Password hash should be generated manually for security, 
     // but here we use a default if not provided
     const passwordHash = process.env.ADMIN_PASSWORD_HASH || await bcrypt.hash('isetag2025', 10);
 
     await pool.query(
-      'INSERT INTO users (email, password_hash) VALUES ($1, $2) ON CONFLICT (email) DO NOTHING',
+      'INSERT INTO users (email, password_hash) \
+       VALUES ($1, $2) \
+       ON CONFLICT (email) \
+       DO UPDATE SET password_hash = EXCLUDED.password_hash',
       [email, passwordHash]
     );
-    console.log('ℹ️  Admin account check completed');
+    console.log('ℹ️  Admin account check completed (seeded/updated)');
 
     // 2. Fix database schema for messages table (ensure role exists and direction is nullable)
     console.log('🔧 Checking messages table schema...');
