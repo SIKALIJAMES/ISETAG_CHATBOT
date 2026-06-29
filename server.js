@@ -13,6 +13,7 @@ const webhookRoutes = require('./src/routes/webhook');
 const messengerRoutes = require('./src/routes/messenger');
 const adminRoutes = require('./src/routes/admin');
 const authRoutes = require('./src/routes/auth');
+const preinscriptionRoutes = require('./src/routes/preinscription');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -34,6 +35,7 @@ app.use('/webhook', webhookRoutes);
 app.use('/webhook', messengerRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/preinscription', preinscriptionRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
@@ -50,6 +52,7 @@ const path = require('path');
 
 // Serve public media files (flyers, tarifs, residence, etc.)
 app.use('/media', express.static(path.join(__dirname, 'public/media')));
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 app.use(express.static(path.join(__dirname, 'frontend/dist')));
 app.get('*', (req, res) => {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Database, MessageSquare, LogOut, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Database, MessageSquare, LogOut, ChevronRight, ClipboardList } from 'lucide-react';
 
 const Layout = () => {
   const location = useLocation();
@@ -9,6 +9,7 @@ const Layout = () => {
     { name: 'Tableau de bord', path: '/',              icon: LayoutDashboard, desc: 'Statistiques globales' },
     { name: 'Base de Connaissance', path: '/knowledge',      icon: Database,        desc: 'Documents & FAQ' },
     { name: 'Conversations',  path: '/conversations',  icon: MessageSquare,   desc: 'Discussions live' },
+    { name: 'Pré-inscriptions', path: '/preinscriptions', icon: ClipboardList, desc: 'Dossiers reçus en ligne' },
   ];
 
   const handleLogout = () => {

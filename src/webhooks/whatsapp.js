@@ -7,6 +7,7 @@ const faqService = require('../services/faq.service');
 const audioService = require('../services/audio.service');
 const escalationService = require('../services/escalation.service');
 const { processMessage } = require('../services/ai-agent');
+const orientationService = require('../services/orientation.service');
 const { hashPhone, shortHash } = require('../utils/crypto');
 const {
   buildTextMessage,
@@ -184,8 +185,47 @@ async function handleWebhook(req, res) {
       }
     }
 
-    // Step 13: Run AI Agent
-    const result = await processMessage(phone, userText, session.lang, session.history || []);
+    // Step 13: Orientation flow — active questionnaire in progress?
+    if (session.orientation?.active) {
+      // Allow user to cancel at any time
+      if (orientationService.isAbortRequest(userText)) {
+        session.orientation.active = false;
+        const abortMsg = orientationService.abortMessage(session.lang);
+        await sendMessage(buildTextMessage(phone, abortMsg));
+        sessionService.addToHistory(session, 'assistant', abortMsg);
+        await logMessage(conversationId, 'out', abortMsg, 'text', null, 1.0);
+        await sessionService.saveSession(phoneHash, session);
+        return;
+      }
+
+      const { text: orientText, done } = orientationService.advanceOrientation(session, userText, session.lang);
+      await sendMessage(buildTextMessage(phone, orientText));
+      sessionService.addToHistory(session, 'assistant', orientText);
+      await logMessage(conversationId, 'out', orientText, 'text', null, 1.0);
+
+      if (done) {
+        logger.info(`Orientation completed for ${shortHash(phone)}`);
+      } else {
+        logger.info(`Orientation step ${session.orientation.stepIndex}/${orientationService.STEPS.length} for ${shortHash(phone)}`);
+      }
+
+      await sessionService.saveSession(phoneHash, session);
+      return;
+    }
+
+    // Step 14: Detect undecided students — launch orientation questionnaire
+    if (orientationService.isUndecided(userText)) {
+      logger.info(`Undecided student detected for ${shortHash(phone)} — starting orientation`);
+      const firstQuestion = orientationService.startOrientation(session, session.lang);
+      await sendMessage(buildTextMessage(phone, firstQuestion));
+      sessionService.addToHistory(session, 'assistant', firstQuestion);
+      await logMessage(conversationId, 'out', firstQuestion, 'text', null, 1.0);
+      await sessionService.saveSession(phoneHash, session);
+      return;
+    }
+
+    // Step 15: Run AI Agent
+    const result = await processMessage(phone, userText, session.lang, session.history || [], session.prospect_name || null);
 
     if (result.text && !result.needsEscalation) {
       const prefix = isFirstMessage ? welcomePrefix(session.lang) : '';
@@ -199,7 +239,6 @@ async function handleWebhook(req, res) {
       // Escalation or error
       await doEscalation({ phone, phoneHash, session, conversationId, lang: session.lang });
       if (result.text && result.needsEscalation) {
-        // Optionnel: On peut loguer l'erreur envoyée
         logger.error(`AI Agent Erreur ou Escalation requise`);
       }
     }
