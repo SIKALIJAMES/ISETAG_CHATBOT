@@ -235,8 +235,8 @@ ${context ? `\n## KNOWLEDGE BASE (use this for precise answers):\n${context}` : 
     }
     messages.push({ role: 'user', content: userText });
 
-    // Call Groq API (free tier: 14,400 req/day for llama-3.3-70b-versatile)
-    const groqModel = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
+    // Call Groq API (active production model: openai/gpt-oss-120b)
+    const groqModel = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
     console.log(`[AI-AGENT] Calling Groq (${groqModel})...`);
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
