@@ -180,11 +180,16 @@ Mécatronique | Menuiserie-Ébénisterie | Énergies renouvelables (solaire)
 (Students learn: port supervision, vessel operations, transport/customs documents, maritime English)
 
 ### 💰 FEES (indicative — confirm at registration)
-- BTS Reg fee: 30,000 FCFA
+⚠️ IMPORTANT — FILE STUDY FEE POLICY:
+- File study (étude de dossier) is FREE for BTS/HND and Licence. NO payment required to submit your application file.
+- ONLY Maritime programs require a file study fee of 10,000 FCFA (for Cameroonian nationals).
+- The 30,000 FCFA registration fee is paid IN PERSON at ISETAG ONLY AFTER the application file is accepted.
+
+- BTS/HND Registration fee (paid in person after acceptance): 30,000 FCFA
   * Industry & Tech: Day 395k (Tranches: 200k, 150k, 45k) | Evening 285k (Tranches: 150k, 100k, 35k)
   * Business & Mgt: Day 315k (Tranches: 150k, 100k, 65k) | Evening 235k (Tranches: 130k, 80k, 25k)
-- LICENCE (Evening ONLY, Reg fee: 55,000 FCFA): Industry/Tech/Commerce 550k | Applied Mgt 500k
-- Maritime (Day ONLY, 4-yr): Reg fee 55k (National) / 105k (Foreign). Tuition: 755k (National) / 1,005k (Foreign)
+- LICENCE (Evening ONLY, Registration fee: 55,000 FCFA paid in person): Industry/Tech/Commerce 550k | Applied Mgt 500k
+- Maritime (Day ONLY, 4-yr): File study fee: 10,000 FCFA (National only). Registration fee: 55k (National) / 105k (Foreign). Tuition: 755k (National) / 1,005k (Foreign)
 - Flexible payment: fees can be paid in multiple installments (moratoire available for financial difficulties)
 
 ### 🌍 INTERNATIONAL PARTNERS
@@ -210,9 +215,9 @@ Sinotruck | CEL'OR | TRANSIMEX | FIGEC | CANOCAM | SOTRABUS
 - 🎓 Linguistic scholarship: new bacheliers (nouveaux bacheliers) can benefit from a 50,000 FCFA linguistic scholarship to help with language learning, international preparation, and job market competitiveness
 
 ### 📋 ADMISSION
-- BTS/HND: Bac or GCE A-Level, pre-registration form, birth cert, diploma, medical cert, 4 photos, ID. File fee: 10,000 FCFA. No entrance exam (except Maritime).
-- Licence: Handwritten request, registration form, BTS/equivalent certified copies, bac transcripts, ID, 2 photos, CV, stamped A4 envelope. Reg fee: 55,000 FCFA.
-- Maritime: File study ONLY. Deadline: September 16. Double degree possible (2 yrs Cameroon + 2 yrs Ghana/China), STCW 95 certification.
+- BTS/HND: Bac or GCE A-Level, pre-registration form, birth cert, diploma, medical cert, 4 photos, ID. File study is COMPLETELY FREE (no fee to submit your file). Registration fee of 30,000 FCFA is paid IN PERSON only after acceptance. No entrance exam.
+- Licence: Handwritten request, registration form, BTS/equivalent certified copies, bac transcripts, ID, 2 photos, CV, stamped A4 envelope. File study is FREE. Registration fee of 55,000 FCFA paid in person after acceptance.
+- Maritime: File study fee: 10,000 FCFA (Cameroonians) — the ONLY program with a file study fee. Deadline: September 16. No entrance exam — selection by file only. Double degree possible (2 yrs Cameroon + 2 yrs Ghana/China), STCW 95 certification.
 
 ### 🏅 ACADEMIC EXCELLENCE
 - 89.23% global success rate (2024)
