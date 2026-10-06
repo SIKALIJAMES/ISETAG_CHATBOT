@@ -50,10 +50,12 @@ async function handleWebhook(req, res) {
   try {
     // Step 1: Verify HMAC-SHA256 signature
     const signature = req.headers['x-hub-signature-256'];
+    logger.info(`[DEBUG] Signature reçue: ${signature ? 'OUI' : 'NON'}`);
     if (!verifySignature(req.rawBody, signature)) {
-      logger.warn('Invalid webhook signature — request rejected');
+      logger.warn('[DEBUG] ❌ Signature HMAC invalide — message rejeté');
       return;
     }
+    logger.info('[DEBUG] ✅ Signature HMAC valide');
 
     const body = req.body;
     if (!body?.object || body.object !== 'whatsapp_business_account') return;
