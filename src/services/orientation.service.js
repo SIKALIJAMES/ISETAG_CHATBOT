@@ -284,9 +284,9 @@ function generateRecommendation(answers, lang) {
       },
       industrie: {
         name: '⚙️ Industrie et Technologie',
-        specialties: 'Mécatronique · Menuiserie-Ébénisterie · Énergies Renouvelables (solaire)',
-        why: 'Tu es manuel, technique et tu aimes comprendre comment les choses fonctionnent. Ces filières sont faites pour toi !',
-        careers: 'Technicien en mécatronique, Électricien, Technicien solaire, Menuisier/Ébéniste, Technicien de maintenance',
+        specialties: 'Génie Civil · Mécatronique · Menuiserie-Ébénisterie · Énergies Renouvelables (solaire)',
+        why: 'Tu es manuel, technique et tu aimes construire ou comprendre comment les choses fonctionnent. Ces filières sont faites pour toi !',
+        careers: 'Technicien Génie Civil / BTP, Technicien en mécatronique, Électricien, Technicien solaire, Menuisier/Ébéniste, Technicien de maintenance',
         duration: 'BTS/HND (2 ans)',
       },
       maritime: {
@@ -314,9 +314,9 @@ function generateRecommendation(answers, lang) {
       },
       industrie: {
         name: '⚙️ Industry & Technology',
-        specialties: 'Mechatronics · Carpentry/Joinery · Renewable Energies (Solar)',
-        why: 'You\'re hands-on, technical, and love understanding how things work. These programs are made for you!',
-        careers: 'Mechatronics Technician, Electrician, Solar Technician, Carpenter, Maintenance Technician',
+        specialties: 'Civil Engineering · Mechatronics · Carpentry/Joinery · Renewable Energies (Solar)',
+        why: 'You\'re hands-on, technical, and love building or understanding how things work. These programs are made for you!',
+        careers: 'Civil Engineering Technician, Mechatronics Technician, Electrician, Solar Technician, Carpenter, Maintenance Technician',
         duration: 'HND (2 yrs)',
       },
       maritime: {

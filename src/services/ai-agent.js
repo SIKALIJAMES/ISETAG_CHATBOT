@@ -172,8 +172,8 @@ Génie logiciel | Infographie & Web Design | E-commerce | Marketing numérique |
 (Students learn: programming, network management, cybersecurity, modern digital tools)
 
 **3. Industrie et Technologie**
-Mécatronique | Menuiserie-Ébénisterie | Énergies renouvelables (solaire)
-(Students learn: machine maintenance, fault detection, equipment repair, safety)
+Génie Civil | Mécatronique | Menuiserie-Ébénisterie | Énergies renouvelables (solaire)
+(Students learn: construction, civil engineering, machine maintenance, fault detection, equipment repair, safety)
 
 **4. Sciences Portuaires et Maritimes**
 Électromécanique navale | Gestion logistique portuaire et maritime | Sciences nautiques
