@@ -324,12 +324,38 @@ router.get('/export/csv', protect, async (req, res) => {
 
 
 // ─────────────────────────────────────────────
+//  GET /api/preinscription/stats/summary  (admin)
+//  ⚠️ Must be BEFORE /:id to avoid Express route collision
+// ─────────────────────────────────────────────
+router.get('/stats/summary', protect, async (req, res) => {
+  try {
+    const total    = await query('SELECT COUNT(*) FROM preinscriptions');
+    const byStatus = await query(
+      `SELECT status, COUNT(*) as count FROM preinscriptions GROUP BY status ORDER BY count DESC`
+    );
+    const byDomain = await query(
+      `SELECT domain, COUNT(*) as count FROM preinscriptions GROUP BY domain ORDER BY count DESC`
+    );
+    res.json({
+      total: parseInt(total.rows[0].count),
+      byStatus: byStatus.rows.map(r => ({ status: r.status, count: parseInt(r.count) })),
+      byDomain: byDomain.rows.map(r => ({ domain: r.domain, count: parseInt(r.count) })),
+    });
+  } catch (err) {
+    console.error('[PREINSCRIPTION] stats/summary error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─────────────────────────────────────────────
 //  GET /api/preinscription/:id  (admin)
 //  Full detail of one submission including doc paths
 // ─────────────────────────────────────────────
 router.get('/:id', protect, async (req, res) => {
+  const numId = parseInt(req.params.id);
+  if (isNaN(numId)) return res.status(400).json({ error: 'ID invalide' });
   try {
-    const result = await query('SELECT * FROM preinscriptions WHERE id = $1', [req.params.id]);
+    const result = await query('SELECT * FROM preinscriptions WHERE id = $1', [numId]);
     if (result.rows.length === 0) return res.status(404).json({ error: 'Introuvable' });
     res.json(result.rows[0]);
   } catch (err) {
@@ -344,35 +370,15 @@ router.patch('/:id/status', protect, async (req, res) => {
   const { status, admin_notes } = req.body;
   const allowed = ['pending', 'reviewed', 'accepted', 'rejected'];
   if (!allowed.includes(status)) return res.status(400).json({ error: 'Status invalide' });
+  const numId = parseInt(req.params.id);
+  if (isNaN(numId)) return res.status(400).json({ error: 'ID invalide' });
 
   try {
     await query(
-      'UPDATE preinscriptions SET status = $1, admin_notes = $2 WHERE id = $3',
-      [status, admin_notes || null, req.params.id]
+      'UPDATE preinscriptions SET status = $1, admin_notes = $2, updated_at = NOW() WHERE id = $3',
+      [status, admin_notes || null, numId]
     );
     res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ─────────────────────────────────────────────
-//  GET /api/preinscription/stats/summary  (admin)
-// ─────────────────────────────────────────────
-router.get('/stats/summary', protect, async (req, res) => {
-  try {
-    const total  = await query('SELECT COUNT(*) FROM preinscriptions');
-    const byStatus = await query(
-      `SELECT status, COUNT(*) as count FROM preinscriptions GROUP BY status`
-    );
-    const byDomain = await query(
-      `SELECT domain, COUNT(*) as count FROM preinscriptions GROUP BY domain ORDER BY count DESC`
-    );
-    res.json({
-      total: parseInt(total.rows[0].count),
-      byStatus: byStatus.rows,
-      byDomain: byDomain.rows,
-    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
