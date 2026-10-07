@@ -13,7 +13,9 @@ async function runMigrations() {
 
   for (const file of files) {
     const filePath = path.join(migrationsDir, file);
-    const sql = fs.readFileSync(filePath, 'utf8');
+    const rawSql = fs.readFileSync(filePath, 'utf8');
+    const sql = rawSql.replace(/^\uFEFF/, '').trim();
+    if (!sql) continue;
     
     try {
       await pool.query(sql);
