@@ -1,8 +1,11 @@
+const fs = require('fs');
+const path = require('path');
 const whatsapp = require('./whatsapp');
 const messenger = require('./messenger');
 
 // Base public URL of your Railway deployment
 const BASE_URL = process.env.APP_URL || 'https://isetag-chatbot-production.up.railway.app';
+const MEDIA_DIR = path.join(__dirname, '../../public/media');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MEDIA CATALOG
@@ -194,6 +197,13 @@ async function sendContextualMedia(phone, userText, aiResponse, lang) {
     const media = MEDIA[key];
     if (!media) continue;
 
+    // Check if the physical file exists on disk
+    const localFilePath = path.join(MEDIA_DIR, media.file);
+    if (!fs.existsSync(localFilePath)) {
+      console.warn(`[MEDIA] ⚠️ Missing file on disk: "${media.file}" at ${localFilePath}. Skipping to avoid Meta 404.`);
+      continue;
+    }
+
     const url = `${BASE_URL}/media/${encodeURIComponent(media.file)}`;
     try {
       if (isMessenger) {
@@ -216,5 +226,6 @@ async function sendContextualMedia(phone, userText, aiResponse, lang) {
     await new Promise(r => setTimeout(r, 600));
   }
 }
+
 
 module.exports = { sendContextualMedia };

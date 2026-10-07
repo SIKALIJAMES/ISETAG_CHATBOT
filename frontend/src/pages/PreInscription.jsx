@@ -178,6 +178,7 @@ export default function PreInscription() {
   const set = (field, value) => setForm(f => ({ ...f, [field]: value }));
   const onFileChange = (name, file) => setFiles(f => ({ ...f, [name]: file }));
 
+  const [dossierCode, setDossierCode] = useState('');
   const specialties = DOMAINS[form.domain]?.specialties || [];
 
   async function handleSubmit(e) {
@@ -194,6 +195,7 @@ export default function PreInscription() {
       const data = await res.json();
 
       if (!res.ok) throw new Error(data.error || 'Erreur serveur');
+      setDossierCode(data.dossier_code || (data.id ? `ISETAG-2026-${String(data.id).padStart(4, '0')}` : ''));
       setStep(2);
     } catch (err) {
       setError(err.message);
@@ -212,16 +214,30 @@ export default function PreInscription() {
                           shadow-[0_0_60px_rgba(93,203,106,0.4)] animate-pulse">
             ✅
           </div>
-          <h1 className="text-3xl font-extrabold text-white mb-3">
+          <h1 className="text-3xl font-extrabold text-white mb-2">
             Pré-inscription envoyée !
           </h1>
-          <p className="text-slate-400 mb-8 text-base leading-relaxed">
-            Nous avons bien reçu ta demande de pré-inscription à <strong className="text-yellow-400">ISETAG</strong>.<br />
-            Notre équipe te contactera dans les <strong className="text-white">24–48h</strong> pour
-            confirmer ton dossier et te donner les prochaines étapes pour l'inscription physique.
+          <p className="text-slate-400 mb-6 text-sm leading-relaxed">
+            Nous avons bien reçu ta demande de pré-inscription à <strong className="text-yellow-400">ISETAG</strong>.
           </p>
+
+          {/* Dossier Code Card */}
+          {dossierCode && (
+            <div className="bg-gradient-to-r from-yellow-400/10 to-green-400/10 border border-yellow-400/30 rounded-2xl p-5 mb-6 text-center">
+              <div className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-1">
+                Numéro de Dossier Officiel
+              </div>
+              <div className="text-2xl sm:text-3xl font-black text-yellow-400 tracking-wider">
+                #{dossierCode}
+              </div>
+              <p className="text-xs text-slate-300 mt-2">
+                📲 Une confirmation a été envoyée sur ton WhatsApp. Conserve ce numéro pour finaliser ton inscription physique au campus de Yassa !
+              </p>
+            </div>
+          )}
+
           <div className="glass rounded-2xl p-6 text-left mb-6">
-            <div className="text-sm font-bold text-white mb-3">📞 Besoin d'aide ?</div>
+            <div className="text-sm font-bold text-white mb-3">📞 Besoin d'aide ou d'orientations ?</div>
             <div className="space-y-2 text-sm text-slate-300">
               <div>📱 <span className="text-white font-medium">+237 676 079 849</span></div>
               <div>📱 <span className="text-white font-medium">+237 690 609 511</span></div>
@@ -244,6 +260,7 @@ export default function PreInscription() {
       </div>
     );
   }
+
 
   // ── Form ─────────────────────────────────────────────────────
   return (

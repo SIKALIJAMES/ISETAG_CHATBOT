@@ -13,6 +13,32 @@ const Dashboard = () => {
     categories: []
   });
   const [loading, setLoading] = useState(true);
+  const [nurturingStats, setNurturingStats] = useState(null);
+  const [triggeringNurture, setTriggeringNurture] = useState(false);
+
+  const fetchNurturing = async () => {
+    try {
+      const res = await axios.get('/api/admin/nurturing/stats', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      setNurturingStats(res.data);
+    } catch (e) {}
+  };
+
+  const triggerNurturing = async () => {
+    setTriggeringNurture(true);
+    try {
+      const res = await axios.post('/api/admin/nurturing/trigger', { limit: 20 }, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      alert(res.data.message || 'Relances envoyées avec succès.');
+      fetchNurturing();
+    } catch (err) {
+      alert('Erreur: ' + (err.response?.data?.error || err.message));
+    } finally {
+      setTriggeringNurture(false);
+    }
+  };
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -28,7 +54,9 @@ const Dashboard = () => {
       }
     };
     fetchStats();
+    fetchNurturing();
   }, []);
+
 
   const defaultActivity  = [
     { label: 'Lun', value: 4  }, { label: 'Mar', value: 9  },
@@ -134,7 +162,39 @@ const Dashboard = () => {
         ))}
       </div>
 
+
+
+      {/* Relance Automatique / Nurturing Banner */}
+      <div className="glass rounded-3xl p-6 border border-yellow-400/20 bg-gradient-to-r from-yellow-400/5 via-transparent to-green-400/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="text-xl">🎯</span>
+            <h3 className="text-base font-bold text-white">Relance Automatique des Prospects (24h)</h3>
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-yellow-400/15 text-yellow-400 font-bold border border-yellow-400/30">
+              Actif 24/7
+            </span>
+          </div>
+          <p className="text-xs text-slate-400 mt-1.5 max-w-xl">
+            Le bot relance automatiquement les prospects WhatsApp inactifs après 24h avec le lien de pré-inscription gratuite.
+            {nurturingStats && (
+              <span className="text-white font-medium ml-1">
+                ({nurturingStats.nurturedTotal} relance(s) envoyée(s), {nurturingStats.pendingEligible} prospect(s) éligible(s) en attente)
+              </span>
+            )}
+          </p>
+        </div>
+        <button
+          onClick={triggerNurturing}
+          disabled={triggeringNurture}
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-black text-xs
+                     bg-gradient-to-r from-yellow-400 to-green-400 hover:opacity-90 transition-all disabled:opacity-50 whitespace-nowrap self-start md:self-auto cursor-pointer"
+        >
+          {triggeringNurture ? '⏳ Relance en cours…' : '🚀 Déclencher la relance maintenant'}
+        </button>
+      </div>
+
       {/* Charts */}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
         {/* Activity line chart */}

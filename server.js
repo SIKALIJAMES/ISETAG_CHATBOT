@@ -77,4 +77,15 @@ app.listen(PORT, '0.0.0.0', () => {
 ║  🌍 Env     : ${(process.env.NODE_ENV || 'development').padEnd(22)}║
 ╚══════════════════════════════════════╝
   `);
+
+  // Background 24h Nurturing follow-up worker (every 30 mins)
+  const { runNurturingJob } = require('./src/services/nurturing.service');
+  setInterval(async () => {
+    try {
+      await runNurturingJob(20);
+    } catch (e) {
+      console.warn('[NURTURING] Periodic worker error:', e.message);
+    }
+  }, 30 * 60 * 1000);
 });
+

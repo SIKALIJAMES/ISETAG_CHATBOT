@@ -309,4 +309,32 @@ router.patch('/conversations/:id/name', protect, async (req, res) => {
   }
 });
 
+/**
+ * GET /api/admin/nurturing/stats
+ */
+router.get('/nurturing/stats', protect, async (req, res) => {
+  try {
+    const { getNurturingStats } = require('../services/nurturing.service');
+    const stats = await getNurturingStats();
+    res.json(stats);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * POST /api/admin/nurturing/trigger
+ */
+router.post('/nurturing/trigger', protect, async (req, res) => {
+  try {
+    const { runNurturingJob } = require('../services/nurturing.service');
+    const limit = parseInt(req.body?.limit) || 20;
+    const result = await runNurturingJob(limit);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
+

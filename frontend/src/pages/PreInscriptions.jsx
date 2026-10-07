@@ -68,11 +68,29 @@ function DetailModal({ id, onClose, onUpdated }) {
             {/* Header */}
             <div className="sticky top-0 bg-[#1a1a1a] border-b border-white/8 px-6 py-4 flex items-center justify-between z-10">
               <div>
-                <h2 className="text-lg font-bold text-white">{data.full_name}</h2>
-                <div className="text-sm text-slate-400">#{data.id} · {data.domain} · {new Date(data.created_at).toLocaleDateString('fr-FR')}</div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-bold text-white">{data.full_name}</h2>
+                  <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-yellow-400/10 text-yellow-400 border border-yellow-400/20">
+                    #{data.dossier_code || `ISETAG-2026-${String(data.id).padStart(4, '0')}`}
+                  </span>
+                </div>
+                <div className="text-sm text-slate-400">{data.domain} · {data.specialty || 'Général'} · {new Date(data.created_at).toLocaleDateString('fr-FR')}</div>
               </div>
-              <button onClick={onClose} className="w-9 h-9 rounded-xl bg-white/8 hover:bg-white/15 flex items-center justify-center text-slate-400 hover:text-white transition-all">✕</button>
+              <div className="flex items-center gap-2">
+                {data.phone && (
+                  <a
+                    href={`https://wa.me/${data.phone.replace(/\D/g, '')}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-3 py-1.5 rounded-xl bg-green-500/15 hover:bg-green-500/25 text-green-400 text-xs font-bold border border-green-500/30 transition-all flex items-center gap-1.5"
+                  >
+                    💬 WhatsApp
+                  </a>
+                )}
+                <button onClick={onClose} className="w-9 h-9 rounded-xl bg-white/8 hover:bg-white/15 flex items-center justify-center text-slate-400 hover:text-white transition-all">✕</button>
+              </div>
             </div>
+
 
             <div className="p-6 space-y-6">
               {/* Personal info */}
@@ -174,10 +192,41 @@ export default function PreInscriptions() {
   const [rows, setRows]       = useState([]);
   const [stats, setStats]     = useState(null);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
   const [search, setSearch]   = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [filterDomain, setFilterDomain] = useState('');
   const [selected, setSelected] = useState(null);
+
+  const handleExportCSV = async () => {
+    setExporting(true);
+    try {
+      const params = new URLSearchParams();
+      if (filterStatus) params.set('status', filterStatus);
+      if (filterDomain) params.set('domain', filterDomain);
+
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API}/export/csv?${params}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!res.ok) throw new Error('Échec du téléchargement du fichier CSV');
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `preinscriptions_isetag_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert('Erreur: ' + err.message);
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -205,16 +254,27 @@ export default function PreInscriptions() {
           <h1 className="text-2xl font-extrabold text-white">Pré-inscriptions</h1>
           <p className="text-slate-400 text-sm mt-1">Dossiers soumis via le formulaire en ligne</p>
         </div>
-        <a
-          href="/preinscription"
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-black text-sm
-                     bg-gradient-to-r from-yellow-400 to-green-400 hover:opacity-90 transition-all"
-        >
-          🔗 Voir le formulaire public
-        </a>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleExportCSV}
+            disabled={exporting}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-white text-sm
+                       bg-white/10 hover:bg-white/15 border border-white/10 transition-all disabled:opacity-50"
+          >
+            {exporting ? '⏳ Exportation…' : '📥 Exporter en Excel / CSV'}
+          </button>
+          <a
+            href="/preinscription"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-black text-sm
+                       bg-gradient-to-r from-yellow-400 to-green-400 hover:opacity-90 transition-all"
+          >
+            🔗 Voir le formulaire public
+          </a>
+        </div>
       </div>
+
 
       {/* Stats */}
       {stats && (
@@ -287,7 +347,7 @@ export default function PreInscriptions() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-white/8">
-                <th className="text-left px-5 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-widest">#</th>
+                <th className="text-left px-5 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-widest">N° Dossier</th>
                 <th className="text-left px-5 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-widest">Candidat</th>
                 <th className="text-left px-5 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-widest hidden md:table-cell">Domaine</th>
                 <th className="text-left px-5 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-widest hidden lg:table-cell">Spécialité</th>
@@ -303,7 +363,9 @@ export default function PreInscriptions() {
                   className="border-b border-white/5 hover:bg-white/3 transition-colors cursor-pointer"
                   onClick={() => setSelected(row.id)}
                 >
-                  <td className="px-5 py-4 text-slate-500 font-mono text-xs">{row.id}</td>
+                  <td className="px-5 py-4 font-mono text-xs font-bold text-yellow-400 whitespace-nowrap">
+                    #{row.dossier_code || `ISETAG-2026-${String(row.id).padStart(4, '0')}`}
+                  </td>
                   <td className="px-5 py-4">
                     <div className="font-semibold text-white">{row.full_name}</div>
                     <div className="text-xs text-slate-400">{row.phone}</div>

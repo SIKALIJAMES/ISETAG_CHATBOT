@@ -86,6 +86,44 @@ async function setName(phone, name) {
   }
 }
 
+const ORIENTATION_TTL = 3600; // 1 heure
+
+/**
+ * Get orientation state for a user
+ */
+async function getOrientation(phone) {
+  try {
+    const raw = await redis.get(`orientation:${phone}`);
+    if (!raw) return null;
+    return typeof raw === 'string' ? JSON.parse(raw) : raw;
+  } catch (err) {
+    console.error('[REDIS] getOrientation error:', err.message);
+    return null;
+  }
+}
+
+/**
+ * Persist orientation state for a user (1 hour TTL)
+ */
+async function setOrientation(phone, orientationState) {
+  try {
+    await redis.set(`orientation:${phone}`, orientationState, { ex: ORIENTATION_TTL });
+  } catch (err) {
+    console.error('[REDIS] setOrientation error:', err.message);
+  }
+}
+
+/**
+ * Clear orientation state for a user
+ */
+async function clearOrientation(phone) {
+  try {
+    await redis.del(`orientation:${phone}`);
+  } catch (err) {
+    console.error('[REDIS] clearOrientation error:', err.message);
+  }
+}
+
 /**
  * Reset conversation history (but keep language preference and name)
  */
@@ -104,5 +142,9 @@ module.exports = {
   setLang,
   getName,
   setName,
+  getOrientation,
+  setOrientation,
+  clearOrientation,
   clearSession,
 };
+

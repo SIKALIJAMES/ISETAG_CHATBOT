@@ -4,12 +4,64 @@ const router  = express.Router();
 const { processMessage } = require('../services/ai-agent');
 const { sendTextMessage } = require('../services/messenger');
 const { triggerEscalation } = require('../services/escalation');
-const { getHistory, addMessage, getLang, setLang, getName, setName } = require('../services/session');
+const {
+  getHistory,
+  addMessage,
+  getLang,
+  setLang,
+  getName,
+  setName,
+  getOrientation,
+  setOrientation,
+  clearOrientation,
+} = require('../services/session');
+const orientationService = require('../services/orientation.service');
 const { query } = require('../config/database');
 const { sendContextualMedia } = require('../services/media-sender');
 
 // Track consecutive AI errors per page-scoped user ID
 const noMatchCount = {};
+
+/**
+ * Helper to record conversation and message exchange in DB & Redis history
+ */
+async function recordInteraction(dbIdentifier, userText, assistantText, lang, convData, prospectName) {
+  await addMessage(dbIdentifier, 'user', userText);
+  await addMessage(dbIdentifier, 'assistant', assistantText);
+
+  let conversationId;
+  if (convData) {
+    conversationId = convData.id;
+    await query(
+      `UPDATE conversations
+         SET last_message = $2, lang = $3,
+             status = CASE WHEN status = 'escalated' THEN 'escalated' ELSE 'active' END,
+             prospect_name = COALESCE($4, prospect_name),
+             updated_at = NOW()
+       WHERE id = $1`,
+      [conversationId, userText, lang, prospectName]
+    );
+  } else {
+    const insertRes = await query(
+      `INSERT INTO conversations (user_phone, last_message, lang, status, prospect_name, updated_at)
+       VALUES ($1, $2, $3, 'active', $4, NOW()) RETURNING id`,
+      [dbIdentifier, userText, lang, prospectName]
+    );
+    conversationId = insertRes.rows[0].id;
+  }
+
+  await query(
+    'INSERT INTO messages (conversation_id, role, content) VALUES ($1, $2, $3)',
+    [conversationId, 'user', userText]
+  );
+  await query(
+    'INSERT INTO messages (conversation_id, role, content) VALUES ($1, $2, $3)',
+    [conversationId, 'assistant', assistantText]
+  );
+
+  return conversationId;
+}
+
 
 /**
  * GET — Webhook Verification (Facebook Messenger handshake)
@@ -109,30 +161,67 @@ router.post('/messenger', async (req, res) => {
         return;
       }
 
+      // ── Language & Name resolution ───────────────────────────────────
       const redisLang = await getLang(dbIdentifier);
-      const storedLang = redisLang || dbLang || null;
-
-      // ── Fetch history ────────────────────────────────────────────────
-      const history = await getHistory(dbIdentifier);
-
-      // ── Fetch prospect name ──────────────────────────────────────────
+      const storedLang = (redisLang || dbLang || 'fr') === 'en' ? 'en' : 'fr';
       const prospectName = await getName(dbIdentifier);
 
-      // ── Call AI agent ────────────────────────────────────────────────
-      const result = await processMessage(dbIdentifier, userText, storedLang, history, prospectName);
+      // ── Step A: Check if orientation questionnaire is active ─────────
+      const activeOrientation = await getOrientation(dbIdentifier);
 
-      if (result.lang) {
-        await setLang(dbIdentifier, result.lang);
+      if (activeOrientation && activeOrientation.active) {
+        if (orientationService.isAbortRequest(userText)) {
+          await clearOrientation(dbIdentifier);
+          const abortMsg = orientationService.abortMessage(storedLang);
+          await sendTextMessage(senderPsid, abortMsg);
+          await recordInteraction(dbIdentifier, userText, abortMsg, storedLang, convData, prospectName);
+          console.log(`[MESSENGER] 🛑 Orientation cancelled by ...${senderPsid.slice(-4)}`);
+          return;
+        }
+
+        const sessionObj = { orientation: activeOrientation };
+        const { text: orientText, done } = orientationService.advanceOrientation(sessionObj, userText, storedLang);
+
+        if (done) {
+          await clearOrientation(dbIdentifier);
+          console.log(`[MESSENGER] 🎓 Orientation completed for ...${senderPsid.slice(-4)}`);
+        } else {
+          await setOrientation(dbIdentifier, sessionObj.orientation);
+          console.log(`[MESSENGER] 🎓 Orientation step ${sessionObj.orientation.stepIndex}/${orientationService.STEPS.length} for ...${senderPsid.slice(-4)}`);
+        }
+
+        await sendTextMessage(senderPsid, orientText);
+        await recordInteraction(dbIdentifier, userText, orientText, storedLang, convData, prospectName);
+
+        if (done) {
+          await sendContextualMedia(dbIdentifier, userText, orientText, storedLang);
+        }
+        return;
       }
 
-      // ── Save messages to Redis history ───────────────────────────────
-      await addMessage(dbIdentifier, 'user', userText);
-      await addMessage(dbIdentifier, 'assistant', result.text);
+      // ── Step B: Check if undecided student: start orientation quiz ────
+      if (orientationService.isUndecided(userText)) {
+        console.log(`[MESSENGER] 🧭 Undecided student detected (...${senderPsid.slice(-4)}) — starting orientation`);
+        const sessionObj = { orientation: {} };
+        const firstQuestion = orientationService.startOrientation(sessionObj, storedLang);
+        await setOrientation(dbIdentifier, sessionObj.orientation);
+        await sendTextMessage(senderPsid, firstQuestion);
+        await recordInteraction(dbIdentifier, userText, firstQuestion, storedLang, convData, prospectName);
+        return;
+      }
+
+      // ── Step C: Normal AI agent flow ──────────────────────────────────
+      const history = await getHistory(dbIdentifier);
+      const result = await processMessage(dbIdentifier, userText, storedLang, history, prospectName);
 
       const nameToSave = result.detectedName || null;
       if (nameToSave) {
         await setName(dbIdentifier, nameToSave);
         console.log(`[MESSENGER] 👤 Name saved for ...${senderPsid.slice(-4)}: "${nameToSave}"`);
+      }
+
+      if (result.lang) {
+        await setLang(dbIdentifier, result.lang);
       }
 
       // ── Handle escalation or reply ───────────────────────────────────
@@ -148,47 +237,19 @@ router.post('/messenger', async (req, res) => {
             ? "🤔 I'm having a bit of trouble right now. Could you rephrase your question? I'll do my best to help!"
             : "🤔 J'ai un peu de mal à répondre à ça. Pourriez-vous reformuler votre question ? Je ferai de mon mieux pour vous aider !";
           await sendTextMessage(senderPsid, retryMsg);
+          await recordInteraction(dbIdentifier, userText, retryMsg, result.lang, convData, nameToSave || prospectName);
+          return;
         }
-      } else {
-        noMatchCount[dbIdentifier] = 0;
-        await sendTextMessage(senderPsid, result.text);
-        // Automatically send relevant media (flyers/tarifs)
-        await sendContextualMedia(dbIdentifier, userText, result.text, result.lang);
       }
 
-      // ── Upsert conversation record in PostgreSQL ─────────────────────
-      let conversationId;
+      // Normal reply
+      noMatchCount[dbIdentifier] = 0;
+      await sendTextMessage(senderPsid, result.text);
+      await sendContextualMedia(dbIdentifier, userText, result.text, result.lang);
+
       const finalName = nameToSave || prospectName || null;
+      await recordInteraction(dbIdentifier, userText, result.text, result.lang, convData, finalName);
 
-      if (convData) {
-        conversationId = convData.id;
-        await query(
-          `UPDATE conversations
-             SET last_message = $2, lang = $3,
-                 status = CASE WHEN status = 'escalated' THEN 'escalated' ELSE 'active' END,
-                 prospect_name = COALESCE($4, prospect_name),
-                 updated_at = NOW()
-           WHERE id = $1`,
-          [conversationId, userText, result.lang, finalName]
-        );
-      } else {
-        const insertRes = await query(
-          `INSERT INTO conversations (user_phone, last_message, lang, status, prospect_name, updated_at)
-           VALUES ($1, $2, $3, 'active', $4, NOW()) RETURNING id`,
-          [dbIdentifier, userText, result.lang, finalName]
-        );
-        conversationId = insertRes.rows[0].id;
-      }
-
-      // ── Save messages to PostgreSQL ──────────────────────────────────
-      await query(
-        'INSERT INTO messages (conversation_id, role, content) VALUES ($1, $2, $3)',
-        [conversationId, 'user', userText]
-      );
-      await query(
-        'INSERT INTO messages (conversation_id, role, content) VALUES ($1, $2, $3)',
-        [conversationId, 'assistant', result.text]
-      );
 
     } catch (err) {
       console.error('[MESSENGER] Background error:', err.message);

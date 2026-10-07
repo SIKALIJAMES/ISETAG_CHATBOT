@@ -4,13 +4,64 @@ const router = express.Router();
 const { processMessage } = require('../services/ai-agent');
 const { sendTextMessage } = require('../services/whatsapp');
 const { triggerEscalation } = require('../services/escalation');
-const { getHistory, addMessage, getLang, setLang, getName, setName } = require('../services/session');
+const {
+  getHistory,
+  addMessage,
+  getLang,
+  setLang,
+  getName,
+  setName,
+  getOrientation,
+  setOrientation,
+  clearOrientation,
+} = require('../services/session');
+const orientationService = require('../services/orientation.service');
 const { verifyHmac } = require('../middleware/hmac');
 const { query } = require('../config/database');
 const { sendContextualMedia } = require('../services/media-sender');
 
 // Track consecutive AI errors per phone (in-memory is fine for this counter)
 const noMatchCount = {};
+
+/**
+ * Helper to record conversation and message exchange in DB & Redis history
+ */
+async function recordInteraction(phone, userText, assistantText, lang, convData, prospectName) {
+  await addMessage(phone, 'user', userText);
+  await addMessage(phone, 'assistant', assistantText);
+
+  let conversationId;
+  if (convData) {
+    conversationId = convData.id;
+    await query(
+      `UPDATE conversations
+         SET last_message = $2, lang = $3,
+             status = CASE WHEN status = 'escalated' THEN 'escalated' ELSE 'active' END,
+             prospect_name = COALESCE($4, prospect_name),
+             updated_at = NOW()
+       WHERE id = $1`,
+      [conversationId, userText, lang, prospectName]
+    );
+  } else {
+    const insertRes = await query(
+      `INSERT INTO conversations (user_phone, last_message, lang, status, prospect_name, updated_at)
+       VALUES ($1, $2, $3, 'active', $4, NOW()) RETURNING id`,
+      [phone, userText, lang, prospectName]
+    );
+    conversationId = insertRes.rows[0].id;
+  }
+
+  await query(
+    'INSERT INTO messages (conversation_id, role, content) VALUES ($1, $2, $3)',
+    [conversationId, 'user', userText]
+  );
+  await query(
+    'INSERT INTO messages (conversation_id, role, content) VALUES ($1, $2, $3)',
+    [conversationId, 'assistant', assistantText]
+  );
+
+  return conversationId;
+}
 
 /**
  * GET — Webhook Verification (Meta handshake)
@@ -65,7 +116,6 @@ router.post('/whatsapp', async (req, res) => {
         userText = transcript.trim();
         console.log(`[WEBHOOK] 📝 Voice transcribed: "${userText}"`);
       } else if (message.type === 'image' || message.type === 'document' || message.type === 'video') {
-        // FIX #7: Inform user instead of silently ignoring media messages
         const storedLang = await getLang(phone);
         await sendTextMessage(phone, storedLang === 'en'
           ? "🖼️ I can't read images or files yet. Please describe your question in text and I'll be happy to help!"
@@ -73,7 +123,6 @@ router.post('/whatsapp', async (req, res) => {
         );
         return;
       } else {
-        // Ignore reactions, status updates, etc.
         return;
       }
 
@@ -81,8 +130,7 @@ router.post('/whatsapp', async (req, res) => {
 
       console.log(`[WEBHOOK] 📨 Message from ...${phone.slice(-4)}: "${userText}"`);
 
-      // ── FIX #2: Single SQL query (was 2 identical queries before) ──────
-      // Gets: id, status, lang — all we need in one round-trip
+      // ── Fetch existing conversation ──────────────────────────────────
       const convRow = await query(
         'SELECT id, status, lang FROM conversations WHERE user_phone = $1 LIMIT 1',
         [phone]
@@ -90,7 +138,7 @@ router.post('/whatsapp', async (req, res) => {
       const convData = convRow.rows[0] || null;
       const dbLang = convData?.lang || null;
 
-      // ── Check escalation ───────────────────────────────────────────────
+      // ── Check escalation ─────────────────────────────────────────────
       if (convData?.status === 'escalated') {
         console.log(`[WEBHOOK] ⏩ Escalated session for ...${phone.slice(-4)}. Saving message only.`);
         await addMessage(phone, 'user', userText);
@@ -105,93 +153,97 @@ router.post('/whatsapp', async (req, res) => {
         return;
       }
 
-      // ── FIX #1: Language from Redis (survives redeployments) ───────────
+      // ── Language & Name resolution ───────────────────────────────────
       const redisLang = await getLang(phone);
-      const storedLang = redisLang || dbLang || null;
-
-      // ── Fetch history ─────────────────────────────────────────────────
-      const history = await getHistory(phone);
-
-      // ── Fetch prospect name from Redis ────────────────────────────────
+      const storedLang = (redisLang || dbLang || 'fr') === 'en' ? 'en' : 'fr';
       const prospectName = await getName(phone);
 
-      // ── Call AI agent ─────────────────────────────────────────────────
+      // ── Step A: Check if orientation questionnaire is active ─────────
+      const activeOrientation = await getOrientation(phone);
+
+      if (activeOrientation && activeOrientation.active) {
+        // User wants to cancel orientation
+        if (orientationService.isAbortRequest(userText)) {
+          await clearOrientation(phone);
+          const abortMsg = orientationService.abortMessage(storedLang);
+          await sendTextMessage(phone, abortMsg);
+          await recordInteraction(phone, userText, abortMsg, storedLang, convData, prospectName);
+          console.log(`[WEBHOOK] 🛑 Orientation cancelled by ...${phone.slice(-4)}`);
+          return;
+        }
+
+        const sessionObj = { orientation: activeOrientation };
+        const { text: orientText, done } = orientationService.advanceOrientation(sessionObj, userText, storedLang);
+
+        if (done) {
+          await clearOrientation(phone);
+          console.log(`[WEBHOOK] 🎓 Orientation completed for ...${phone.slice(-4)}`);
+        } else {
+          await setOrientation(phone, sessionObj.orientation);
+          console.log(`[WEBHOOK] 🎓 Orientation step ${sessionObj.orientation.stepIndex}/${orientationService.STEPS.length} for ...${phone.slice(-4)}`);
+        }
+
+        await sendTextMessage(phone, orientText);
+        await recordInteraction(phone, userText, orientText, storedLang, convData, prospectName);
+
+        if (done) {
+          await sendContextualMedia(phone, userText, orientText, storedLang);
+        }
+        return;
+      }
+
+      // ── Step B: Check if undecided student: start orientation quiz ────
+      if (orientationService.isUndecided(userText)) {
+        console.log(`[WEBHOOK] 🧭 Undecided student detected (...${phone.slice(-4)}) — starting orientation`);
+        const sessionObj = { orientation: {} };
+        const firstQuestion = orientationService.startOrientation(sessionObj, storedLang);
+        await setOrientation(phone, sessionObj.orientation);
+        await sendTextMessage(phone, firstQuestion);
+        await recordInteraction(phone, userText, firstQuestion, storedLang, convData, prospectName);
+        return;
+      }
+
+      // ── Step C: Normal AI agent processing ───────────────────────────
+      const history = await getHistory(phone);
       const result = await processMessage(phone, userText, storedLang, history, prospectName);
 
-      // ── If agent extracted a name from this message, persist it ───────
+      // Persist detected name if found
       const nameToSave = result.detectedName || null;
       if (nameToSave) {
         await setName(phone, nameToSave);
         console.log(`[WEBHOOK] 👤 Name saved for ...${phone.slice(-4)}: "${nameToSave}"`);
       }
 
-      // ── FIX #1: Persist detected language to Redis for next messages ───
+      // Persist detected language
       if (result.lang) {
         await setLang(phone, result.lang);
       }
 
-      // ── Save messages to Redis history ────────────────────────────────
-      await addMessage(phone, 'user', userText);
-      await addMessage(phone, 'assistant', result.text);
-
-      // ── FIX #4: Handle escalation BEFORE sending the AI error message ─
+      // ── Handle escalation or standard reply ──────────────────────────
       if (result.needsEscalation) {
         noMatchCount[phone] = (noMatchCount[phone] || 0) + 1;
 
         if (noMatchCount[phone] >= 3) {
-          // FIX: threshold raised to 3 (was 2) to avoid false escalations on timeouts
           noMatchCount[phone] = 0;
           await triggerEscalation({ phone, history, lang: result.lang });
-          return; // ← Do NOT send the error text, escalation message is enough
+          return;
         } else {
-          // Not escalating yet — send a polite "retry" message instead of the raw error
           const retryMsg = result.lang === 'en'
             ? "🤔 I'm having a bit of trouble right now. Could you rephrase your question? I'll do my best to help!"
             : "🤔 J'ai un peu de mal à répondre à ça. Pourriez-vous reformuler votre question ? Je ferai de mon mieux pour vous aider !";
           await sendTextMessage(phone, retryMsg);
+          await recordInteraction(phone, userText, retryMsg, result.lang, convData, nameToSave || prospectName);
+          return;
         }
-      } else {
-        // ── Normal successful reply ───────────────────────────────────────────
-        noMatchCount[phone] = 0;
-        await sendTextMessage(phone, result.text);
-        // ── Automatically send relevant flyers/tarifs/images ─────────────
-        await sendContextualMedia(phone, userText, result.text, result.lang);
       }
 
-      // ── Upsert conversation record in PostgreSQL ──────────────────────
-      let conversationId;
-      // Resolve final prospect name: newly detected takes priority, else keep existing
+      // Successful reply
+      noMatchCount[phone] = 0;
+      await sendTextMessage(phone, result.text);
+      await sendContextualMedia(phone, userText, result.text, result.lang);
+
       const finalName = nameToSave || prospectName || null;
-
-      if (convData) {
-        conversationId = convData.id;
-        await query(
-          `UPDATE conversations
-             SET last_message = $2, lang = $3,
-                 status = CASE WHEN status = 'escalated' THEN 'escalated' ELSE 'active' END,
-                 prospect_name = COALESCE($4, prospect_name),
-                 updated_at = NOW()
-           WHERE id = $1`,
-          [conversationId, userText, result.lang, finalName]
-        );
-      } else {
-        const insertRes = await query(
-          `INSERT INTO conversations (user_phone, last_message, lang, status, prospect_name, updated_at)
-           VALUES ($1, $2, $3, 'active', $4, NOW()) RETURNING id`,
-          [phone, userText, result.lang, finalName]
-        );
-        conversationId = insertRes.rows[0].id;
-      }
-
-      // ── Save messages to PostgreSQL for Admin Dashboard ───────────────
-      await query(
-        'INSERT INTO messages (conversation_id, role, content) VALUES ($1, $2, $3)',
-        [conversationId, 'user', userText]
-      );
-      await query(
-        'INSERT INTO messages (conversation_id, role, content) VALUES ($1, $2, $3)',
-        [conversationId, 'assistant', result.text]
-      );
+      await recordInteraction(phone, userText, result.text, result.lang, convData, finalName);
 
     } catch (err) {
       console.error('[WEBHOOK] Background error:', err.message);
@@ -200,3 +252,4 @@ router.post('/whatsapp', async (req, res) => {
 });
 
 module.exports = router;
+
