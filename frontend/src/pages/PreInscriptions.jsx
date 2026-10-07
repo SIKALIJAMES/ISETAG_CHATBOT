@@ -30,8 +30,16 @@ function DetailModal({ id, onClose, onUpdated }) {
 
   useEffect(() => {
     fetch(`${API}/${id}`, { headers: authHeaders() })
-      .then(r => r.json())
-      .then(d => { setData(d); setStatus(d.status); setNotes(d.admin_notes || ''); });
+      .then(async r => {
+        if (r.status === 401) { localStorage.removeItem('token'); window.location.href = '/login'; return; }
+        const text = await r.text();
+        try { return JSON.parse(text); } catch { return null; }
+      })
+      .then(d => {
+        if (!d || d.error) return;
+        setData(d); setStatus(d.status); setNotes(d.admin_notes || '');
+      })
+      .catch(err => console.error('[DetailModal] fetch error:', err.message));
   }, [id]);
 
   async function saveStatus() {
@@ -228,20 +236,49 @@ export default function PreInscriptions() {
     }
   };
 
+  const [error, setError] = useState('');
+
+  // Safe JSON helper — never throws
+  async function safeJson(res) {
+    if (res.status === 401) {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+      return null;
+    }
+    const text = await res.text();
+    try { return JSON.parse(text); } catch { return null; }
+  }
+
   const load = useCallback(async () => {
     setLoading(true);
+    setError('');
     const params = new URLSearchParams();
     if (filterStatus) params.set('status', filterStatus);
     if (filterDomain) params.set('domain', filterDomain);
     if (search)       params.set('search', search);
 
-    const [listRes, statsRes] = await Promise.all([
-      fetch(`${API}?${params}`, { headers: authHeaders() }),
-      fetch(`${API}/stats/summary`, { headers: authHeaders() }),
-    ]);
-    setRows(await listRes.json());
-    setStats(await statsRes.json());
-    setLoading(false);
+    try {
+      const [listRes, statsRes] = await Promise.all([
+        fetch(`${API}?${params}`, { headers: authHeaders() }),
+        fetch(`${API}/stats/summary`, { headers: authHeaders() }),
+      ]);
+
+      const listData  = await safeJson(listRes);
+      const statsData = await safeJson(statsRes);
+
+      if (!listRes.ok) {
+        setError(listData?.error || `Erreur serveur (${listRes.status})`);
+        setRows([]);
+      } else {
+        setRows(Array.isArray(listData) ? listData : []);
+      }
+      setStats(statsData && !statsData.error ? statsData : null);
+    } catch (err) {
+      setError('Impossible de charger les dossiers. Vérifiez votre connexion.');
+      console.error('[PREINSCRIPTIONS] load error:', err.message);
+    } finally {
+      setLoading(false);
+    }
   }, [filterStatus, filterDomain, search]);
 
   useEffect(() => { load(); }, [load]);
@@ -333,10 +370,25 @@ export default function PreInscriptions() {
         </select>
       </div>
 
+      {/* Error banner */}
+      {error && (
+        <div className="glass rounded-2xl p-5 flex items-start gap-3 border border-red-400/25 bg-red-500/8">
+          <span className="text-2xl">⚠️</span>
+          <div>
+            <div className="text-sm font-bold text-red-400 mb-0.5">Erreur de chargement</div>
+            <div className="text-xs text-red-300/80">{error}</div>
+            <button
+              onClick={load}
+              className="mt-2 text-xs font-bold text-yellow-400 hover:text-yellow-300 underline"
+            >🔄 Réessayer</button>
+          </div>
+        </div>
+      )}
+
       {/* Table */}
       {loading ? (
         <div className="glass rounded-2xl p-12 text-center text-slate-400">Chargement…</div>
-      ) : rows.length === 0 ? (
+      ) : error ? null : rows.length === 0 ? (
         <div className="glass rounded-2xl p-12 text-center">
           <div className="text-5xl mb-4">📭</div>
           <div className="text-white font-bold mb-1">Aucun dossier trouvé</div>
