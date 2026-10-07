@@ -40,7 +40,12 @@ const DOMAINS = {
   },
 };
 
-const LEVELS = ['BTS / HND (2 ans)', 'Licence / Bachelor (3 ans)', 'Master (5 ans)'];
+const LEVELS = [
+  'BAC / GCE A-Level (Entrée en 1ère année BTS / HND)',
+  'BTS / HND (2 ans)',
+  'Licence / Bachelor (3 ans)',
+  'Master (5 ans)',
+];
 
 const REGIONS_CM = [
   'Adamaoua', 'Centre', 'Est', 'Extrême-Nord', 'Littoral',

@@ -48,11 +48,58 @@ router.get('/stats', protect, async (req, res) => {
       GROUP BY COALESCE(category, 'general')
     `);
 
+    // Preinscriptions stats
+    let preinscriptionsStats = {
+      total: 0,
+      pending: 0,
+      reviewed: 0,
+      accepted: 0,
+      rejected: 0,
+      byDomain: [],
+      byLevel: [],
+    };
+    try {
+      const preinscripTotal = await query(`
+        SELECT 
+          count(*) as total,
+          count(*) FILTER (WHERE status = 'pending') as pending,
+          count(*) FILTER (WHERE status = 'reviewed') as reviewed,
+          count(*) FILTER (WHERE status = 'accepted') as accepted,
+          count(*) FILTER (WHERE status = 'rejected') as rejected
+        FROM preinscriptions
+      `);
+      const pRow = preinscripTotal.rows[0] || {};
+      preinscriptionsStats.total = parseInt(pRow.total) || 0;
+      preinscriptionsStats.pending = parseInt(pRow.pending) || 0;
+      preinscriptionsStats.reviewed = parseInt(pRow.reviewed) || 0;
+      preinscriptionsStats.accepted = parseInt(pRow.accepted) || 0;
+      preinscriptionsStats.rejected = parseInt(pRow.rejected) || 0;
+
+      const domainQuery = await query(`
+        SELECT COALESCE(domain, 'Autre') as domain, count(*) as count
+        FROM preinscriptions
+        GROUP BY COALESCE(domain, 'Autre')
+        ORDER BY count DESC
+      `);
+      preinscriptionsStats.byDomain = domainQuery.rows.map(r => ({ label: r.domain, value: parseInt(r.count) }));
+
+      const levelQuery = await query(`
+        SELECT COALESCE(study_level, 'Non spécifié') as level, count(*) as count
+        FROM preinscriptions
+        GROUP BY COALESCE(study_level, 'Non spécifié')
+        ORDER BY count DESC
+      `);
+      preinscriptionsStats.byLevel = levelQuery.rows.map(r => ({ label: r.level, value: parseInt(r.count) }));
+    } catch (preErr) {
+      console.warn('[ADMIN] Preinscriptions stats error:', preErr.message);
+    }
+
     res.json({
       totalConversations: totalCount,
       escalatedCount,
       knowledgeChunks,
       resolutionRate,
+      preinscriptions: preinscriptionsStats,
       activity: activityQuery.rows.map(r => ({ label: r.day, value: parseInt(r.count) })),
       languages: langQuery.rows.map(r => ({ label: r.lang === 'en' ? 'Anglais' : 'Français', value: parseInt(r.count) })),
       categories: catQuery.rows.map(r => ({ label: r.category, value: parseInt(r.count) }))

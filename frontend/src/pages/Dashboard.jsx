@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { Users, BookOpen, MessageSquare, CheckCircle, TrendingUp, Globe, BarChart2, Zap, Database } from 'lucide-react';
+import { 
+  Users, BookOpen, MessageSquare, CheckCircle, TrendingUp, Globe, 
+  BarChart2, Zap, Database, ClipboardList, GraduationCap, ChevronRight, FileCheck 
+} from 'lucide-react';
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -8,6 +12,15 @@ const Dashboard = () => {
     escalatedCount: 0,
     knowledgeChunks: 0,
     resolutionRate: 100,
+    preinscriptions: {
+      total: 0,
+      pending: 0,
+      reviewed: 0,
+      accepted: 0,
+      rejected: 0,
+      byDomain: [],
+      byLevel: []
+    },
     activity: [],
     languages: [],
     categories: []
@@ -87,6 +100,9 @@ const Dashboard = () => {
   const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
   const areaPath = `${linePath} L ${points[points.length-1].x} ${chartH-20} L ${points[0].x} ${chartH-20} Z`;
 
+  const preTotal = stats.preinscriptions?.total || 0;
+  const prePending = stats.preinscriptions?.pending || 0;
+
   const cards = [
     {
       title: 'Conversations',
@@ -97,6 +113,24 @@ const Dashboard = () => {
       border: 'rgba(234,231,74,0.2)',
     },
     {
+      title: 'Pré-inscriptions',
+      value: preTotal,
+      subValue: prePending > 0 ? `${prePending} en attente` : 'Dossiers reçus',
+      icon: ClipboardList,
+      accent: '#38bdf8',
+      bg: 'rgba(56,189,248,0.08)',
+      border: 'rgba(56,189,248,0.2)',
+      link: '/preinscriptions',
+    },
+    {
+      title: 'Taux Résolution',
+      value: `${stats.resolutionRate?.toFixed(1)}%`,
+      icon: CheckCircle,
+      accent: '#a78bfa',
+      bg: 'rgba(167,139,250,0.08)',
+      border: 'rgba(167,139,250,0.2)',
+    },
+    {
       title: 'Chunks RAG',
       value: `${stats.knowledgeChunks}`,
       icon: BookOpen,
@@ -105,15 +139,7 @@ const Dashboard = () => {
       border: 'rgba(93,203,106,0.2)',
     },
     {
-      title: 'Taux de Résolution',
-      value: `${stats.resolutionRate?.toFixed(1)}%`,
-      icon: CheckCircle,
-      accent: '#a78bfa',
-      bg: 'rgba(167,139,250,0.08)',
-      border: 'rgba(167,139,250,0.2)',
-    },
-    {
-      title: 'Escalades Humaines',
+      title: 'Escalades',
       value: stats.escalatedCount,
       icon: Users,
       accent: '#f87171',
@@ -130,7 +156,7 @@ const Dashboard = () => {
         <div>
           <h1 className="text-3xl font-extrabold text-brand tracking-tight">ISETAG Analytics</h1>
           <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>
-            Performances en temps réel du chatbot WhatsApp
+            Performances en temps réel du chatbot WhatsApp & suivi des admissions
           </p>
         </div>
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-sm"
@@ -141,25 +167,39 @@ const Dashboard = () => {
       </header>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-        {cards.map((card, i) => (
-          <div
-            key={i}
-            className="stat-card"
-            style={{ borderColor: card.border, background: card.bg }}
-          >
-            <div className="p-3.5 rounded-2xl flex-shrink-0"
-              style={{ background: `${card.accent}18`, border: `1px solid ${card.accent}30` }}>
-              <card.icon size={22} style={{ color: card.accent }} />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        {cards.map((card, i) => {
+          const cardContent = (
+            <div
+              className={`stat-card transition-all duration-200 ${card.link ? 'hover:scale-[1.02] cursor-pointer' : ''}`}
+              style={{ borderColor: card.border, background: card.bg }}
+            >
+              <div className="p-3.5 rounded-2xl flex-shrink-0"
+                style={{ background: `${card.accent}18`, border: `1px solid ${card.accent}30` }}>
+                <card.icon size={22} style={{ color: card.accent }} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[11px] font-bold uppercase tracking-wider truncate" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                  {card.title}
+                </p>
+                <h3 className="text-2xl font-black mt-0.5 text-white">{card.value}</h3>
+                {card.subValue && (
+                  <p className="text-[10px] font-semibold mt-0.5 truncate" style={{ color: card.accent }}>
+                    {card.subValue}
+                  </p>
+                )}
+              </div>
             </div>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                {card.title}
-              </p>
-              <h3 className="text-2xl font-black mt-0.5 text-white">{card.value}</h3>
-            </div>
-          </div>
-        ))}
+          );
+
+          return card.link ? (
+            <Link key={i} to={card.link} className="block no-underline">
+              {cardContent}
+            </Link>
+          ) : (
+            <div key={i}>{cardContent}</div>
+          );
+        })}
       </div>
 
 
@@ -304,6 +344,99 @@ const Dashboard = () => {
         </div>
       </div>
 
+      {/* ── Pre-inscriptions Analytics ──────────────────────────── */}
+      <div className="glass rounded-3xl p-6 md:p-8">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <GraduationCap size={20} style={{ color: '#38bdf8' }} />
+              Suivi des Pré-inscriptions
+            </h3>
+            <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>
+              Dossiers reçus via le formulaire en ligne
+            </p>
+          </div>
+          <Link
+            to="/preinscriptions"
+            className="inline-flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-xl transition-all hover:opacity-80"
+            style={{ background: 'rgba(56,189,248,0.12)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.25)' }}
+          >
+            Voir tous les dossiers <ChevronRight size={14} />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+          {/* Status Breakdown */}
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: 'rgba(255,255,255,0.35)' }}>
+              Statut des dossiers
+            </p>
+            <div className="space-y-3">
+              {[
+                { label: '⏳ En attente',  key: 'pending',  color: '#EAE74A' },
+                { label: '🔍 En revue',    key: 'reviewed', color: '#38bdf8' },
+                { label: '✅ Acceptés',    key: 'accepted', color: '#5DCB6A' },
+                { label: '❌ Refusés',     key: 'rejected', color: '#f87171' },
+              ].map(({ label, key, color }) => {
+                const val   = stats.preinscriptions?.[key] || 0;
+                const total = stats.preinscriptions?.total || 1;
+                const pct   = Math.round((val / total) * 100);
+                return (
+                  <div key={key} className="space-y-1">
+                    <div className="flex justify-between text-xs font-semibold">
+                      <span style={{ color: 'rgba(255,255,255,0.65)' }}>{label}</span>
+                      <span style={{ color }}>{val} ({pct}%)</span>
+                    </div>
+                    <div className="w-full h-2 rounded-full" style={{ background: 'rgba(255,255,255,0.07)' }}>
+                      <div className="h-full rounded-full transition-all duration-1000"
+                        style={{ width: `${pct}%`, background: color }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Domain Breakdown */}
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: 'rgba(255,255,255,0.35)' }}>
+              Filières les plus demandées
+            </p>
+            {(stats.preinscriptions?.byDomain || []).length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-24 text-center">
+                <FileCheck size={28} style={{ color: 'rgba(255,255,255,0.15)' }} />
+                <p className="text-xs mt-2" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                  Aucune pré-inscription encore
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {(stats.preinscriptions?.byDomain || []).slice(0, 5).map((d, idx) => {
+                  const total = (stats.preinscriptions?.byDomain || []).reduce((a, c) => a + c.value, 0) || 1;
+                  const pct   = Math.round((d.value / total) * 100);
+                  const colors = ['#EAE74A', '#5DCB6A', '#38bdf8', '#a78bfa', '#f87171'];
+                  return (
+                    <div key={idx} className="space-y-1">
+                      <div className="flex justify-between text-xs font-semibold">
+                        <span className="truncate max-w-[180px]" style={{ color: 'rgba(255,255,255,0.65)' }}>
+                          {d.label}
+                        </span>
+                        <span style={{ color: colors[idx % colors.length] }}>{d.value} ({pct}%)</span>
+                      </div>
+                      <div className="w-full h-2 rounded-full" style={{ background: 'rgba(255,255,255,0.07)' }}>
+                        <div className="h-full rounded-full transition-all duration-1000"
+                          style={{ width: `${pct}%`, background: colors[idx % colors.length] }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* Footer info */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div className="glass rounded-2xl p-5 flex items-center gap-4">
@@ -311,8 +444,8 @@ const Dashboard = () => {
             <Zap size={20} style={{ color: 'var(--isetag-yellow)' }} />
           </div>
           <div>
-            <h4 className="font-bold text-white text-sm">Gemini 2.5 Flash</h4>
-            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>Moteur IA — Google DeepMind</p>
+            <h4 className="font-bold text-white text-sm">Groq — Llama 3.3 70b</h4>
+            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>Moteur IA — 14 400 req/jour gratuit</p>
           </div>
         </div>
         <div className="glass rounded-2xl p-5 flex items-center gap-4">
@@ -320,8 +453,8 @@ const Dashboard = () => {
             <Database size={20} style={{ color: 'var(--isetag-green)' }} />
           </div>
           <div>
-            <h4 className="font-bold text-white text-sm">pgvector + Neon</h4>
-            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>Base RAG — 768 dimensions</p>
+            <h4 className="font-bold text-white text-sm">pgvector + Railway</h4>
+            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>Base RAG — Déploiement cloud</p>
           </div>
         </div>
       </div>
