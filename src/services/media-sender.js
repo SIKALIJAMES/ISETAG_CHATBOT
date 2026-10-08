@@ -31,6 +31,16 @@ const MEDIA = {
     file: 'pricing sheet HND (engeneering and technology).pdf',
     caption: '🏭 HND Pricing Sheet — Engineering & Technology (all fields)\n🌐 Website: https://www.isetag.cm',
   },
+  tarif_licence_fr: {
+    type: 'document',
+    file: 'Fiche tarifaire License.pdf',
+    caption: '🎓 Fiche tarifaire Licence Professionnelle (cours du soir)\n🌐 Site web : https://www.isetag.cm',
+  },
+  tarif_master_fr: {
+    type: 'document',
+    file: 'Fiche tarifaire Master.pdf',
+    caption: '🎓 Fiche tarifaire Master Professionnel (cours du soir)\n🌐 Site web : https://www.isetag.cm',
+  },
   flyer_fr: {
     type: 'document',
     file: 'flyer_general_français.pdf',
@@ -161,17 +171,26 @@ function detectMediaKeys(userText, aiResponse, lang) {
       const userGestion = matchesAny(userText, GESTION_TERMS);
       const userTech    = matchesAny(userText, TECH_TERMS);
 
-      if (userGestion || (isGestion && !userTech)) {
-        keys.push(isEn ? 'tarif_bts_gestion_en' : 'tarif_bts_gestion_fr');
-      }
-      if (userTech || (isTech && !userGestion)) {
-        keys.push(isEn ? 'tarif_bts_tech_en' : 'tarif_bts_tech_fr');
-      }
+      const isLicence = /licence|license|bachelor/i.test(domainContext);
+      const isMaster  = /master/i.test(domainContext);
 
-      // If domain is ambiguous and user just said "frais"/"tarif" without specifying → send both
-      if (!isGestion && !isTech) {
-        keys.push(isEn ? 'tarif_bts_gestion_en' : 'tarif_bts_gestion_fr');
-        keys.push(isEn ? 'tarif_bts_tech_en'    : 'tarif_bts_tech_fr');
+      if (isLicence && !isEn) {
+        keys.push('tarif_licence_fr');
+      } else if (isMaster && !isEn) {
+        keys.push('tarif_master_fr');
+      } else {
+        if (userGestion || (isGestion && !userTech)) {
+          keys.push(isEn ? 'tarif_bts_gestion_en' : 'tarif_bts_gestion_fr');
+        }
+        if (userTech || (isTech && !userGestion)) {
+          keys.push(isEn ? 'tarif_bts_tech_en' : 'tarif_bts_tech_fr');
+        }
+
+        // If domain is ambiguous and user just said "frais"/"tarif" without specifying → send both
+        if (!isGestion && !isTech) {
+          keys.push(isEn ? 'tarif_bts_gestion_en' : 'tarif_bts_gestion_fr');
+          keys.push(isEn ? 'tarif_bts_tech_en'    : 'tarif_bts_tech_fr');
+        }
       }
     } else {
       console.log('[MEDIA-SENDER] ⚓ Maritime request detected. Skipping BTS general tuition sheets.');
