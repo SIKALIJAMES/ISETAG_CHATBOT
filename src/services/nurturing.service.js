@@ -11,7 +11,7 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
  * but haven't yet submitted a pre-registration.
  */
 async function runNurturingJob(limit = 20) {
-  const appUrl = process.env.APP_URL || 'https://isetag-chatbot-production.up.railway.app';
+  const appUrl = process.env.APP_URL || 'https://isetagchatbot-production.up.railway.app';
   const formUrl = `${appUrl}/preinscription`;
 
   try {

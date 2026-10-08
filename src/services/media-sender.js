@@ -4,7 +4,7 @@ const whatsapp = require('./whatsapp');
 const messenger = require('./messenger');
 
 // Base public URL of your Railway deployment
-const BASE_URL = process.env.APP_URL || 'https://isetag-chatbot-production.up.railway.app';
+const BASE_URL = process.env.APP_URL || 'https://isetagchatbot-production.up.railway.app';
 const MEDIA_DIR = path.join(__dirname, '../../public/media');
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -44,7 +44,7 @@ const MEDIA = {
   residence: {
     type: 'image',
     file: 'residence.jpeg',
-    caption: '🏠 Résidence universitaire ISETAG — chambre meublée avec WIFI, eau & électricité inclus !\n🌐 Plus d\'infos : https://www.isetag.cm',
+    caption: '🏠 *Résidence universitaire ISETAG (Campus Yassa)*\n• Plus de 250 chambres meublées et sécurisées\n• Tarif officiel : *22 000 FCFA / mois*\n• Eau, électricité et Wi-Fi haut débit inclus !\n🌐 Plus d\'infos : https://www.isetag.cm',
   },
 };
 
@@ -114,8 +114,8 @@ function detectMediaKeys(userText, aiResponse, lang) {
 
   // ── 1. RÉSIDENCE ────────────────────────────────────────────────────
   // Send image if the USER asked OR if the BOT introduced the topic
-  const residenceInUser = /r[eé]sidence|chambre|logement|dortoir|h[eé]berg|housing|room|accommodation/i.test(userText);
-  const residenceInBot  = /r[eé]sidence universitaire|chambre [eé]tudiant|logement [eé]tudiant|university (hostel|residence)/i.test(aiResponse);
+  const residenceInUser = /r[eé]sidence|chambre|logement|dortoir|h[eé]berg|hostel|housing|room|accommodation|cit[eé] univ/i.test(userText);
+  const residenceInBot  = /r[eé]sidence|chambre|logement|cit[eé] univ|hostel|dormitory/i.test(aiResponse);
   if (residenceInUser || residenceInBot) {
     keys.push('residence');
   }

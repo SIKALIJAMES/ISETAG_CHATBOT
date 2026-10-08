@@ -4,6 +4,43 @@ const fetch = require('node-fetch');
 const WA_BASE_URL = 'https://graph.facebook.com/v20.0';
 
 /**
+ * Clean markdown and format text properly for WhatsApp:
+ * - Converts markdown headers (#, ##, ###) into bold *Title*
+ * - Strips markdown dividers (---, ___, ***)
+ * - Converts markdown bold (**text** or ***text***) into WhatsApp bold (*text*)
+ * - Cleans up stray asterisks and space-padded bold syntax
+ * - Normalizes consecutive linebreaks
+ */
+function formatForWhatsApp(text) {
+  if (!text || typeof text !== 'string') return text;
+
+  let cleaned = text;
+
+  // 1. Remove markdown horizontal rules (e.g. ---, ___, ***)
+  cleaned = cleaned.replace(/^[ \t]*[-*_]{3,}[ \t]*$/gm, '');
+
+  // 2. Convert markdown headers (# Title, ## Title, ### Title) to bold WhatsApp (*Title*)
+  cleaned = cleaned.replace(/^[ \t]*#{1,6}\s*(.+)$/gm, '*$1*');
+
+  // 3. Convert triple asterisks (bold + italic) to WhatsApp bold: ***text*** -> *text*
+  cleaned = cleaned.replace(/\*\*\*\s*([^\*\n]+?)\s*\*\*\*/g, '*$1*');
+
+  // 4. Convert double asterisks (standard markdown bold) to single asterisks (WhatsApp bold)
+  cleaned = cleaned.replace(/\*\*\s*([^\*\n]+?)\s*\*\*/g, '*$1*');
+
+  // 5. Clean up any remaining double asterisks
+  cleaned = cleaned.replace(/\*\*/g, '*');
+
+  // 6. Fix WhatsApp bold syntax where space prevents bolding: "* text *" -> "*text*"
+  cleaned = cleaned.replace(/(?<=\s|^)\*\s+([^\*\n]+?)\s+\*(?=\s|$)/g, '*$1*');
+
+  // 7. Clean up excessive consecutive blank lines (more than 2 -> 2)
+  cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
+
+  return cleaned.trim();
+}
+
+/**
  * Send a text message via WhatsApp Cloud API
  */
 async function sendTextMessage(to, text) {
@@ -14,6 +51,8 @@ async function sendTextMessage(to, text) {
     console.error('[WHATSAPP] Missing credentials');
     return;
   }
+
+  const formattedText = formatForWhatsApp(text);
 
   try {
     const response = await fetch(`${WA_BASE_URL}/${phoneNumberId}/messages`, {
@@ -27,7 +66,7 @@ async function sendTextMessage(to, text) {
         recipient_type: 'individual',
         to: to,
         type: 'text',
-        text: { body: text },
+        text: { body: formattedText },
       }),
     });
 
@@ -170,4 +209,4 @@ async function sendDocumentMessage(to, docUrl, filename, caption = '') {
   }
 }
 
-module.exports = { sendTextMessage, sendAudioMessage, sendImageMessage, sendDocumentMessage };
+module.exports = { sendTextMessage, sendAudioMessage, sendImageMessage, sendDocumentMessage, formatForWhatsApp };

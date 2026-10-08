@@ -2,6 +2,7 @@
 const { searchRelevant } = require('./embeddings');
 const { franc } = require('franc');
 const fetch = require('node-fetch');
+const { formatForWhatsApp } = require('./whatsapp');
 
 // Rate limiting — 20 msgs/minute per phone
 const rateLimitMap = {};
@@ -28,7 +29,8 @@ function detectLanguage(text) {
     if (detected === 'fra') return 'fr';
   }
 
-  const enPattern = /\b(hi|hello|hey|yes|no|please|thanks|thank|what|where|how|when|who|why|can|is|are|i|my|the|a|an|and|or|for|in|of|to|with|you|we|do|does|have|has|this|that|from|about|want|need|get|good|great|ok|okay|sure|sorry|help|pls|send|tell|show|its|it|am|at|by|if|so|but|been|not|more|some|all)\b/i;
+  // Note: "ok", "okay", "cool" are universal and deliberately excluded from enPattern
+  const enPattern = /\b(hi|hello|hey|yes|no|please|thanks|thank|what|where|how|when|who|why|can|is|are|i|my|the|a|an|and|or|for|in|of|to|with|you|we|do|does|have|has|this|that|from|about|want|need|get|good|great|sure|sorry|help|pls|send|tell|show|its|it|am|at|by|if|so|but|been|not|more|some|all)\b/i;
   const frPattern = /\b(bonjour|bonsoir|salut|oui|non|merci|comment|quand|pourquoi|qui|quoi|je|tu|il|nous|vous|ils|mon|ma|mes|ton|ta|ses|est|sont|avoir|etre|faire|aller|vouloir|pouvoir|savoir|voir|venir|votre|notre|leur|avec|pour|dans|sur|par|au|aux|du|des|les|une|ca|que|qui|mais|ou|donc|or|ni|car|bien|tres|plus|aussi|encore|meme)\b/i;
 
   if (enPattern.test(text) && !frPattern.test(text)) return 'en';
@@ -51,9 +53,19 @@ async function processMessage(phone, userText, storedLang, history = [], prospec
     };
   }
 
-  // Language resolution
+  // Language resolution — maintain conversation continuity
   const detectedLang = detectLanguage(userText);
-  const lang = detectedLang || storedLang || 'fr';
+  let lang = storedLang || 'fr';
+
+  if (!storedLang) {
+    lang = detectedLang || 'fr';
+  } else if (detectedLang && detectedLang !== storedLang) {
+    // Only switch language if message is substantial (>= 15 chars) or explicitly asking for a language switch
+    const isExplicitSwitch = /\b(speak english|in english|parler anglais|parle anglais|en anglais|parlez français|speak french|in french)\b/i.test(userText);
+    if (userText.trim().length >= 15 || isExplicitSwitch) {
+      lang = detectedLang;
+    }
+  }
   const isEnglish = lang === 'en';
 
   console.log(`[AI-AGENT] Lang for ...${phone.slice(-4)}: ${lang} (detected=${detectedLang}, stored=${storedLang})`);
@@ -98,17 +110,19 @@ async function processMessage(phone, userText, storedLang, history = [], prospec
       greetingRule = `- This is an ONGOING conversation. You do NOT yet know their name. If they just gave it, extract and use it. Otherwise, weave in a polite request at the end.`;
     }
 
+    const preinscriptionUrl = (process.env.APP_URL || 'https://isetagchatbot-production.up.railway.app') + '/preinscription';
+
     const systemPrompt = `You are the official virtual orientation advisor for ISETAG (Institut Superieur Evangelique des Technologies Appliquees et de Gestion) in Douala, Cameroon.
 
 ## RULE #1 — LANGUAGE (NON-NEGOTIABLE):
-The student's language is: **${isEnglish ? 'ENGLISH' : 'FRENCH'}**
+The student's language is: *${isEnglish ? 'ENGLISH' : 'FRENCH'}*
 You MUST respond 100% in ${isEnglish ? 'ENGLISH' : 'FRENCH'}.
-NEVER mix languages. NEVER switch. This overrides all other rules.
+NEVER mix languages. NEVER switch unless the user explicitly speaks to you in the other language. This overrides all other rules.
 
-## RULE #2 — LENGTH (NON-NEGOTIABLE):
-- Keep responses SHORT and FOCUSED — maximum 3-4 bullet points or 2-3 short paragraphs.
+## RULE #2 — LENGTH & STYLE (NON-NEGOTIABLE):
+- Keep responses SHORT, NATURAL and FOCUSED — maximum 3-4 bullet points or 2-3 short paragraphs.
 - WhatsApp readers scan quickly. Long walls of text are ignored.
-- If asked something simple, answer simply.
+- If asked something simple, answer simply without repeating the entire school brochure.
 
 ## RULE #3 — GREETING:
 ${greetingRule}
@@ -119,32 +133,38 @@ At the END of your response, on a new line, you MUST output:
 <NAME_DETECTED>Jean</NAME_DETECTED>  if the user just told you their first name
 Only extract a first name (1-2 words max). If unsure, output null.
 
+## RULE #5 — WHATSAPP FORMATTING (CRITICAL):
+- WhatsApp uses single asterisks for bold: *mot en gras* (NEVER use double asterisks **mot**).
+- NEVER use markdown headers (# or ## or ###). Use *Titre* instead.
+- NEVER use markdown horizontal dividers (---).
+- Keep bullet points clean with simple hyphens (- ) or emojis.
+
+## RULE #6 — ANTI-REPETITION & NATURAL DIALOGUE (CRITICAL):
+- DO NOT repeat the pre-registration link (${preinscriptionUrl}) in every message!
+- ONLY include the pre-registration link when:
+  1) The prospect explicitly asks how to register, how to apply, or asks for the link/form.
+  2) The student has completed the 9-question orientation quiz and received their recommendation.
+  3) The prospect confirms they are ready to enroll or join ISETAG.
+- For all other questions (e.g. campus location, school start date/rentrée, tuition fees, student residence/logement, bus, diploma recognition): DO NOT include the pre-registration link! Answer the question cleanly and directly, then ask a simple conversational question.
+- NEVER repeat the exact same promotional bullet points (Sinotruck, CEL'OR, 300 stages, bus gratuit) across consecutive responses. Keep the dialogue fresh and focused on the student's question.
+
 ## YOUR ROLE:
 Warm, persuasive orientation counselor. Goals:
-1. Answer the student's specific question accurately
-2. Highlight 1-2 relevant ISETAG strengths
-3. End with ONE clear call-to-action or open question
-4. Do NOT repeat the website link (https://www.isetag.cm) in every message. Only include it when the user explicitly asks for the website, or when discussing online registration or application forms. Otherwise, omit the link.
+1. Answer the student's specific question accurately and concisely
+2. Highlight 1 relevant ISETAG strength when helpful
+3. End with ONE clear open question to keep the conversation flowing
+4. Do NOT repeat the website link (https://www.isetag.cm) in every message.
 
-## PRE-REGISTRATION GOAL (MOST IMPORTANT CONVERSION GOAL):
-Your ultimate goal in every conversation is to encourage the prospect to submit a pre-registration.
-The pre-registration form is 100% FREE and available online at: **${process.env.APP_URL || 'https://isetag.cm'}/preinscription**
-- There are NO fees to pre-register. The 30,000 FCFA registration fee is only paid in person at ISETAG.
-- After answering the prospect's question(s), naturally invite them to pre-register, especially when:
-  a) They seem interested in a program
-  b) They ask about admissions or how to register
-  c) They confirm they want to join ISETAG
-  d) After the orientation questionnaire gives a recommendation
-- The CTA should feel natural, not pushy. Say something like:
-  FR: "Pour réserver ta place, tu peux déposer ta pré-inscription gratuitement en ligne : [lien]. C'est rapide et sans engagement !"
-  EN: "To secure your spot, you can submit a free pre-registration online: [link]. It's quick and free!"
-- Only include the form link when it's contextually appropriate (not in every message).
+## PRE-REGISTRATION POLICY:
+The pre-registration form is 100% FREE online at: ${preinscriptionUrl}
+- There are NO fees to pre-register. File study (étude de dossier) is completely free for BTS and Licence.
+- The 30,000 FCFA registration fee is paid IN PERSON at ISETAG ONLY AFTER the student's file is accepted.
 
-## ORIENTATION QUESTIONNAIRE (IMPORTANT):
+## ORIENTATION QUESTIONNAIRE:
 If a student says they don't know which specialty or field to choose (e.g. "je ne sais pas quelle filière", "I'm not sure what to study", "je suis indécis", "help me choose"), DO NOT list all programs. Instead:
 - Briefly acknowledge their situation with empathy
 - Tell them you have a personalised orientation tool
-- Invite them to type "je ne sais pas" or "orientation" or "help me choose" to start a short 9-question questionnaire that will recommend the best ISETAG specialty for them.
+- Invite them to type "je ne sais pas" or "orientation" to start a short 9-question questionnaire that will recommend the best ISETAG specialty for them.
 - Example (FR): "Pas de souci ! 😊 Tape *orientation* ou *je ne sais pas* pour démarrer ton bilan d'orientation personnalisé en 9 questions."
 - Example (EN): "No worries! 😊 Type *orientation* or *I don't know* to start your personalised 9-question orientation quiz."
 
@@ -203,7 +223,9 @@ Sinotruck | CEL'OR | TRANSIMEX | FIGEC | CANOCAM | SOTRABUS
 
 ### 🎁 KEY ADVANTAGES
 - 🚌 Free student bus service within Douala to campus
-- 🏠 University hostel: furnished rooms with WiFi, water & electricity included
+- 🏠 Cité Universitaire / Résidence étudiante (Campus de Yassa) : Plus de 250 chambres meublées et sécurisées avec Wi-Fi haut débit, eau et électricité inclus.
+  * PRIX OFFICIEL EXACT : 22 000 FCFA par mois (JAMAIS 50 000 ni 80 000 ! Le prix est exactement 22 000 FCFA/mois).
+  * Fiche et photo de la résidence envoyées automatiquement sur demande.
 - 📋 Day courses (8h–17h) OR Evening courses (17h30–21h30) — choose your schedule
 - 🎓 300+ free academic internships via partner companies
 - 💻 5+ air-conditioned multimedia labs, high-speed internet campus-wide
@@ -268,7 +290,8 @@ ${context ? `\n## KNOWLEDGE BASE (use this for precise answers):\n${context}` : 
     const detectedName = (nameMatch && nameMatch[1] && nameMatch[1].trim() !== 'null')
       ? nameMatch[1].trim()
       : null;
-    const aiResponse = rawResponse.replace(/<NAME_DETECTED>.*?<\/NAME_DETECTED>/gi, '').trim();
+    const rawAiResponse = rawResponse.replace(/<NAME_DETECTED>.*?<\/NAME_DETECTED>/gi, '').trim();
+    const aiResponse = formatForWhatsApp(rawAiResponse);
 
     console.log(`[AI-AGENT] Response: ${aiResponse.length} chars | lang: ${lang} | name: ${detectedName || '(none)'}`);
 

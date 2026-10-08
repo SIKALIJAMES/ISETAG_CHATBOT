@@ -103,7 +103,7 @@
 ## 5. 🎁 AVANTAGES CONCURRENTIELS & VIE SUR LE CAMPUS
 
 - [x] **Transport gratuit** : Bus de ramassage gratuit des étudiants reliant différents carrefours de Douala au campus de Yassa ✅
-- [x] **Logement universitaire** : Cité universitaire sécurisée avec chambres meublées, eau, électricité et Wi-Fi inclus ✅
+- [x] **Logement universitaire / Résidence étudiante** : Cité universitaire de plus de 250 chambres meublées et sécurisées sur le campus de Yassa. Tarif officiel : **22 000 FCFA / mois** (eau, électricité et Wi-Fi haut débit inclus). ✅
 - [x] **Horaires au choix** :
   - Cours du jour : 8h00 – 17h00 (idéal pour les bacheliers) ✅
   - Cours du soir : 17h30 – 21h30 (idéal pour les travailleurs ou personnes en activité) ✅
@@ -114,7 +114,6 @@
   - Bourses partenaires : Réductions de 30 000 à 100 000 FCFA ✅
   - Bourse linguistique de 50 000 FCFA offerte aux nouveaux bacheliers pour renforcer leur maîtrise des langues et leur employabilité internationale ✅
 - [ ] 🔴 **TODO Admin** : Quels sont les itinéraires précis du bus gratuit (ex: Deido, Ndokoti, Bonabéri, PK14, Village) ?
-- [ ] 🔴 **TODO Admin** : Prix mensuel ou annuel de la chambre en cité universitaire pour les étudiants ?
 
 ---
 
