@@ -91,6 +91,58 @@ const MEDIA = {
     file: 'etudier_etranger.jpeg',
     caption: '🌍 *Programme Étudier à l\'Étranger — ISETAG*\n• Partenariats universitaires : Allemagne, Tunisie, Espagne, Ghana, Chine\n• 1 à 2 ans au Cameroun puis poursuite à l\'international avec accompagnement Visa !\n🌐 Plus d\'infos : https://www.isetag.cm',
   },
+
+  // ── NOUVEAUX ASSETS (images_brutes_1) ──────────────────────────────────────
+  mecanique_auto: {
+    type: 'image',
+    file: 'atelier_mecanique_automobile.jpeg',
+    caption: '🔧 *Atelier de Mécanique Automobile — ISETAG*\n• Plusieurs véhicules en maintenance simultanée\n• Combinaisons professionnelles, outillage complet et encadrement expert\n• Filières : BTS Mécanique Automobile & Mécatronique.\n🌐 Plus d\'infos : https://www.isetag.cm',
+  },
+  mecanique_bus: {
+    type: 'image',
+    file: 'atelier_mecanique_pratique_bus.jpeg',
+    caption: '🔧🚌 *Pratique sur Bus — Mécanique Automobile ISETAG*\n• Travaux pratiques directement sur minibus en conditions réelles\n• Étudiants encadrés en combinaison ISETAG officielle.\n🌐 Plus d\'infos : https://www.isetag.cm',
+  },
+  informatique: {
+    type: 'image',
+    file: 'salle_informatique.jpeg',
+    caption: '💻 *Salle Informatique ISETAG — Équipements Modernes*\n• Postes fixes + portables, réseau haut-débit, climatisation\n• Formations : IGL, IWD, MSI, Infographie, Télécoms.\n🌐 Plus d\'infos : https://www.isetag.cm',
+  },
+  genie_electrique: {
+    type: 'image',
+    file: 'atelier_genie_electrique.jpeg',
+    caption: '⚡ *Atelier Génie Électrique & Électronique — ISETAG*\n• Bancs d\'essai électriques, moteurs, câblage industriel\n• Filières : BTS Électrotechnique, Électronique & Automatisme.\n🌐 Plus d\'infos : https://www.isetag.cm',
+  },
+  froid_clim: {
+    type: 'image',
+    file: 'atelier_froid_climatisation.jpeg',
+    caption: '❄️ *Filière Froid & Climatisation — ISETAG*\n• Maintenance d\'unités de climatisation industrielle en conditions réelles\n• Compresseurs, serpentins, ventilateurs : pratique totale !\n🌐 Plus d\'infos : https://www.isetag.cm',
+  },
+  genie_civil: {
+    type: 'image',
+    file: 'atelier_genie_civil.jpeg',
+    caption: '🏗️ *Atelier Génie Civil & Topographie — ISETAG*\n• Maquettes de ponts, plans architecturaux, théodolites et niveaux\n• BTS Bâtiment & Travaux Publics : formation complète terrain + bureau.\n🌐 Plus d\'infos : https://www.isetag.cm',
+  },
+  biblio_isetag: {
+    type: 'image',
+    file: 'bibliotheque_isetag.jpeg',
+    caption: '📚 *Bibliothèque ISETAG — Espaces de Lecture & Recherche*\n• Ouvrages spécialisés toutes filières, Wi-Fi haut débit\n• Étudiants en uniforme officiel dans un cadre studieux d\'excellence.\n🌐 Plus d\'infos : https://www.isetag.cm',
+  },
+  salle_classe: {
+    type: 'image',
+    file: 'salle_classe_isetag.jpeg',
+    caption: '🎓 *Salles de Cours ISETAG — Discipline & Excellence*\n• Uniformes officiels (blanc + casquette de marin) pour tous les étudiants\n• Ambiance académique sérieuse et cadre d\'apprentissage motivant.\n🌐 Plus d\'infos : https://www.isetag.cm',
+  },
+  campus_facade: {
+    type: 'image',
+    file: 'campus_facade_isetag.jpeg',
+    caption: '🏛️ *Campus ISETAG — Façade Principale (Yassa, Douala)*\n• Logo ISETAG visible à l\'entrée, bâtiments modernes multi-niveaux\n• Situé à 100m de Tradex Yassa, vers l\'Hôpital Gynéco-Obstétrique.\n🌐 Site web : https://www.isetag.cm',
+  },
+  mecatronique_moteur: {
+    type: 'image',
+    file: 'atelier_mecatronique_moteur.jpeg',
+    caption: '⚙️ *Atelier Mécatronique — Moteurs Sectionnés ISETAG*\n• Travaux sur moteurs thermiques en coupe : pistons, cylindres, boîte de vitesses\n• Apprentissage complet par la pratique en atelier équipé.\n🌐 Plus d\'infos : https://www.isetag.cm',
+  },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -267,12 +319,56 @@ function detectMediaKeys(userText, aiResponse, lang) {
   const userAsksBiblio = /biblioth[eè]que|salle de lecture|cadre d'[eé]tude/i.test(userText);
   if (userAsksBiblio) {
     keys.push('bibliotheque');
+    keys.push('biblio_isetag'); // photo réelle avec étudiants
   }
 
   // ── 10. ÉTUDES À L'ÉTRANGER ────────────────────────────────────────
   const userAsksEtranger = /[eé]tudier [aà] l'[eé]tranger|partenariat international|universit[eé]s? partenaires?|visa/i.test(userText);
   if (userAsksEtranger) {
     keys.push('etranger');
+  }
+
+  // ── 11. MÉCANIQUE AUTOMOBILE & MÉCATRONIQUE ─────────────────────────
+  const userAsksMecaAuto = /m[eé]canique automobile|m[eé]catronique|mav|mka|atelier m[eé]ca|r[eé]paration auto|moteur/i.test(userText);
+  if (userAsksMecaAuto) {
+    keys.push('mecanique_auto');
+    keys.push('mecatronique_moteur');
+  }
+
+  // ── 12. INFORMATIQUE & MULTIMÉDIA ──────────────────────────────────
+  const userAsksInfo = /informatique|salle machines|labo info|ordinateur|programmation|igl|iwd|msi|multimédia|infographie/i.test(userText);
+  if (userAsksInfo) {
+    keys.push('informatique');
+  }
+
+  // ── 13. GÉNIE ÉLECTRIQUE & ÉLECTRONIQUE ────────────────────────────
+  const userAsksElecGenie = /g[eé]nie [eé]lectrique|[eé]lectronique|banc d'essai [eé]lectrique|câblage|elt|automatisme/i.test(userText);
+  if (userAsksElecGenie) {
+    keys.push('genie_electrique');
+  }
+
+  // ── 14. FROID & CLIMATISATION ──────────────────────────────────────
+  const userAsksFroid = /froid|climatisation|clim|r[eé]frig[eé]ration|compresseur|maintenance clim/i.test(userText);
+  if (userAsksFroid) {
+    keys.push('froid_clim');
+  }
+
+  // ── 15. GÉNIE CIVIL & TOPOGRAPHIE ──────────────────────────────────
+  const userAsksGenieCivil = /g[eé]nie civil|topographie|b[aâ]timent|travaux publics|tpu|construction|architecture/i.test(userText);
+  if (userAsksGenieCivil) {
+    keys.push('genie_civil');
+  }
+
+  // ── 16. SALLE DE CLASSE & VIE ACADÉMIQUE ───────────────────────────
+  const userAsksSalle = /salle de classe|uniforme|vie [eé]tudiante|ambiance|cours magistral/i.test(userText);
+  if (userAsksSalle) {
+    keys.push('salle_classe');
+  }
+
+  // ── 17. CAMPUS FAÇADE / LOCALISATION PRÉCISE ───────────────────────
+  const userAsksFacade = /fa[çc]ade|entr[eé]e principale|logo isetag|comment est l'[eé]cole/i.test(userText);
+  if (userAsksFacade) {
+    keys.push('campus_facade');
   }
 
   // Return at most 2 media files per message to avoid spamming WhatsApp
