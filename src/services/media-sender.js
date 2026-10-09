@@ -56,6 +56,41 @@ const MEDIA = {
     file: 'residence.jpeg',
     caption: '🏠 *Résidence universitaire ISETAG (Campus Yassa)*\n• Plus de 250 chambres meublées et sécurisées\n• Tarif officiel : *22 000 FCFA / mois*\n• Eau, électricité et Wi-Fi haut débit inclus !\n🌐 Plus d\'infos : https://www.isetag.cm',
   },
+  bus: {
+    type: 'image',
+    file: 'bus_isetag.jpeg',
+    caption: '🚌 *Transport gratuit ISETAG (Douala)*\n• Minibus de ramassage gratuits pour nos étudiants\n• Desservent les grands carrefours de Douala jusqu\'au campus de Yassa.\n🌐 Plus d\'infos : https://www.isetag.cm',
+  },
+  campus: {
+    type: 'image',
+    file: 'campus_isetag.jpeg',
+    caption: '🏛️ *Campus ISETAG (Yassa, Douala)*\n• Situé à 100m de Tradex Yassa (vers l\'Hôpital Gynéco-Obstétrique)\n• Cadre moderne, sécurisé et propice aux études d\'excellence.\n🌐 Site web : https://www.isetag.cm',
+  },
+  maritime_photo: {
+    type: 'image',
+    file: 'maritime_port.jpeg',
+    caption: '⚓ *Filière Maritime & Portuaire — ISETAG*\n• Double diplomation (Licence Pro) + certification internationale STCW 95\n• Uniformes et cours d\'anglais & chinois offerts\n• Stages garantis et mobilité internationale (Ghana / Chine)\n🌐 Plus d\'infos : https://www.isetag.cm',
+  },
+  electricite: {
+    type: 'image',
+    file: 'atelier_electricite.jpeg',
+    caption: '⚡ *Atelier de Génie Électrique & Énergies Renouvelables*\n• Bancs d\'essais, alternateurs triphasés et instrumentation moderne\n• Formation pratique orientée vers les besoins de l\'industrie.\n🌐 Site web : https://www.isetag.cm',
+  },
+  bois: {
+    type: 'image',
+    file: 'atelier_bois.jpeg',
+    caption: '🪵 *Atelier Pratique de Menuiserie & Ébénisterie*\n• Équipements industriels de découpe et de transformation du bois\n• Savoir-faire technique et compétences professionnelles d\'élite.\n🌐 Site web : https://www.isetag.cm',
+  },
+  bibliotheque: {
+    type: 'image',
+    file: 'bibliotheque.jpeg',
+    caption: '📚 *Bibliothèque & Cadre d\'Études ISETAG*\n• Espace de lecture calme, riche en ouvrages spécialisés et Wi-Fi haut débit\n• Environnement studieux et encadrement d\'excellence.\n🌐 Plus d\'infos : https://www.isetag.cm',
+  },
+  etranger: {
+    type: 'image',
+    file: 'etudier_etranger.jpeg',
+    caption: '🌍 *Programme Étudier à l\'Étranger — ISETAG*\n• Partenariats universitaires : Allemagne, Tunisie, Espagne, Ghana, Chine\n• 1 à 2 ans au Cameroun puis poursuite à l\'international avec accompagnement Visa !\n🌐 Plus d\'infos : https://www.isetag.cm',
+  },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -197,7 +232,51 @@ function detectMediaKeys(userText, aiResponse, lang) {
     }
   }
 
-  return [...new Set(keys)];
+  // ── 4. BUS & TRANSPORT ─────────────────────────────────────────────
+  const userAsksBus = /bus|transport|navette|ramassage|minibus|d[eé]placement/i.test(userText);
+  const botMentionsBus = /bus gratuit|ramassage gratuit|navette/i.test(aiResponse);
+  if (userAsksBus || botMentionsBus) {
+    keys.push('bus');
+  }
+
+  // ── 5. CAMPUS & LOCALISATION ───────────────────────────────────────
+  const userAsksCampus = /o[uù] se trouve|localisation|situation|adresse|campus|b[aâ]timent|ressemble|visiter|o[uù] est (l'|cette )?[eé]cole|situe[^\w]|yassa/i.test(userText);
+  if (userAsksCampus) {
+    keys.push('campus');
+  }
+
+  // ── 6. MARITIME PHOTO ──────────────────────────────────────────────
+  const userAsksMaritime = /maritime|portuaire|navigation|stcw|bateau|navire|quai/i.test(userText);
+  if (userAsksMaritime && !residenceInUser && !userAsksBus) {
+    keys.push('maritime_photo');
+  }
+
+  // ── 7. ATELIER ÉLECTRICITÉ & ÉNERGIES ───────────────────────────────
+  const userAsksElec = /[eé]lectrotechnique|[eé]lectricit[eé]|[eé]nergie renouvelable|solaire|banc d'essai/i.test(userText);
+  if (userAsksElec) {
+    keys.push('electricite');
+  }
+
+  // ── 8. ATELIER BOIS & MENUISERIE ───────────────────────────────────
+  const userAsksBois = /menuiserie|[eé]b[eé]nisterie|bois|charpente/i.test(userText);
+  if (userAsksBois) {
+    keys.push('bois');
+  }
+
+  // ── 9. BIBLIOTHÈQUE & CADRE DE TRAVAIL ─────────────────────────────
+  const userAsksBiblio = /biblioth[eè]que|salle de lecture|cadre d'[eé]tude/i.test(userText);
+  if (userAsksBiblio) {
+    keys.push('bibliotheque');
+  }
+
+  // ── 10. ÉTUDES À L'ÉTRANGER ────────────────────────────────────────
+  const userAsksEtranger = /[eé]tudier [aà] l'[eé]tranger|partenariat international|universit[eé]s? partenaires?|visa/i.test(userText);
+  if (userAsksEtranger) {
+    keys.push('etranger');
+  }
+
+  // Return at most 2 media files per message to avoid spamming WhatsApp
+  return [...new Set(keys)].slice(0, 2);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
