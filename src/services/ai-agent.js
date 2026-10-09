@@ -172,83 +172,73 @@ If a student says they don't know which specialty or field to choose (e.g. "je n
 
 ### 🏫 IDENTITY
 - Full name: Institut Supérieur Évangélique des Technologies Appliquées et de Gestion (ISETAG)
-- Founded: 2015 (10 years of training)
-- Location: Between Tradex Yassa and the Hôpital Gynéco-Obstétrique et Pédiatrique de Douala — accessible by moto-taxi or taxi (100–200 FCFA)
-- Type: Private, serious, committed higher education institution under the University of Douala and FSEGA (for management programs)
-- Recognition: Diplomas (BTS, HND, Licence, Bachelor, Master) recognized nationally (MINESUP) and internationally — accepted by universities in Africa and Europe
-- Languages: Fully bilingual — French-medium section AND English-medium section
+- Founded: 2015 (Arrêté N°17/00048/MINESUP & Autorisation N°15/09096/L/MINESUP)
+- Founder / Promoteur: Pasteur PAMEN Flaubert
+- Location: Yassa, Douala (à 100m de Tradex Yassa en direction de l'Hôpital Gynéco-Obstétrique) — accessible en taxi/moto (100–200 FCFA)
+- Type: Établissement supérieur privé d'excellence sous la tutelle de l'Université de Douala (FSEGA)
+- Recognition: Diplômes accrédités MINESUP et reconnus à l'international
+- Languages: Bilingue intégral (Sections francophone et anglophone)
 
 ### 📚 TRAINING CYCLES
-BTS | HND | Licence | Bachelor Degree | Master
+BTS | HND | Licences Professionnelles / Bachelor | Masters Professionnels | Cursus Maritime International (4 ans) | Formations Certifiantes (4 à 9 mois)
 
 ### 🎓 DOMAINS & SPECIALITIES
 
-**1. Commerce – Gestion – Droit**
-Marketing | Commerce et vente | Commerce international | Douane et transit
-(Students learn: sales, negotiation, administration, time management, law)
+**1. Commerce – Gestion – Droit (BTS / HND / Licence / Master)**
+Marketing Commerce Vente | Commerce International | Douane et Transit | Banque et Finance | Comptabilité et Gestion | Logistique & Transport | Gestion des Projets | GRH | Fiscalité
 
 **2. Technologies de l'Information et de la Communication (TIC)**
-Génie logiciel | Infographie & Web Design | E-commerce | Marketing numérique | Intelligence artificielle
-(Students learn: programming, network management, cybersecurity, modern digital tools)
+Génie Logiciel | Infographie & Web Design | E-commerce | Marketing Numérique | Intelligence Artificielle | Réseaux et Sécurité Informatique | Maintenance Informatique
 
 **3. Industrie et Technologie**
-Génie Civil | Mécatronique | Menuiserie-Ébénisterie | Énergies renouvelables (solaire)
-(Students learn: construction, civil engineering, machine maintenance, fault detection, equipment repair, safety)
+Génie Civil (Bâtiment & Travaux Publics) | Mécatronique & Automobile | Énergies Renouvelables (Solaire) | Électrotechnique | Chaudronnerie & Soudure | Froid & Climatisation | Menuiserie-Ébénisterie
 
-**4. Sciences Portuaires et Maritimes**
-Électromécanique navale | Gestion logistique portuaire et maritime | Sciences nautiques
-(Students learn: port supervision, vessel operations, transport/customs documents, maritime English)
+**4. Sciences Portuaires et Maritimes (4 ans, STCW 95)**
+Électromécanique navale | Gestion logistique portuaire et maritime | Sciences nautiques | Pêches maritimes & Aquaculture | Sécurité des plateformes pétrolières (SSPPM)
+(Double diplôme Licence + certificat international STCW 95, cours d'anglais/chinois offerts, uniformes offerts, stages garantis)
 
-### 💰 FEES (indicative — confirm at registration)
-⚠️ IMPORTANT — FILE STUDY FEE POLICY:
-- File study (étude de dossier) is FREE for BTS/HND and Licence. NO payment required to submit your application file.
-- ONLY Maritime programs require a file study fee of 10,000 FCFA (for Cameroonian nationals).
-- The 30,000 FCFA registration fee is paid IN PERSON at ISETAG ONLY AFTER the application file is accepted.
+**5. Formations Certifiantes Express (4 à 9 mois — 75% pratique)**
+Formation courte jour/soir pour acquérir un métier d'élite rapidement :
+Mécanique auto, Soudure homologuée, Électricité bâtiment/industrielle, Marketing digital, Programmation web/mobile, Infographie 2D/3D, IA, Docker, Chaudronnerie navale, Douane-transit, Comptabilité informatisée.
 
-- BTS/HND Registration fee (paid in person after acceptance): 30,000 FCFA
-  * Industry & Tech: Day 395k (Tranches: 200k, 150k, 45k) | Evening 285k (Tranches: 150k, 100k, 35k)
-  * Business & Mgt: Day 315k (Tranches: 150k, 100k, 65k) | Evening 235k (Tranches: 130k, 80k, 25k)
-- LICENCE (Evening ONLY, Registration fee: 55,000 FCFA paid in person): Industry/Tech/Commerce 550k | Applied Mgt 500k
-- Maritime (Day ONLY, 4-yr): File study fee: 10,000 FCFA (National only). Registration fee: 55k (National) / 105k (Foreign). Tuition: 755k (National) / 1,005k (Foreign)
-- Flexible payment: fees can be paid in multiple installments (moratoire available for financial difficulties)
+### 💰 FEES (indicative)
+⚠️ ÉTUDE DE DOSSIER :
+- Étude de dossier 100% GRATUITE pour BTS, HND, Licence et Certifiant (aucun frais de dépôt).
+- Seul le maritime demande 10 000 FCFA de frais d'étude de dossier (nationaux).
+- Frais d'inscription BTS/HND : 30 000 FCFA (payés en personne après acceptation).
+- Frais d'inscription Licence/Master : 55 000 FCFA.
 
-### 🌍 INTERNATIONAL PARTNERS
-- 🇪🇸 Spain: EEMI
-- 🇹🇳 Tunisia: IAHF & Université Montplaisir Tunis
-- 🇬🇭 Ghana: Regional Maritime University of Ghana
-- 🇨🇳 China: Shanghai Ocean University
+- BTS/HND Scolarité annuelle (payable en 3 tranches : Rentrée, 30 nov, 28 fév) :
+  * Technologie/Industrie : Jour 395k (200k, 150k, 45k) | Soir 285k (150k, 100k, 35k)
+  * Commerce/Gestion : Jour 315k (150k, 100k, 65k) | Soir 235k (130k, 80k, 25k)
+- LICENCE (Soir) : Technologie 550k | Commerce 500k
+- MASTER (Soir) : Technologie 700k | Gestion 675k
+- Maritime (Jour 4 ans) : Scolarité 755k / an (Nationaux) | 1 005k / an (Étrangers)
 
-### 🏢 EMPLOYER PARTNERS (recruit ISETAG students annually)
-Sinotruck | CEL'OR | TRANSIMEX | FIGEC | CANOCAM | SOTRABUS
+### 🌍 ÉTUDIER À L'ÉTRANGER (PARTENARIATS INTERNATIONAUX)
+Formule : 1 à 2 ans à l'ISETAG à Douala, puis poursuite à l'international avec accompagnement visa :
+- 🇩🇪 Allemagne : City is Lemgo (Gestion & TIC — niveau BAC / Licence)
+- 🇹🇳 Tunisie : Université Montplaisir Tunis & IAHF (Tous domaines / Gestion & TIC — accessible dès le BEPC / Probatoire / BAC !)
+- 🇪🇸 Espagne : EEMI (Gestion & TIC — niveau BAC / Licence)
+- 🇬🇭 Ghana : Regional Maritime University (Maritime — niveau BAC)
+- 🇨🇳 Chine : Shanghai Ocean University (Maritime — niveau BAC)
 
-### 🎁 KEY ADVANTAGES
-- 🚌 Free student bus service within Douala to campus
-- 🏠 Cité Universitaire / Résidence étudiante (Campus de Yassa) : Plus de 250 chambres meublées et sécurisées avec Wi-Fi haut débit, eau et électricité inclus.
-  * PRIX OFFICIEL EXACT : 22 000 FCFA par mois (JAMAIS 50 000 ni 80 000 ! Le prix est exactement 22 000 FCFA/mois).
-  * Fiche et photo de la résidence envoyées automatiquement sur demande.
-- 📋 Day courses (8h–17h) OR Evening courses (17h30–21h30) — choose your schedule
-- 🎓 300+ free academic internships via partner companies
-- 💻 5+ air-conditioned multimedia labs, high-speed internet campus-wide
-- 📚 Spacious, well-stocked library
-- 🔬 Laboratories: Electrotechnics & Renewable Energies
-- 🏛️ 30+ spacious, clean, ventilated classrooms + air-conditioned amphitheatres + canteens
-- 🏆 Official BTS & HND exam sub-center (practical & theoretical)
-- 💸 Partner scholarships: 30,000 to 100,000 FCFA available through partner institutions
-- 🎓 Linguistic scholarship: new bacheliers (nouveaux bacheliers) can benefit from a 50,000 FCFA linguistic scholarship to help with language learning, international preparation, and job market competitiveness
+### 🏢 ENTREPRISES PARTENAIRES (Plus de 50 partenaires)
+Sinotruk, CEL'OR, TRANSIMEX, PAD (Port Autonome de Douala), PAK (Port de Kribi), SOTRABUS, UBA, FIGEC, CANOCAM, MSC, Kloe Shipping, SCS...
 
-### 📋 ADMISSION
-- BTS/HND: Bac or GCE A-Level, pre-registration form, birth cert, diploma, medical cert, 4 photos, ID. File study is COMPLETELY FREE (no fee to submit your file). Registration fee of 30,000 FCFA is paid IN PERSON only after acceptance. No entrance exam.
-- Licence: Handwritten request, registration form, BTS/equivalent certified copies, bac transcripts, ID, 2 photos, CV, stamped A4 envelope. File study is FREE. Registration fee of 55,000 FCFA paid in person after acceptance.
-- Maritime: File study fee: 10,000 FCFA (Cameroonians) — the ONLY program with a file study fee. Deadline: September 16. No entrance exam — selection by file only. Double degree possible (2 yrs Cameroon + 2 yrs Ghana/China), STCW 95 certification.
+### 🎁 AVANTAGES CLÉS
+- 🚌 Minibus gratuits pour le ramassage des étudiants sur Douala vers Yassa
+- 🏠 Cité Universitaire (Campus Yassa) : Plus de 250 chambres meublées et sécurisées. PRIX EXACT : 22 000 FCFA / mois (eau, électricité et Wi-Fi inclus). Photo envoyée automatiquement.
+- 🎓 Bourses partenaires : 30 000 à 100 000 FCFA pour les 100 premiers inscrits !
+- 🎓 Bourse linguistique de 50 000 FCFA pour les nouveaux bacheliers
+- 💼 Plus de 300 stages académiques garantis chez nos partenaires
+- 💻 Plus de 5 salles informatiques climatisées, fibre optique, labos énergies renouvelables
+- 🏆 Sous-centre agréé des examens nationaux BTS et HND
 
-### 🏅 ACADEMIC EXCELLENCE
-- 89.23% global success rate (2024)
-- Ranked 4th nationally by MINESUP (2021)
-- 100% pass rate in: Software Engineering, Networks, Accounting, Logistics, Marketing
-
-### 📞 CONTACTS
-- Phones: +237 676 079 849 / 690 609 511 / 659 855 800
-- Website: www.isetag.cm
+### 📞 CONTACTS OFFICIELS
+- Téléphones / WhatsApp : +237 676 079 849 / 659 855 800 / 694 490 614 / 699 787 818
+- Email : info.isetag@gmail.com
+- Sites : www.isetag-univ.net / www.isetag.cm
 
 ${context ? `\n## KNOWLEDGE BASE (use this for precise answers):\n${context}` : ''}`;
 

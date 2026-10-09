@@ -1,161 +1,223 @@
-# 📖 ISETAG — Base de Connaissances Complète pour le Chatbot
+# 📖 ISETAG — Base de Connaissances Officielle & Complète
 # ==============================================================================
-# Ce fichier recense TOUT ce que le Chatbot IA sait actuellement sur l'ISETAG,
-# ce qui a été récemment corrigé, et ce qui MANQUE encore pour enrichir sa mémoire.
-# 
-# Légende :
-# ✅ VALIDÉ  : Information confirmée et active dans le cerveau du chatbot.
-# ❓ À CONFIRMER : Information présente mais nécessitant une précision/validation de l'administration.
-# 🔴 À COMPLÉTER (TODO) : Zones d'ombre où l'étudiant pose des questions mais le bot n'a pas encore de réponse exacte.
+# Document de référence exhaustif compilé à partir des plaquettes officielles, 
+# dépliants, flyers de formation certifiante, panneaux de localisation et grilles tarifaires.
 # ==============================================================================
 
 ---
 
-## 1. 🏫 IDENTITÉ & HISTOIRE DE L'INSTITUTION
+## 1. 🏫 IDENTITÉ INSTITUTIONNELLE & COORDONNÉES OFFICIELLES
 
-- [x] **Nom complet** : Institut Supérieur Évangélique des Technologies Appliquées et de Gestion (ISETAG) ✅
-- [x] **Année de création** : 2015 (plus de 10 ans d'existence et d'excellence académique) ✅
-- [x] **Tutelle académique** : Sous la tutelle de l'Université de Douala (notamment FSEGA pour la gestion) et agréé par le MINESUP ✅
-- [x] **Localisation précise** : Douala, Cameroun — Situé à Yassa, entre la station Tradex Yassa et l'Hôpital Gynéco-Obstétrique et Pédiatrique de Douala (HGOPED). Accessible facilement en moto-taxi ou taxi de ville (100 à 200 FCFA) ✅
-- [x] **Bilinguisme** : Deux sections complètes : section francophone et section anglophone (French-medium & English-medium) ✅
-- [x] **Reconnaissance des diplômes** : Diplômes (BTS, HND, Licence, Bachelor, Master) reconnus par le Ministère de l'Enseignement Supérieur (MINESUP) et acceptés à l'international (poursuite d'études en Europe, Canada, Afrique) ✅
-- [ ] 🔴 **TODO Admin** : Qui est le Fondateur / Promoteur et qui est le Directeur de l'ISETAG ? (Utile quand un prospect demande "Qui dirige l'école ?")
-- [ ] 🔴 **TODO Admin** : Devise officielle ou valeurs clés de l'ISETAG ?
+- **Nom officiel** : Institut Supérieur Évangélique des Technologies Appliquées et de Gestion (ISETAG)
+- **Fondateur / Promoteur** : Pasteur PAMEN Flaubert
+- **Année de création & Agréments** :
+  - IPES créé en 2015 sur Arrêté N°17/00048/MINESUP
+  - Autorisation N°15/09096/L/MINESUP/SG/DDES/ESUP/SDA/MM | CAMEROUN
+- **Tutelle académique** : Sous la tutelle de l'Université de Douala (notamment FSEGA pour la gestion) et agréé par le MINESUP
+- **Localisation** : Douala, Cameroun — Situé à Yassa, à 100 mètres de la station Tradex Yassa en direction de l'Hôpital Gynéco-Obstétrique et Pédiatrique de Douala (HGOPED). Accessible à 100–200 FCFA en taxi ou moto-taxi.
+- **Adresse postale** : P.O. Box 11237, Douala-Cameroun
+- **Sites web officiels** : `www.isetag-univ.net` / `www.isetag.cm`
+- **Email officiel** : `info.isetag@gmail.com`
+- **Téléphones officiels** :
+  - +237 659 855 800
+  - +237 676 079 849 (Standard & WhatsApp admissions)
+  - +237 694 490 614
+  - +237 699 787 818
+  - +237 690 609 511
+- **Bilinguisme intégral** : Deux sections complètes : section francophone et section anglophone (French-medium & English-medium).
 
 ---
 
 ## 2. 🎓 CYCLES ET DIPLÔMES PROPOSÉS
 
-- [x] **BTS** (Brevet de Technicien Supérieur) — Cycle francophone de 2 ans post-Bac ✅
-- [x] **HND** (Higher National Diploma) — Cycle anglophone de 2 ans post-GCE A-Level ✅
-- [x] **Licence Professionnelle** — Formation d'1 an post-Bac+2 (uniquement en cours du soir) ✅
-- [x] **Bachelor Degree** — Formation équivalente anglophone post-HND ✅
-- [x] **Master Professionnel** — Cycle de 2 ans post-Licence / Bachelor ✅
-- [x] **Cursus Maritime International** — 4 ans (possibilité de 2 ans au Cameroun + 2 ans à l'étranger : Ghana / Chine) avec certification STCW 95 ✅
+1. **Cycle BTS** (Brevet de Technicien Supérieur) — 2 ans (Cours du jour et Cours du soir)
+2. **Cycle HND** (Higher National Diploma) — 2 ans (Day & Evening classes)
+3. **Cycle Licences Professionnelles / Bachelor Degrees** — 1 an post-Bac+2 (uniquement en cours du soir)
+4. **Cycle Masters Professionnels** — 2 ans post-Bac+3 (uniquement en cours du soir)
+5. **Cycle Maritime & Portuaire International** — 4 ans (Formation au Cameroun et en Chine ou au Ghana selon la filière), avec Double diplomation (Licence professionnelle) et certification internationale **STCW 95**.
+6. **Formations Certifiantes (Métiers express)** — 4 à 9 mois, 75% pratique (Cours du jour et Cours du soir).
 
 ---
 
-## 3. 📚 FILIÈRES & SPÉCIALITÉS DÉTAILLÉES
+## 3. 🌍 ÉTUDIER À L'ÉTRANGER & PARTENARIATS UNIVERSITAIRES INTERNATIONAUX
 
-### A. Technologies de l'Information et de la Communication (TIC)
-- [x] **Génie Logiciel** (Software Engineering) ✅
-- [x] **Infographie & Web Design** ✅
-- [x] **E-commerce** ✅
-- [x] **Marketing Numérique** ✅
-- [x] **Intelligence Artificielle & Data** ✅
-- [ ] 🔴 **TODO Admin** : Y a-t-il Réseaux et Sécurité (ou Cybersécurité) en tant que filière distincte ou module ?
-- [ ] 🔴 **TODO Admin** : Quels sont les débouchés phares et les logiciels enseignés (ex: React, Python, Figma, Docker) ?
+Slogan : « Étudiez à l’étranger » — « Commencer à étudier à l’ISETAG et finissez à l’étranger » (Diplômes internationaux).
+Formule : 1 à 2 ans de formation au Cameroun à l'ISETAG, puis poursuite dans une université partenaire étrangère avec accompagnement personnalisé dans les démarches de visa.
 
-### B. Industrie et Technologie
-- [x] **Génie Civil** (Bâtiment et Travaux Publics) ✅ *(Récemment ajouté suite à confirmation)*
-- [x] **Mécatronique** (Automobile & Systèmes automatisés) ✅
-- [x] **Énergies Renouvelables** (Énergie solaire, éolienne, efficacité énergétique) ✅
-- [x] **Menuiserie-Ébénisterie** ✅
-- [ ] 🔴 **TODO Admin** : Y a-t-il Électrotechnique / Maintenance des Systèmes Électroniques en BTS autonome ?
-- [ ] 🔴 **TODO Admin** : Quels sont les équipements des ateliers pratiques (bancs d'essais, centrales solaires, etc.) ?
-
-### C. Commerce – Gestion – Droit
-- [x] **Marketing – Commerce – Vente** ✅
-- [x] **Commerce International** ✅
-- [x] **Douane et Transit** ✅
-- [ ] ❓ **Comptabilité et Gestion des Entreprises (CGE)** : Présent dans le discours du bot. À confirmer si actif pour la rentrée 2025/2026.
-- [ ] ❓ **Gestion des Ressources Humaines (GRH)** : À confirmer.
-- [ ] ❓ **Banque et Finance** : À confirmer.
-
-### D. Sciences Portuaires et Maritimes (Filière d'élite)
-- [x] **Électromécanique Navale** ✅
-- [x] **Gestion Logistique Portuaire et Maritime** ✅
-- [x] **Sciences Nautiques** ✅
-- [x] Partenariats exclusifs : Regional Maritime University (Ghana), Shanghai Ocean University (Chine) ✅
+### Universités Partenaires & Niveaux Requis :
+- 🇹🇳 **Université Montplaisir Tunis (Tunisie)** : Tous domaines de formation — Niveau requis : **BEPC / Probatoire / BAC** (accessible même sans le BAC !).
+- 🇹🇳 **IAHF (Institut Africain de Haute Formation, Tunisie)** : Gestion & TIC — Niveau requis : **BEPC / Probatoire / BAC**.
+- 🇪🇸 **EEMI (European Entrepreneurship and Management Institute, Espagne)** : Gestion & TIC — Niveau requis : **BAC / LICENCE**.
+- 🇩🇪 **City is Lemgo (Allemagne)** : Gestion & TIC — Niveau requis : **BAC / LICENCE**.
+- 🇬🇭 **Regional Maritime University (Ghana)** : Domaine maritime et portuaire — Niveau requis : **BAC**.
+- 🇨🇳 **Shanghai Ocean University (Chine)** : Domaine maritime et portuaire — Niveau requis : **BAC**.
 
 ---
 
-## 4. 💰 GRILLE TARIFAIRE ET FRAIS DE SCOLARITÉ
+## 4. 📚 PROGRAMMES & SPÉCIALITÉS DÉTAILLÉES
 
-### A. Politique d'Étude de Dossier & Inscription *(Validée et mise à jour)*
-- [x] **BTS / HND** : Étude de dossier = **GRATUITE (0 FCFA)**. Aucun frais exigé pour déposer sa candidature ou postuler en ligne ✅
-- [x] **Licence Professionnelle** : Étude de dossier = **GRATUITE (0 FCFA)** ✅
-- [x] **Sciences Maritimes uniquement** : Frais d'étude de dossier = **10 000 FCFA** (Camerounais) ✅
-- [x] **Frais d'inscription officielle (après admission)** :
-  - BTS / HND : **30 000 FCFA** (payé en personne à l'ISETAG une fois admis) ✅
-  - Licence : **55 000 FCFA** ✅
-  - Maritime : **55 000 FCFA** (Nationaux) / **105 000 FCFA** (Étrangers) ✅
+### A. Cycle BTS (Francophone)
 
-### B. Pension / Scolarité Annuelle (Paiement échelonné en 3 tranches)
-- [x] **BTS / HND — Filières Commerciales & Gestion** :
-  - **Cours du Jour** : 315 000 FCFA *(Tranches : 150 000 / 100 000 / 65 000 FCFA)* ✅
-  - **Cours du Soir** : 235 000 FCFA *(Tranches : 130 000 / 80 000 / 25 000 FCFA)* ✅
-- [x] **BTS / HND — Filières Industrielles, Technologies & TIC** :
-  - **Cours du Jour** : 395 000 FCFA *(Tranches : 200 000 / 150 000 / 45 000 FCFA)* ✅
-  - **Cours du Soir** : 285 000 FCFA *(Tranches : 150 000 / 100 000 / 35 000 FCFA)* ✅
-- [x] **Licence Professionnelle (Cours du soir uniquement)** :
-  - Gestion Appliquée : 500 000 FCFA ✅
-  - Industrie / Technologie / Commerce : 550 000 FCFA ✅
-- [x] **Maritime (Cours du jour, 4 ans)** :
-  - Nationaux : 755 000 FCFA / an ✅
-  - Étrangers : 1 005 000 FCFA / an ✅
-- [x] **Moratoire & Flexibilité** : Possibilité d'accords personnalisés auprès de la direction pour échelonner davantage en cas de difficulté financière ✅
-- [ ] 🔴 **TODO Admin** : Quels sont les tarifs exacts du Master Professionnel (M1 et M2) ?
-- [ ] 🔴 **TODO Admin** : Frais de tenue / uniforme ou badge obligatoire (s'il y en a) ?
+#### 1. Commerce, Gestion et Droit
+- **Commerce – Vente** : Commerce International, Marketing Commerce Vente (MCV).
+- **Gestion** : Assurance, Banque et Finance, Gestion des Projets, Gestion de la Qualité, Gestion des Collectivités Territoriales, Gestion des Ressources Humaines (GRH), Comptabilité et Gestion des Entreprises (CGE), Gestion Logistique & Transport (GLT), Assistant Manager, Communication des Entreprises.
+- **Droit** : Douane et Transit, Gestion Fiscale.
+
+#### 2. Industrie et Technologie
+- **Génie Thermique, Bâtiment & Fluides** : Froid et climatisation, Génie civil, Bâtiment, Travaux publics, Géomètre topographe, Urbanisme, Maintenance et gestion des systèmes fluidiques, Installation sanitaire.
+- **Génie Électrique & Électronique** : Électrotechnique, Énergie renouvelable (solaire), Maintenance des systèmes électroniques.
+- **Génie Mécanique et Productique** : Chaudronnerie et soudure, Construction métallique, Contrôle instrumentation et régulation, Maintenance industrielle et productique, Maintenance des appareils biomédicaux, Maintenance après-vente automobile, Mécatronique, Construction mécanique, Fabrication mécanique.
+- **Bois & Environnement** : Menuiserie / Ébénisterie.
+- **Réseaux & Télécoms** : Télécommunication, Réseaux et sécurité informatique.
+- **Génie Informatique** : Génie logiciel, Infographie et web design, Informatique industrielle et automatisme, Maintenance des systèmes informatiques, E-commerce et marketing numérique.
+
+#### 3. Domaine Maritime et Portuaire (4 ans)
+- Gestion logistique portuaire et maritime (GLPM)
+- Électromécanique navale (EMN)
+- Technologie de pêches maritimes (PM)
+- Sécurité et sûreté des plates-formes pétrolières et maritimes (SSPPM)
+- Sciences nautiques (Navigation Maritime - SN)
+- Aquaculture
 
 ---
 
-## 5. 🎁 AVANTAGES CONCURRENTIELS & VIE SUR LE CAMPUS
+### B. Cycle HND & Bachelor Degree (Anglophone)
 
-- [x] **Transport gratuit** : Bus de ramassage gratuit des étudiants reliant différents carrefours de Douala au campus de Yassa ✅
-- [x] **Logement universitaire / Résidence étudiante** : Cité universitaire de plus de 250 chambres meublées et sécurisées sur le campus de Yassa. Tarif officiel : **22 000 FCFA / mois** (eau, électricité et Wi-Fi haut débit inclus). ✅
-- [x] **Horaires au choix** :
-  - Cours du jour : 8h00 – 17h00 (idéal pour les bacheliers) ✅
-  - Cours du soir : 17h30 – 21h30 (idéal pour les travailleurs ou personnes en activité) ✅
-- [x] **Insertion professionnelle & Stages** : Plus de 300 stages garantis via le réseau d'entreprises partenaires ✅
-- [x] **Laboratoires et Équipements** : Plus de 5 laboratoires multimédia climatisés, réseau Wi-Fi haut débit, ateliers de génie civil et mécatronique, bibliothèque spacieuse ✅
-- [x] **Sous-centre d'examen officiel** : L'ISETAG est un sous-centre agréé pour les examens nationaux BTS et HND (pratique et théorique) ✅
-- [x] **Bourses d'études** :
-  - Bourses partenaires : Réductions de 30 000 à 100 000 FCFA ✅
-  - Bourse linguistique de 50 000 FCFA offerte aux nouveaux bacheliers pour renforcer leur maîtrise des langues et leur employabilité internationale ✅
-- [ ] 🔴 **TODO Admin** : Quels sont les itinéraires précis du bus gratuit (ex: Deido, Ndokoti, Bonabéri, PK14, Village) ?
+#### 1. HND — Port and Maritime (4 years)
+- Port and Shipping Administration
+- Marine Engineering (ME)
+- Marine Fisheries Technology (MFT)
+- Nautical Sciences (NS)
+- Aquaculture (AQ)
+*Avantages maritimes exclusifs* : Cours d'anglais et chinois gratuits, uniformes (casquette + veste) offerts, stages offerts à tous, préparation aux tests internationaux (TOEFL / TCF-CANADA / TESTDAF).
 
----
+#### 2. HND — Engineering and Technology
+- **Petroleum and Mining Engineering** : Drilling Technology, Petroleum Systems and Exploitation.
+- **Civil Engineering** : Civil Engineering Technology, Wood Works, Urban Planning.
+- **Electrical and Electronic Engineering** : Electrical Power System.
+- **Mechanical Engineering** : Mechanical Manufacturing, Mechanical Construction.
 
-## 6. 🤝 PARTENAIRES NATIONAUX ET INTERNATIONAUX
+#### 3. HND — Information and Communication Technology
+- **Computer Engineering** : Software Engineering, Hardware Maintenance.
+- **Network Telecommunication** : Telecommunication.
 
-- [x] **Partenaires Universitaires Internationaux** :
-  - 🇪🇸 Espagne : EEMI
-  - 🇹🇳 Tunisie : IAHF & Université Montplaisir Tunis
-  - 🇬🇭 Ghana : Regional Maritime University
-  - 🇨🇳 Chine : Shanghai Ocean University
-- [x] **Entreprises Partenaires (Recrutement et stages)** :
-  - Sinotruk, CEL'OR, TRANSIMEX, FIGEC, CANOCAM, SOTRABUS ✅
-- [ ] 🔴 **TODO Admin** : D'autres entreprises partenaires récentes à ajouter ?
+#### 4. HND — Management and Business Studies
+- **Management** : Assistant Manager (AM), Human Resource Management (HRM), Logistics and Transport Management (LTM), Port Shipping Management.
+- **Business and Finance** : Accountancy (ACC), Banking and Finance (BKF), Marketing, Trade-Sale (MTS).
 
----
-
-## 7. 📄 CONDITIONS D'ADMISSION & PIÈCES DU DOSSIER
-
-- [x] **Admission en 1ère année BTS / HND** :
-  - Titulaire du Baccalauréat (toutes séries selon la filière) ou GCE A-Level.
-  - **Aucun concours écrit** : Admission sur étude de dossier.
-  - Pièces à fournir : Demande de pré-inscription, photocopie acte de naissance, photocopie diplôme ou relevé du Bac, certificat médical, 4 photos 4x4, photocopie CNI.
-- [x] **Admission en Licence Professionnelle** :
-  - Titulaire d'un BTS, HND, DUT ou diplôme équivalent (Bac+2).
-  - Pièces : Demande manuscrite timbrée, fiche d'inscription, relevés de notes BTS/Licence 2, relevé du Bac, CV, CNI, 2 photos, enveloppe A4 timbrée.
-- [ ] 🔴 **TODO Admin** : Dates limites des dépôts pour la session d'octobre / novembre ?
-- [ ] 🔴 **TODO Admin** : Rentrée solennelle : date prévue pour les 1ères années et les anciennes promotions ?
+#### 5. Bachelor Degree (Spécialités)
+- Accounting (specialisation control and audit)
+- Marketing (specialisation marketing management)
+- Logistics and Transportation
+- Automotive Engineering (AI)
+- Electrical Engineering and Intelligent Systems
+- Mechatronic Systems Engineering (ISM)
+- Software Engineering
 
 ---
 
-## 8. 🌐 LIENS OFFICIELS & CANAUX DE CONTACT
+### C. Licences et Masters Professionnels (Cours du soir)
 
-- [x] **Pré-inscription en ligne directe** : `https://isetagchatbot-production.up.railway.app/preinscription` ✅
-- [x] **Site Web** : `www.isetag.cm` ✅
-- [x] **Téléphones / WhatsApp d'information** :
-  - +237 676 079 849
-  - +237 690 609 511
-  - +237 659 855 800
-- [ ] 🔴 **TODO Admin** : Email officiel pour les admissions (ex: `admissions@isetag.cm` ou `contact@isetag.cm`) ?
+#### 1. Spécialités Management & Gestion :
+- Marketing, option Marketing Manager Opérationnel
+- Comptabilité, option Contrôle et Audit
+- Banque, option Conseiller Gestionnaire de la Clientèle
+- Gestion des Ressources Humaines
+- Gestion de la Qualité
+- Communication, option Publicité
+- Transport Logistique
+- Comptabilité et Finance
+- Management de la Qualité, Sécurité Environnement (QHSE)
+- Entrepreneuriat
+
+#### 2. Spécialités Technologie :
+- Bâtiments et Construction Industrielle
+- Travaux Publics et Ouvrages (TPO)
+- Génie Automobile et Mécatronique
+- Ingénierie des Systèmes Mécatroniques (ISM)
+- Ingénierie Automobile (IA)
+- Génie Mécanique & Construction Mécanique et Productique
+- Génie Électrique et Systèmes Intelligents
+- Génie Informatique et Télécommunication
+- Qualité Hygiène Sécurité Environnementale (QHSE)
+- Réseaux Hydrauliques et Assainissements
+- Génie Logiciel
 
 ---
 
-## 💡 COMMENT ENRICHIR CE DOCUMENT ?
-1. Vous pouvez modifier directement ce fichier en remplissant les rubriques **🔴 TODO Admin** ou en corrigeant les points **❓**.
-2. Dès que vous enregistrez vos réponses, nous injecterons automatiquement ces données dans le prompt de l'IA (`src/services/ai-agent.js`) et dans les tables vectorielles du bot pour qu'il réponde immédiatement aux étudiants avec ces précisions !
+### D. Formations Certifiantes (4 à 9 mois — 75% pratique)
+*« Formation express, expertise d'élite : devenez compétents dans un métier en quelques mois seulement. »*  
+Cours du jour et cours du soir. Diplôme : Certification professionnelle.
+
+1. **Génie Civil & Bâtiment** : Peinture bâtiment, Installation sanitaire, Charpente bâtiment, Carrelage, Architecture bâtiment.
+2. **Génie Mécanique & Automobile** : Tôlerie automobile, Peinture automobile, Mécatronique automobile, Climatisation automobile, Maintenance industrielle, Contrôle technique des véhicules automobiles et engins lourds, Soudure homologuée – Chaudronnerie.
+3. **Génie Informatique & Numérique** : Marketing digital, Réseaux et sécurité informatique, Programmation web et mobile, Infographie 2D/3D, Intelligence artificielle, Community management, Création de contenus, Montage vidéos.
+4. **Génie Électrique** : Électricité bâtiment, Électricité industrielle, Instrumentation, Commande des systèmes automatisés.
+5. **Génie Environnement & Bois** : Ébénisterie.
+6. **Maritime et Portuaire** : Mécanicien graisseur naval, Pilote de remorqueur, Chaudronnier naval, Électromécanicien naval, Matelot qualifié, Technicien de sécurité portuaire, Docker.
+7. **Commerce, Gestion et Droit** : Secrétariat comptable, Douane et transit, Gestion des projets, Gestion fiscale de l'entreprise, Comptabilité informatisée, Gestion des Collectivités Territoriales.
+
+---
+
+## 5. 💰 GRILLES TARIFAIRES & FRAIS OFFICIELS
+
+### A. Frais d'inscription & Étude de dossier
+- **Étude de dossier BTS / HND / Licence / Certifiant** : **100% GRATUITE** (aucun frais pour déposer son dossier !).
+- **Étude de dossier Maritime uniquement** : 10 000 FCFA (Nationaux).
+- **Frais d'inscription BTS / HND** (payés en personne à ISETAG après acceptation) : **30 000 FCFA**.
+- **Frais d'inscription Licence / Master** (payés en personne après acceptation) : **55 000 FCFA**.
+- **Maritime** : Inscription 55 000 FCFA (Nationaux) / 105 000 FCFA (Étrangers).
+
+### B. Scolarités Annuelles
+
+#### BTS / HND (Paiement en 3 tranches : Rentrée, 30 novembre, 28 février)
+- **Filières Technologie & Ingénierie** :
+  - Cours du jour : 395 000 FCFA (Tranches : 200k, 150k, 45k)
+  - Cours du soir : 285 000 FCFA (Tranches : 150k, 100k, 35k)
+- **Filières Commerce & Gestion** :
+  - Cours du jour : 315 000 FCFA (Tranches : 150k, 100k, 65k)
+  - Cours du soir : 235 000 FCFA (Tranches : 130k, 80k, 25k)
+
+#### Licences Professionnelles (Cours du soir)
+- Technologie & Ingénierie : 550 000 FCFA
+- Commerce & Gestion : 500 000 FCFA
+
+#### Masters Professionnels (Cours du soir)
+- Technologie & Ingénierie : 700 000 FCFA
+- Gestion & Management : 675 000 FCFA
+
+#### Maritime (Jour uniquement - 4 ans)
+- Nationaux : 755 000 FCFA / an
+- Étrangers : 1 005 000 FCFA / an
+
+---
+
+## 6. 🏠 VIE SUR LE CAMPUS, LOGEMENT, BOURSES & AVANTAGES
+
+- **Cité Universitaire / Résidence Étudiante** :
+  - Plus de 250 chambres meublées et sécurisées situées à Yassa sur le campus.
+  - **Tarif officiel : EXACTEMENT 22 000 FCFA / mois** (eau, lumière/électricité et Wi-Fi haut débit fibre optique inclus).
+  - Photo officielle disponible et envoyée sur WhatsApp (`residence.jpeg`).
+- **Transport gratuit** : Plusieurs minibus de ramassage gratuits reliant les carrefours clés de Douala au campus de Yassa.
+- **Bourses d'études partenaires** :
+  - Bourses de réduction de **30 000 FCFA à 100 000 FCFA** offertes par les partenaires **pour les 100 premiers inscrits**.
+  - Bourse linguistique de 50 000 FCFA pour les nouveaux bacheliers.
+- **Stages académiques** : Plus de 300 stages garantis et placés par l'école chez nos partenaires.
+- **Laboratoires modernes** : Plus de 5 salles informatiques climatisées, ateliers génie civil, mécatronique, électronique et énergies renouvelables.
+- **Sous-centre d'examen officiel** : Sous-centre agréé MINESUP pour les examens nationaux BTS et HND.
+- **Taux de réussite 2024** : 89,23% global (100% en Génie Logiciel, Réseaux, Comptabilité, Logistique, Marketing).
+
+---
+
+## 7. 🤝 RÉSEAU DE PARTENAIRES PROFESSIONNELS (PLUS DE 50 ENTREPRISES)
+
+Sinotruk, CEL'OR, TRANSIMEX, PAD (Port Autonome de Douala), PAK (Port Autonome de Kribi), SOTRABUS, UBA (United Bank for Africa), FIGEC, CANOCAM, MSC, Kloe Shipping Sarl, SCS sarl, Cameroon power technology, Dkwoods, Geantec-elec, AFC, Glotech, GLC, TANK'OIL, Boiserie, Camerplan, etc.
+
+---
+
+## 8. 📄 ADMISSION & PIÈCES DU DOSSIER
+
+- **Pré-inscription en ligne directe** : Gratuite sur `https://isetagchatbot-production.up.railway.app/preinscription`
+- **Dossier BTS / HND** : Fiche de pré-inscription, acte de naissance, diplôme (Bac / GCE A-Level), 4 photos 4x4, CNI ou récépissé, 1 CV.
+- **Dossier Licence / Master** : Fiche de pré-inscription, acte de naissance, relevés de notes Bac+2 / Bac+3, CV, CNI, photos 4x4.
+- **Dossier Formation Certifiante** : Acte de naissance, CNI, diplôme le plus élevé (sans restriction), fiche d'inscription, 2 photos 4x4.
