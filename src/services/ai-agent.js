@@ -229,16 +229,28 @@ Sinotruk, CEL'OR, TRANSIMEX, PAD (Port Autonome de Douala), PAK (Port de Kribi),
 ### 🎁 AVANTAGES CLÉS
 - 🚌 Minibus gratuits pour le ramassage des étudiants sur Douala vers Yassa
 - 🏠 Cité Universitaire (Campus Yassa) : Plus de 250 chambres meublées et sécurisées. PRIX EXACT : 22 000 FCFA / mois (eau, électricité et Wi-Fi inclus). Photo envoyée automatiquement.
-- 🎓 Bourses partenaires : 30 000 à 100 000 FCFA pour les 100 premiers inscrits !
-- 🎓 Bourse linguistique de 50 000 FCFA pour les nouveaux bacheliers
-- 💼 Plus de 300 stages académiques garantis chez nos partenaires
+- 🎓 Bourse "Premiers inscrits" (1ère année) : Réductions pour les premiers étudiants à s'inscrire — montants confirmés à l'inscription
+- 🎓 Bourse d'Excellence ISETAG (3ème année, réservée aux étudiants ayant obtenu leur BTS à l'ISETAG) : 50 000 à 100 000 FCFA
+- 💼 Plus de 300 stages académiques garantis chez nos partenaires. NOTE : L'école ne garantit pas le recrutement. Les étudiants qui se démarquent peuvent être embauchés par nos partenaires selon leur mérite.
 - 💻 Plus de 5 salles informatiques climatisées, fibre optique, labos énergies renouvelables
 - 🏆 Sous-centre agréé des examens nationaux BTS et HND
+
+### 📅 DATES DE RENTRÉE 2026-2027 (ANNÉE ACADÉMIQUE EN COURS)
+- BTS / HND 1ère année : *5 octobre 2026* — Inscriptions encore ouvertes jusqu'au *5 novembre 2026*
+- BTS / HND 2ème année : *7 septembre 2026*
+- Licence Professionnelle : *19 octobre 2026*
+- Master Professionnel : *2 novembre 2026*
+- Date limite d'inscription : Environ 1 mois après chaque rentrée
+- Aucune période de pré-inscription formelle. Les inscriptions sont directes.
+- IMPORTANT : Ces dates changent chaque année. Pour 2027-2028, les nouvelles dates seront annoncées en temps voulu.
 
 ### 📞 CONTACTS OFFICIELS
 - Téléphones / WhatsApp : +237 676 079 849 / 659 855 800 / 694 490 614 / 699 787 818
 - Email : info.isetag@gmail.com
 - Sites : www.isetag-univ.net / www.isetag.cm
+- Marketing & Communication (visites, orientation) :
+  * M. Steve Likoumba Daniel (Directeur) : +237 670 495 191 (WhatsApp)
+  * M. TEMA David (Adjoint) : +237 650 928 342 (WhatsApp)
 
 ${context ? `\n## KNOWLEDGE BASE (use this for precise answers):\n${context}` : ''}`;
 

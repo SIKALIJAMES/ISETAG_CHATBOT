@@ -24,6 +24,9 @@
   - +237 694 490 614
   - +237 699 787 818
   - +237 690 609 511
+- **Contacts Marketing & Communication (informations, visites, orientation)** :
+  - *M. Steve Likoumba Daniel* (Directeur Marketing & Communication) : +237 670 495 191 (WhatsApp)
+  - *M. TEMA David* (Adjoint Marketing & Communication) : +237 650 928 342 (WhatsApp)
 - **Bilinguisme intégral** : Deux sections complètes : section francophone et section anglophone (French-medium & English-medium).
 
 ---
@@ -199,10 +202,21 @@ Cours du jour et cours du soir. Diplôme : Certification professionnelle.
   - **Tarif officiel : EXACTEMENT 22 000 FCFA / mois** (eau, lumière/électricité et Wi-Fi haut débit fibre optique inclus).
   - Photo officielle disponible et envoyée sur WhatsApp (`residence.jpeg`).
 - **Transport gratuit** : Plusieurs minibus de ramassage gratuits reliant les carrefours clés de Douala au campus de Yassa.
-- **Bourses d'études partenaires** :
-  - Bourses de réduction de **30 000 FCFA à 100 000 FCFA** offertes par les partenaires **pour les 100 premiers inscrits**.
-  - Bourse linguistique de 50 000 FCFA pour les nouveaux bacheliers.
-- **Stages académiques** : Plus de 300 stages garantis et placés par l'école chez nos partenaires.
+- **Dates de rentrée académique 2026-2027 (année en cours)** :
+  - **BTS / HND 1ère année** : 5 octobre 2026 — Inscriptions ouvertes jusqu'au *5 novembre 2026*
+  - **BTS / HND 2ème année** : 7 septembre 2026
+  - **Licence Professionnelle** : 19 octobre 2026
+  - **Master Professionnel** : 2 novembre 2026
+  - *Note* : Ces dates changent chaque année. Pour l'année 2027-2028, les nouvelles dates seront communiquées en temps voulu.
+  - **Date limite d'inscription** : Environ 1 mois après chaque rentrée respective.
+  - **Pré-inscription en ligne** : Pas de période de pré-inscription formelle. Les inscriptions se font directement.
+- **Bourses d'études** :
+  - **Bourse "Premiers inscrits" (1ère année)** : Réductions réservées aux premiers étudiants à s'inscrire à chaque rentrée. Les montants exacts sont confirmés à l'inscription.
+  - **Bourse d'Excellence ISETAG (3ème année)** : Attribuée aux étudiants ayant obtenu leur BTS à l'ISETAG et poursuivant en Licence. Montant : **50 000 à 100 000 FCFA** selon les résultats.
+  - *Aucune bourse garantie pour toutes les années — les bourses sont méritées ou liées à la priorité d'inscription.*
+- **Stages académiques & Recrutement** :
+  - Plus de 300 stages garantis et placés par l'école chez nos partenaires.
+  - *L'école ne garantit pas l'embauche* : Les stages sont académiques. Cependant, les étudiants qui se distinguent peuvent être recrutés directement par les partenaires (Sinotruck, CEL'OR, etc.). Tout dépend de la détermination et du travail de l'étudiant.
 - **Laboratoires modernes** : Plus de 5 salles informatiques climatisées, ateliers génie civil, mécatronique, électronique et énergies renouvelables.
 - **Sous-centre d'examen officiel** : Sous-centre agréé MINESUP pour les examens nationaux BTS et HND.
 - **Taux de réussite 2024** : 89,23% global (100% en Génie Logiciel, Réseaux, Comptabilité, Logistique, Marketing).

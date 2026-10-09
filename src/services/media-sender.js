@@ -1,4 +1,4 @@
-const fs = require('fs');
+﻿const fs = require('fs');
 const path = require('path');
 const whatsapp = require('./whatsapp');
 const messenger = require('./messenger');
@@ -142,6 +142,26 @@ const MEDIA = {
     type: 'image',
     file: 'atelier_mecatronique_moteur.jpeg',
     caption: '⚙️ *Atelier Mécatronique — Moteurs Sectionnés ISETAG*\n• Travaux sur moteurs thermiques en coupe : pistons, cylindres, boîte de vitesses\n• Apprentissage complet par la pratique en atelier équipé.\n🌐 Plus d\'infos : https://www.isetag.cm',
+  },
+  plomberie: {
+    type: 'image',
+    file: 'atelier_plomberie_fluides.jpeg',
+    caption: '🚿 *Atelier Plomberie & Fluides — ISETAG*\n• Installation sanitaire complète : lavabo, toilettes, pompe à pression\n• Filières : BTS Installation Sanitaire & Maintenance des Systèmes Fluidiques.\n🌐 Plus d\'infos : https://www.isetag.cm',
+  },
+  maritime_port_1: {
+    type: 'image',
+    file: 'maritime_etudiants_port_1.jpeg',
+    caption: '⚓ *Étudiants Maritimes ISETAG au Port de Douala*\n• Uniformes marins officiels (veste blanche + casquette de capitaine) offerts\n• Stage au Port Autonome de Douala (PAD) avec grues et navires réels !\n• Double diplôme Licence + Certification Internationale STCW 95.\n🌐 Plus d\'infos : https://www.isetag.cm',
+  },
+  maritime_port_2: {
+    type: 'image',
+    file: 'maritime_etudiants_port_2.jpeg',
+    caption: '⚓ *Formation Maritime ISETAG — Immersion au Port de Douala*\n• Étudiants et enseignants sur le quai du port, navire "SPAR GEMINI" en arrière-plan\n• Stages garantis : PAD, PAK (Kribi), MSC, Kloe Shipping et plus.\n🌐 Plus d\'infos : https://www.isetag.cm',
+  },
+  maritime_port_3: {
+    type: 'image',
+    file: 'maritime_etudiants_port_3.jpeg',
+    caption: '⚓ *Sciences Portuaires & Maritimes — ISETAG Douala*\n• Groupe d\'étudiants en uniforme marin sur le quai du Port Autonome de Douala\n• Filières : Navigation Maritime, Électromécanique Navale, Logistique Portuaire, Pêches.\n🌐 Plus d\'infos : https://www.isetag.cm',
   },
 };
 
@@ -297,16 +317,23 @@ function detectMediaKeys(userText, aiResponse, lang) {
     keys.push('campus');
   }
 
-  // ── 6. MARITIME PHOTO ──────────────────────────────────────────────
-  const userAsksMaritime = /maritime|portuaire|navigation|stcw|bateau|navire|quai/i.test(userText);
+  // -- 6. MARITIME PHOTOS (vraies photos du port avec etudiants en uniforme) --
+  const userAsksMaritime = /maritime|portuaire|navigation|stcw|bateau|navire|quai|sciences portuaires|glpm|nautique/i.test(userText);
   if (userAsksMaritime && !residenceInUser && !userAsksBus) {
-    keys.push('maritime_photo');
+    keys.push('maritime_port_1');
+    keys.push('maritime_port_2');
   }
 
   // ── 7. ATELIER ÉLECTRICITÉ & ÉNERGIES ───────────────────────────────
   const userAsksElec = /[eé]lectrotechnique|[eé]lectricit[eé]|[eé]nergie renouvelable|solaire|banc d'essai/i.test(userText);
   if (userAsksElec) {
     keys.push('electricite');
+  }
+
+  // -- 7b. PLOMBERIE & FLUIDES --
+  const userAsksPlomberie = /plomberie|fluides|sanitaire|installation sanitaire|robinetterie|tuyauterie/i.test(userText);
+  if (userAsksPlomberie) {
+    keys.push('plomberie');
   }
 
   // ── 8. ATELIER BOIS & MENUISERIE ───────────────────────────────────
