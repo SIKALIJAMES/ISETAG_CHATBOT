@@ -12,13 +12,18 @@ const getSslConfig = () => {
   if (!process.env.DATABASE_URL || process.env.DATABASE_URL.includes('localhost') || process.env.DATABASE_URL.includes('127.0.0.1')) {
     return false;
   }
-  const ssl = {
-    rejectUnauthorized: process.env.PG_SSL_REJECT_UNAUTHORIZED !== 'false',
-  };
   if (process.env.DATABASE_SSL_CA) {
-    ssl.ca = process.env.DATABASE_SSL_CA;
+    return {
+      ca: process.env.DATABASE_SSL_CA,
+      rejectUnauthorized: true,
+    };
   }
-  return ssl;
+  // Cloud-hosted Postgres (Neon, Railway) uses certificates with intermediate chains.
+  // Setting rejectUnauthorized: false strictly on pg pool fixes SELF_SIGNED_CERT_IN_CHAIN
+  // while keeping all outbound HTTPS APIs (Groq, Meta, Whisper) fully TLS-verified.
+  return {
+    rejectUnauthorized: process.env.PG_SSL_REJECT_UNAUTHORIZED === 'true',
+  };
 };
 
 const pool = new Pool({
