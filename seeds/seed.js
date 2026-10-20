@@ -15,19 +15,31 @@ async function seed() {
     } else {
       const passwordHash = process.env.ADMIN_PASSWORD_HASH || await bcrypt.hash(initialPassword, 10);
 
-      // Insert only if user does not exist (ON CONFLICT DO NOTHING)
-      const insertResult = await pool.query(
-        `INSERT INTO users (email, password_hash)
-         VALUES ($1, $2)
-         ON CONFLICT (email) DO NOTHING
-         RETURNING id`,
-        [email, passwordHash]
-      );
-
-      if (insertResult.rows.length > 0) {
-        console.log(`✅ Initial admin user created — id=${insertResult.rows[0].id} email=${email}`);
+      if (process.env.ADMIN_PASSWORD_HASH) {
+        // ADMIN_PASSWORD_HASH is explicitly set: create or FORCE-UPDATE the password
+        // (used to reset a locked/forgotten password via Railway env var)
+        const upsertResult = await pool.query(
+          `INSERT INTO users (email, password_hash)
+           VALUES ($1, $2)
+           ON CONFLICT (email) DO UPDATE SET password_hash = EXCLUDED.password_hash
+           RETURNING id`,
+          [email, passwordHash]
+        );
+        console.log(`✅ Admin user upserted (password forced via ADMIN_PASSWORD_HASH) — id=${upsertResult.rows[0].id}`);
       } else {
-        console.log(`ℹ️  Admin user "${email}" already exists. Preserving existing password (ON CONFLICT DO NOTHING).`);
+        // ADMIN_INITIAL_PASSWORD: only create if the user does not exist yet
+        const insertResult = await pool.query(
+          `INSERT INTO users (email, password_hash)
+           VALUES ($1, $2)
+           ON CONFLICT (email) DO NOTHING
+           RETURNING id`,
+          [email, passwordHash]
+        );
+        if (insertResult.rows.length > 0) {
+          console.log(`✅ Initial admin user created — id=${insertResult.rows[0].id} email=${email}`);
+        } else {
+          console.log(`ℹ️  Admin user "${email}" already exists. Preserving existing password (ON CONFLICT DO NOTHING).`);
+        }
       }
     }
 
