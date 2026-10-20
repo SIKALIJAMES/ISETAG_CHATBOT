@@ -1,6 +1,6 @@
 'use strict';
 const fetch = require('node-fetch');
-const { query } = require('../config/db');
+const { query } = require('../config/database');
 const { generateSummary } = require('./faq.service');
 const { shortHash } = require('../utils/crypto');
 const { escalationUserMessage, escalationAdminMessage } = require('../utils/formatter');

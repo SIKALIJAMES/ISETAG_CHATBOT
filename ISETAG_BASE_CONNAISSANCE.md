@@ -72,7 +72,7 @@ Formule : 1 à 2 ans de formation au Cameroun à l'ISETAG, puis poursuite dans u
 - **Génie Mécanique et Productique** : Chaudronnerie et soudure, Construction métallique, Contrôle instrumentation et régulation, Maintenance industrielle et productique, Maintenance des appareils biomédicaux, Maintenance après-vente automobile, Mécatronique, Construction mécanique, Fabrication mécanique.
 - **Bois & Environnement** : Menuiserie / Ébénisterie.
 - **Réseaux & Télécoms** : Télécommunication, Réseaux et sécurité informatique.
-- **Génie Informatique** : Génie logiciel, Infographie et web design, Informatique industrielle et automatisme, Maintenance des systèmes informatiques, E-commerce et marketing numérique.
+- **Génie Informatique** : Génie logiciel, Infographie & Web Design (IWD — spécialité unique combinant infographie, graphisme et web design), Informatique industrielle et automatisme (IIA), Maintenance des systèmes informatiques (MSI), E-commerce et marketing numérique.
 
 #### 3. Domaine Maritime et Portuaire (4 ans)
 - Gestion logistique portuaire et maritime (GLPM)
@@ -193,6 +193,47 @@ Cours du jour et cours du soir. Diplôme : Certification professionnelle.
 - Nationaux : 755 000 FCFA / an
 - Étrangers : 1 005 000 FCFA / an
 
+#### Formation Professionnelle (Année académique 2026-2027)
+- **Frais d'inscription** : **15 000 – 25 000 FCFA** (à régler séparément, avant le début des cours).
+- **Avantage spécial** : **Une remise de 10% est accordée en cas de paiement intégral de la scolarité à l'inscription !**
+- **Modalités de paiement** : 3 tranches (1ère tranche à l'inscription, 2ème tranche au plus tard le 30/11/2026, 3ème tranche au plus tard le 28/02/2027).
+
+| N° | Filières / Spécialités | 1ère tranche (Inscription) | 2ème tranche (30/11/2026) | 3ème tranche (28/02/2027) | TOTAL |
+|---|---|---|---|---|---|
+| **Génie Civil & Bâtiment** | | | | | |
+| 01 | Peinture bâtiment, Installation sanitaire, Charpente bâtiment, Carrelage | 145 000 FCFA | 95 000 FCFA | 60 000 FCFA | **300 000 FCFA** |
+| 02 | Architecture bâtiment | 155 000 FCFA | 105 000 FCFA | 70 000 FCFA | **330 000 FCFA** |
+| **Génie Mécanique & Production** | | | | | |
+| 03 | Tôlerie automobile, Peinture automobile | 150 000 FCFA | 100 000 FCFA | 70 000 FCFA | **320 000 FCFA** |
+| 04 | Mécatronique automobile, Climatisation automobile | 180 000 FCFA | 120 000 FCFA | 80 000 FCFA | **380 000 FCFA** |
+| 05 | Maintenance industrielle, Contrôle technique véhicules et engins lourds | 185 000 FCFA | 125 000 FCFA | 80 000 FCFA | **390 000 FCFA** |
+| 06 | Soudure homologuée – Chaudronnerie | 185 000 FCFA | 125 000 FCFA | 80 000 FCFA | **390 000 FCFA** |
+| **Génie Informatique** | | | | | |
+| 07 | Marketing digital, Community management, Création de contenus, Montage vidéo | 165 000 FCFA | 110 000 FCFA | 75 000 FCFA | **350 000 FCFA** |
+| 08 | Réseaux et sécurité informatique | 180 000 FCFA | 120 000 FCFA | 75 000 FCFA | **375 000 FCFA** |
+| 09 | Programmation web et mobile | 190 000 FCFA | 125 000 FCFA | 85 000 FCFA | **400 000 FCFA** |
+| 10 | Infographie 2D/3D | 165 000 FCFA | 110 000 FCFA | 75 000 FCFA | **350 000 FCFA** |
+| 11 | Intelligence artificielle | 200 000 FCFA | 135 000 FCFA | 85 000 FCFA | **420 000 FCFA** |
+| **Génie Électrique** | | | | | |
+| 12 | Électricité bâtiment, Instrumentation | 145 000 FCFA | 95 000 FCFA | 60 000 FCFA | **300 000 FCFA** |
+| 13 | Électricité industrielle, Commande des systèmes automatisés | 185 000 FCFA | 125 000 FCFA | 80 000 FCFA | **390 000 FCFA** |
+| **Génie Environnement** | | | | | |
+| 14 | Ébénisterie | 130 000 FCFA | 85 000 FCFA | 55 000 FCFA | **270 000 FCFA** |
+| **Filière Maritime & Portuaire** | | | | | |
+| 15 | Matelot qualifié | 165 000 FCFA | 110 000 FCFA | 75 000 FCFA | **350 000 FCFA** |
+| 16 | Docker | 165 000 FCFA | 110 000 FCFA | 75 000 FCFA | **350 000 FCFA** |
+| 17 | Mécanicien graisseur naval | 190 000 FCFA | 125 000 FCFA | 85 000 FCFA | **400 000 FCFA** |
+| 18 | Chaudronnier naval | 215 000 FCFA | 145 000 FCFA | 90 000 FCFA | **450 000 FCFA** |
+| 19 | Électromécanicien naval | 215 000 FCFA | 145 000 FCFA | 90 000 FCFA | **450 000 FCFA** |
+| 20 | Pilote de remorqueur | 190 000 FCFA | 125 000 FCFA | 85 000 FCFA | **400 000 FCFA** |
+| **Commerce, Gestion et Droit** | | | | | |
+| 21 | Secrétariat comptable | 145 000 FCFA | 95 000 FCFA | 60 000 FCFA | **300 000 FCFA** |
+| 22 | Comptabilité informatisée | 150 000 FCFA | 100 000 FCFA | 70 000 FCFA | **320 000 FCFA** |
+| 23 | Douane et transit | 160 000 FCFA | 105 000 FCFA | 70 000 FCFA | **335 000 FCFA** |
+| 24 | Gestion des projets | 155 000 FCFA | 105 000 FCFA | 70 000 FCFA | **330 000 FCFA** |
+| 25 | Gestion fiscale de l'entreprise | 155 000 FCFA | 105 000 FCFA | 70 000 FCFA | **330 000 FCFA** |
+| 26 | Gestion des collectivités territoriales décentralisées | 180 000 FCFA | 120 000 FCFA | 80 000 FCFA | **380 000 FCFA** |
+
 ---
 
 ## 6. 🏠 VIE SUR LE CAMPUS, LOGEMENT, BOURSES & AVANTAGES
@@ -201,7 +242,9 @@ Cours du jour et cours du soir. Diplôme : Certification professionnelle.
   - Plus de 250 chambres meublées et sécurisées situées à Yassa sur le campus.
   - **Tarif officiel : EXACTEMENT 22 000 FCFA / mois** (eau, lumière/électricité et Wi-Fi haut débit fibre optique inclus).
   - Photo officielle disponible et envoyée sur WhatsApp (`residence.jpeg`).
-- **Transport gratuit** : Plusieurs minibus de ramassage gratuits reliant les carrefours clés de Douala au campus de Yassa.
+- **Transport gratuit** : Service de minibus de ramassage 100% gratuits pour tous les étudiants inscrits à l'ISETAG. Deux lignes officielles :
+  - **Ligne 1** : Campus Yassa ↔ Rond-point ELF (à l'arrêt de bus situé juste après le rond-point ELF). Le bus s'arrête à chaque arrêt de bus et chaque carrefour sur le trajet menant au campus.
+  - **Ligne 2** : Campus Yassa ↔ Station-service TotalEnergies de Nkolbong.
 - **Dates de rentrée académique 2026-2027 (année en cours)** :
   - **BTS / HND 1ère année** : 5 octobre 2026 — Inscriptions ouvertes jusqu'au *5 novembre 2026*
   - **BTS / HND 2ème année** : 7 septembre 2026

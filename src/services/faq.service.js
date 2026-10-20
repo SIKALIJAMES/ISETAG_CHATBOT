@@ -1,5 +1,5 @@
 'use strict';
-const { query } = require('../config/db');
+const { query } = require('../config/database');
 const { getOpenAI } = require('./audio.service');
 const { normalizeText, tokenize } = require('./nlp.service');
 const logger = require('../utils/logger');

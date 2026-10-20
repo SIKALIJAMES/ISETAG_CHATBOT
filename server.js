@@ -6,8 +6,7 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-// Bypass local SSL certificate verification (useful for corporate networks like intern machines)
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+const helmet = require('helmet');
 
 const webhookRoutes = require('./src/routes/webhook');
 const messengerRoutes = require('./src/routes/messenger');
@@ -16,7 +15,14 @@ const authRoutes = require('./src/routes/auth');
 const preinscriptionRoutes = require('./src/routes/preinscription');
 
 const app = express();
+app.set('trust proxy', 1); // Railway est derrière un proxy inverse
 const PORT = process.env.PORT || 3000;
+
+// Security Middleware
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginResourcePolicy: { policy: 'cross-origin' }
+}));
 
 // Middleware
 app.use(cors());
@@ -25,7 +31,7 @@ app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 // Capture rawBody for HMAC signature verification (must come before json parser)
 app.use(express.json({
   verify: (req, res, buf) => {
-    req.rawBody = buf.toString();
+    req.rawBody = buf; // Buffer brut, octets exacts reçus
   }
 }));
 app.use(express.urlencoded({ extended: true }));
@@ -52,7 +58,6 @@ const path = require('path');
 
 // Serve public media files (flyers, tarifs, residence, etc.)
 app.use('/media', express.static(path.join(__dirname, 'public/media')));
-app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 app.use(express.static(path.join(__dirname, 'frontend/dist')));
 app.get('*', (req, res) => {

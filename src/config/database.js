@@ -8,9 +8,22 @@ if (!process.env.DATABASE_URL) {
   console.error('[DB] ❌ FATAL ERROR: DATABASE_URL environment variable is not defined!');
 }
 
+const getSslConfig = () => {
+  if (!process.env.DATABASE_URL || process.env.DATABASE_URL.includes('localhost') || process.env.DATABASE_URL.includes('127.0.0.1')) {
+    return false;
+  }
+  const ssl = {
+    rejectUnauthorized: process.env.PG_SSL_REJECT_UNAUTHORIZED !== 'false',
+  };
+  if (process.env.DATABASE_SSL_CA) {
+    ssl.ca = process.env.DATABASE_SSL_CA;
+  }
+  return ssl;
+};
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
+  ssl: getSslConfig(),
   max: 10,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 15000,  // 15s — enough for Neon cold start
@@ -51,5 +64,6 @@ if (process.env.NODE_ENV !== 'test') {
 module.exports = {
   query: (text, params) => pool.query(text, params),
   getClient: () => pool.connect(),
-  pool
+  pool,
+  getPool: () => pool
 };

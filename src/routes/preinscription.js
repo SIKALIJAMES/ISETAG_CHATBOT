@@ -4,7 +4,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const { query } = require('../config/db');
+const { query } = require('../config/database');
 const { protect } = require('../middleware/auth');
 const { sendTextMessage } = require('../services/whatsapp');
 
@@ -21,30 +21,34 @@ function normalizePhone(raw) {
   return cleaned;
 }
 
+const crypto = require('crypto');
+
 // ─────────────────────────────────────────────
-//  Upload directory setup
+//  Upload directory setup (Private storage, configurable via UPLOADS_DIR)
 // ─────────────────────────────────────────────
-const UPLOAD_DIR = path.join(__dirname, '../../public/uploads/preinscriptions');
-if (!fs.existsSync(UPLOAD_DIR)) {
-  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+const UPLOADS_DIR = process.env.UPLOADS_DIR || path.join(__dirname, '../../uploads/preinscriptions');
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, UPLOAD_DIR),
+  destination: (req, file, cb) => cb(null, UPLOADS_DIR),
   filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    const safeName = `${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`;
+    const ext = path.extname(file.originalname).toLowerCase();
+    const safeName = `${crypto.randomUUID()}${ext}`;
     cb(null, safeName);
   },
 });
 
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'application/pdf'];
+const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.pdf'];
+
 const fileFilter = (req, file, cb) => {
-  const allowed = ['.pdf', '.jpg', '.jpeg', '.png', '.webp'];
   const ext = path.extname(file.originalname).toLowerCase();
-  if (allowed.includes(ext)) {
+  if (ALLOWED_MIME_TYPES.includes(file.mimetype) && ALLOWED_EXTENSIONS.includes(ext)) {
     cb(null, true);
   } else {
-    cb(new Error(`Type de fichier non autorisé: ${ext}. Formats acceptés: PDF, JPG, PNG`));
+    cb(new Error(`Type de fichier non autorisé. Formats acceptés: PDF, JPG, PNG`));
   }
 };
 
@@ -143,7 +147,7 @@ router.post('/', (req, res) => {
         [dossierCode, newId]
       ).catch(err => console.warn('[PRE-INSCRIPTION] Could not set dossier_code:', err.message));
 
-      console.log(`[PRE-INSCRIPTION] ✅ New submission #${dossierCode} — ${full_name} / ${domain}`);
+      console.log(`[PRE-INSCRIPTION] ✅ New submission #${dossierCode} — ${domain} / ${specialty}`);
 
       // ── Envoi automatique de la confirmation WhatsApp au candidat ────
       const targetPhone = normalizePhone(whatsapp_phone || phone);
@@ -169,7 +173,7 @@ Votre pré-inscription à l'**ISETAG** (Institut Supérieur Évangélique des Te
 🌐 *Site web :* https://www.isetag.cm`;
 
         sendTextMessage(targetPhone, confirmationText)
-          .then(() => console.log(`[PRE-INSCRIPTION] 📲 WhatsApp confirmation sent to ${targetPhone} (#${dossierCode})`))
+          .then(() => console.log(`[PRE-INSCRIPTION] 📲 WhatsApp confirmation sent to ...${targetPhone.slice(-4)} (#${dossierCode})`))
           .catch(waErr => console.warn(`[PRE-INSCRIPTION] ⚠️ WhatsApp confirmation failed:`, waErr.message));
       }
 
@@ -222,7 +226,8 @@ router.get('/', protect, async (req, res) => {
     const result = await query(sql, params);
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[PREINSCRIPTION] List error:', err.message);
+    res.status(500).json({ error: 'Une erreur interne est survenue' });
   }
 });
 
@@ -343,7 +348,7 @@ router.get('/stats/summary', protect, async (req, res) => {
     });
   } catch (err) {
     console.error('[PREINSCRIPTION] stats/summary error:', err.message);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Une erreur interne est survenue' });
   }
 });
 
@@ -359,7 +364,8 @@ router.get('/:id', protect, async (req, res) => {
     if (result.rows.length === 0) return res.status(404).json({ error: 'Introuvable' });
     res.json(result.rows[0]);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[PREINSCRIPTION] Detail error:', err.message);
+    res.status(500).json({ error: 'Une erreur interne est survenue' });
   }
 });
 
@@ -380,7 +386,8 @@ router.patch('/:id/status', protect, async (req, res) => {
     );
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[PREINSCRIPTION] Status update error:', err.message);
+    res.status(500).json({ error: 'Une erreur interne est survenue' });
   }
 });
 

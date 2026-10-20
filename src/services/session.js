@@ -135,6 +135,94 @@ async function clearSession(phone) {
   }
 }
 
+/**
+ * Get all media keys already sent to a user in the current session
+ */
+async function getSentMedia(phone) {
+  try {
+    const members = await redis.smembers(`sent_media:${phone}`);
+    return Array.isArray(members) ? members : [];
+  } catch (err) {
+    console.error('[REDIS] getSentMedia error:', err.message);
+    return [];
+  }
+}
+
+/**
+ * Record a media key as sent to a user (expires after 24h)
+ */
+async function addSentMedia(phone, mediaKey) {
+  const key = `sent_media:${phone}`;
+  try {
+    await redis.sadd(key, mediaKey);
+    await redis.expire(key, SESSION_TTL);
+  } catch (err) {
+    console.error('[REDIS] addSentMedia error:', err.message);
+  }
+}
+
+/**
+ * Check if a media key was already sent to a user
+ */
+async function hasMediaBeenSent(phone, mediaKey) {
+  try {
+    const isMember = await redis.sismember(`sent_media:${phone}`, mediaKey);
+    return Boolean(isMember);
+  } catch (err) {
+    console.error('[REDIS] hasMediaBeenSent error:', err.message);
+    return false;
+  }
+}
+
+// ─────────────────────────────────────────────
+//  Webhook Idempotency / Message Deduplication
+// ─────────────────────────────────────────────
+const inMemoryDedup = new Map();
+const DEDUP_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+function cleanupMemoryDedup() {
+  const now = Date.now();
+  for (const [id, expiry] of inMemoryDedup.entries()) {
+    if (expiry <= now) inMemoryDedup.delete(id);
+  }
+}
+
+/**
+ * Deduplicate incoming webhook messages (10 minutes TTL).
+ * Uses local fast memory first, then Upstash Redis SET NX for distributed safety.
+ * Returns true if message is NEW (not seen before).
+ * Returns false if message is a DUPLICATE (already processed).
+ */
+async function markMessageProcessed(messageId) {
+  if (!messageId) return true;
+
+  const now = Date.now();
+  // 1. Fast in-memory check
+  if (inMemoryDedup.has(messageId)) {
+    if (inMemoryDedup.get(messageId) > now) {
+      return false; // Duplicate found in memory
+    }
+  }
+
+  // Record in memory
+  inMemoryDedup.set(messageId, now + DEDUP_TTL_MS);
+  if (inMemoryDedup.size > 2000) cleanupMemoryDedup();
+
+  // 2. Distributed Redis check (survives worker reloads/multi-instances)
+  try {
+    const key = `msg_dedup:${messageId}`;
+    const res = await redis.set(key, '1', { nx: true, ex: 600 });
+    // In @upstash/redis, returns 'OK' or true if newly set, null if key already existed
+    if (res === null) {
+      return false; // Key was already set in Redis
+    }
+    return true;
+  } catch (err) {
+    console.warn('[REDIS] Dedup fallback to memory:', err.message);
+    return true; // Memory check passed, so proceed
+  }
+}
+
 module.exports = {
   getHistory,
   addMessage,
@@ -146,5 +234,10 @@ module.exports = {
   setOrientation,
   clearOrientation,
   clearSession,
+  getSentMedia,
+  addSentMedia,
+  hasMediaBeenSent,
+  markMessageProcessed,
 };
+
 

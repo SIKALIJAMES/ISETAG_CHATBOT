@@ -53,7 +53,11 @@ function DetailModal({ id, onClose, onUpdated }) {
     onUpdated();
   }
 
-  const docUrl = f => f ? `/uploads/preinscriptions/${f}` : null;
+  const docUrl = f => {
+    if (!f) return null;
+    const token = localStorage.getItem('token');
+    return `/api/admin/documents/${encodeURIComponent(f)}${token ? `?token=${encodeURIComponent(token)}` : ''}`;
+  };
 
   const docs = data ? [
     { label: 'Photo 4×4',          file: data.doc_photo },

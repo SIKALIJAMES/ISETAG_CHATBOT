@@ -270,9 +270,9 @@ function generateRecommendation(answers, lang) {
     fr: {
       tic: {
         name: '💻 Technologies de l\'Information et de la Communication (TIC)',
-        specialties: 'Génie Logiciel · Infographie & Web Design · E-commerce · Marketing Numérique · Intelligence Artificielle',
-        why: 'Tu as un profil créatif/technique. Ces filières te permettront de coder, concevoir des sites web, créer des applications ou piloter des campagnes numériques.',
-        careers: 'Développeur web, Designer UI/UX, Responsable e-commerce, Data Analyst, Ingénieur en IA',
+        specialties: 'Génie Logiciel · Infographie & Web Design (IWD) · Informatique Industrielle & Automatisme (IIA) · E-commerce & Marketing Numérique · Réseau & Sécurité',
+        why: 'Tu as un profil créatif/technique. Ces filières te permettront de coder, concevoir des sites web, créer des applications ou piloter des systèmes informatiques et automatisés.',
+        careers: 'Développeur web, Designer UI/UX, Administrateur réseau, Technicien IIA, Responsable e-commerce',
         duration: 'BTS/HND (2 ans) · Licence (3 ans) · Master (5 ans)',
       },
       commerce: {
@@ -300,9 +300,9 @@ function generateRecommendation(answers, lang) {
     en: {
       tic: {
         name: '💻 Information & Communication Technologies (ICT)',
-        specialties: 'Software Engineering · Graphic Design & Web Design · E-commerce · Digital Marketing · Artificial Intelligence',
-        why: 'You have a creative/technical profile. These programs will let you code, design websites, build apps, or manage digital campaigns.',
-        careers: 'Web Developer, UI/UX Designer, E-commerce Manager, Data Analyst, AI Engineer',
+        specialties: 'Software Engineering · Graphic & Web Design (IWD) · Industrial Computing & Automation (IIA) · E-commerce & Digital Marketing · Network & Security',
+        why: 'You have a creative/technical profile. These programs will let you code, design websites, build apps, or manage networks and automated systems.',
+        careers: 'Web Developer, UI/UX Designer, Network Administrator, Automation Technician, E-commerce Manager',
         duration: 'HND (2 yrs) · Bachelor\'s (3 yrs) · Master\'s (5 yrs)',
       },
       commerce: {
@@ -334,7 +334,7 @@ function generateRecommendation(answers, lang) {
   const secondDomain = d[second];
 
   // ── Build recommendation message ──────────────────────────────
-  const formUrl = `${process.env.APP_URL || 'https://isetag.cm'}/preinscription`;
+  const formUrl = `${process.env.APP_URL || 'https://isetagchatbot-production.up.railway.app'}/preinscription`;
 
   if (lang === 'en') {
     return `✅ *Your Orientation Result*\n\n` +

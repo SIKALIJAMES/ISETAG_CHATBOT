@@ -14,10 +14,12 @@ const {
   getOrientation,
   setOrientation,
   clearOrientation,
+  markMessageProcessed,
 } = require('../services/session');
 const orientationService = require('../services/orientation.service');
 const { query } = require('../config/database');
 const { sendContextualMedia } = require('../services/media-sender');
+const { verifyHmac } = require('../middleware/hmac');
 
 // Track consecutive AI errors per page-scoped user ID
 const noMatchCount = {};
@@ -77,14 +79,14 @@ router.get('/messenger', (req, res) => {
     console.log('[MESSENGER] ✅ Verified by Meta');
     return res.status(200).send(challenge);
   }
-  console.warn(`[MESSENGER] ❌ Verification failed. Expected: '${expectedToken?.trim()}', Got: '${token}'`);
+  console.warn('[MESSENGER] ❌ Verification failed — token mismatch');
   res.status(403).send('Forbidden');
 });
 
 /**
  * POST — Receive messages from Messenger
  */
-router.post('/messenger', async (req, res) => {
+router.post('/messenger', verifyHmac, async (req, res) => {
   // Acknowledge Messenger immediately to prevent retry storms
   res.status(200).send('EVENT_RECEIVED');
 
@@ -96,6 +98,16 @@ router.post('/messenger', async (req, res) => {
       const messagingEvent = entry?.messaging?.[0];
 
       if (!messagingEvent || !messagingEvent.message) return;
+
+      // ── Anti-Duplicate / Webhook Idempotency Check ──────────────────
+      const messageMid = messagingEvent.message.mid;
+      if (messageMid) {
+        const isNew = await markMessageProcessed(`msg:${messageMid}`);
+        if (!isNew) {
+          console.log(`[MESSENGER] ⚠️ Duplicate Messenger message ignored: ${messageMid}`);
+          return;
+        }
+      }
 
       const senderPsid = messagingEvent.sender.id;
       const dbIdentifier = `messenger:${senderPsid}`;

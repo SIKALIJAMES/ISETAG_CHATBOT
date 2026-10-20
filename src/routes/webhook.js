@@ -14,6 +14,7 @@ const {
   getOrientation,
   setOrientation,
   clearOrientation,
+  markMessageProcessed,
 } = require('../services/session');
 const orientationService = require('../services/orientation.service');
 const { verifyHmac } = require('../middleware/hmac');
@@ -75,7 +76,7 @@ router.get('/whatsapp', (req, res) => {
     console.log('[WEBHOOK] ✅ Verified by Meta');
     return res.status(200).send(challenge);
   }
-  console.warn(`[WEBHOOK] ❌ Verification failed. Expected: '${process.env.WHATSAPP_VERIFY_TOKEN?.trim()}', Got: '${token}'`);
+  console.warn('[WEBHOOK] ❌ Verification failed — token mismatch');
   res.status(403).send('Forbidden');
 });
 
@@ -83,8 +84,8 @@ router.get('/whatsapp', (req, res) => {
  * POST — Receive messages from WhatsApp
  * FIX: respond 200 immediately, process async
  */
-router.post('/whatsapp', async (req, res) => {
-  console.log('[WEBHOOK] 🔔 POST received!', JSON.stringify(req.body).slice(0, 200));
+router.post('/whatsapp', verifyHmac, async (req, res) => {
+  console.log('[WEBHOOK] POST received');
 
   // ✅ Acknowledge Meta immediately (prevents retry storms)
   res.status(200).send('OK');
@@ -96,6 +97,16 @@ router.post('/whatsapp', async (req, res) => {
       const message = changes?.messages?.[0];
 
       if (!message) return;
+
+      // ── Anti-Duplicate / Webhook Idempotency Check ──────────────────
+      const messageId = message.id;
+      if (messageId) {
+        const isNew = await markMessageProcessed(`wa:${messageId}`);
+        if (!isNew) {
+          console.log(`[WEBHOOK] ⚠️ Duplicate WhatsApp message ignored: ${messageId}`);
+          return;
+        }
+      }
 
       const phone = message.from;
       let userText = '';

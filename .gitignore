@@ -7,4 +7,6 @@ frontend/node_modules/
 frontend/dist/
 ~$*
 images_brutes/
+images_brutes_1/
 images_analysis.json
+images_analysis_1.json

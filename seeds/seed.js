@@ -6,40 +6,29 @@ async function seed() {
   console.log('🌱 Running seed script...');
 
   try {
-    // 1. Create/Reset Admin User
+    // 1. Seed Initial Admin User (Safe & Idempotent)
     const email = (process.env.ADMIN_EMAIL || 'admin@isetag.cm').toLowerCase().trim();
-    const plainPassword = 'isetag2025';
+    const initialPassword = process.env.ADMIN_INITIAL_PASSWORD;
 
-    // Warn if ADMIN_PASSWORD_HASH is set externally (this overrides the default)
-    if (process.env.ADMIN_PASSWORD_HASH) {
-      console.warn('⚠️  ADMIN_PASSWORD_HASH env var is set — using it instead of default password');
-    }
-
-    const passwordHash = process.env.ADMIN_PASSWORD_HASH || await bcrypt.hash(plainPassword, 10);
-
-    // Verify the hash works before saving (sanity check)
-    if (!process.env.ADMIN_PASSWORD_HASH) {
-      const valid = await bcrypt.compare(plainPassword, passwordHash);
-      console.log(`🔑 Hash sanity check: ${valid ? '✅ OK' : '❌ FAILED'}`);
-    }
-
-    // Force-delete and reinsert to guarantee a clean state
-    await pool.query('DELETE FROM users WHERE email = $1', [email]);
-    await pool.query(
-      'INSERT INTO users (email, password_hash) VALUES ($1, $2)',
-      [email, passwordHash]
-    );
-
-    // Read back and verify
-    const check = await pool.query('SELECT id, email, password_hash FROM users WHERE email = $1', [email]);
-    if (check.rows.length > 0) {
-      const stored = check.rows[0];
-      const verifyOk = !process.env.ADMIN_PASSWORD_HASH
-        ? await bcrypt.compare(plainPassword, stored.password_hash)
-        : true;
-      console.log(`✅ Admin user saved — id=${stored.id} email=${stored.email} hash_verify=${verifyOk ? '✅' : '❌'}`);
+    if (!initialPassword && !process.env.ADMIN_PASSWORD_HASH) {
+      console.warn('⚠️  Neither ADMIN_INITIAL_PASSWORD nor ADMIN_PASSWORD_HASH is set. Skipping initial admin user creation.');
     } else {
-      console.error('❌ Admin user not found after insert!');
+      const passwordHash = process.env.ADMIN_PASSWORD_HASH || await bcrypt.hash(initialPassword, 10);
+
+      // Insert only if user does not exist (ON CONFLICT DO NOTHING)
+      const insertResult = await pool.query(
+        `INSERT INTO users (email, password_hash)
+         VALUES ($1, $2)
+         ON CONFLICT (email) DO NOTHING
+         RETURNING id`,
+        [email, passwordHash]
+      );
+
+      if (insertResult.rows.length > 0) {
+        console.log(`✅ Initial admin user created — id=${insertResult.rows[0].id} email=${email}`);
+      } else {
+        console.log(`ℹ️  Admin user "${email}" already exists. Preserving existing password (ON CONFLICT DO NOTHING).`);
+      }
     }
 
     // 2. Fix database schema for messages table (ensure role exists and direction is nullable)

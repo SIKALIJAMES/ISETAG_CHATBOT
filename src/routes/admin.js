@@ -4,6 +4,8 @@ const router = express.Router();
 const { query } = require('../config/database');
 const { uploadKnowledge, searchRelevant } = require('../services/embeddings');
 const { protect } = require('../middleware/auth');
+const path = require('path');
+const fs = require('fs');
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 const pdf = require('pdf-parse');
@@ -106,7 +108,7 @@ router.get('/stats', protect, async (req, res) => {
     });
   } catch (err) {
     console.error('[ADMIN] Stats error:', err.message);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Une erreur interne est survenue' });
   }
 });
 
@@ -132,7 +134,7 @@ router.post('/knowledge/upload', protect, upload.single('file'), async (req, res
     res.json({ message: 'Document vectorised and stored successfully' });
   } catch (err) {
     console.error('[ADMIN] Upload error:', err.message);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Une erreur interne est survenue' });
   }
 });
 
@@ -152,7 +154,7 @@ router.post('/knowledge/text', protect, async (req, res) => {
     res.json({ message: 'Text vectorized and stored successfully' });
   } catch (err) {
     console.error('[ADMIN] Text upload error:', err.message);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Une erreur interne est survenue' });
   }
 });
 
@@ -171,7 +173,8 @@ router.get('/knowledge/content', protect, async (req, res) => {
     const fullText = result.rows.map(r => r.content).join('\n\n');
     res.json({ source, text: fullText });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[ADMIN] Knowledge content error:', err.message);
+    res.status(500).json({ error: 'Une erreur interne est survenue' });
   }
 });
 
@@ -183,7 +186,8 @@ router.get('/conversations', protect, async (req, res) => {
     const result = await query('SELECT * FROM conversations ORDER BY updated_at DESC');
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[ADMIN] Conversations list error:', err.message);
+    res.status(500).json({ error: 'Une erreur interne est survenue' });
   }
 });
 
@@ -199,7 +203,8 @@ router.get('/conversations/:id/messages', protect, async (req, res) => {
     );
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[ADMIN] Messages list error:', err.message);
+    res.status(500).json({ error: 'Une erreur interne est survenue' });
   }
 });
 
@@ -244,7 +249,7 @@ router.post('/conversations/:id/reply', protect, async (req, res) => {
     res.json({ message: 'Reply sent successfully' });
   } catch (err) {
     console.error('[ADMIN] Reply sending error:', err.message);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Une erreur interne est survenue' });
   }
 });
 
@@ -257,7 +262,8 @@ router.post('/conversations/:id/resolve', protect, async (req, res) => {
     await query("UPDATE conversations SET status = 'active', updated_at = NOW() WHERE id = $1", [id]);
     res.json({ message: 'Bot re-engaged successfully' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[ADMIN] Resolve escalation error:', err.message);
+    res.status(500).json({ error: 'Une erreur interne est survenue' });
   }
 });
 
@@ -269,7 +275,8 @@ router.delete('/knowledge', protect, async (req, res) => {
     await query('DELETE FROM knowledge_chunks');
     res.json({ message: 'All knowledge chunks cleared successfully' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[ADMIN] Clear knowledge error:', err.message);
+    res.status(500).json({ error: 'Une erreur interne est survenue' });
   }
 });
 
@@ -286,7 +293,8 @@ router.get('/knowledge', protect, async (req, res) => {
     );
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[ADMIN] List knowledge error:', err.message);
+    res.status(500).json({ error: 'Une erreur interne est survenue' });
   }
 });
 
@@ -301,7 +309,8 @@ router.delete('/knowledge/source', protect, async (req, res) => {
     await query('DELETE FROM knowledge_chunks WHERE source = $1', [source]);
     res.json({ message: `Source "${source}" deleted successfully` });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[ADMIN] Delete source error:', err.message);
+    res.status(500).json({ error: 'Une erreur interne est survenue' });
   }
 });
 
@@ -332,7 +341,7 @@ router.post('/conversations/sync-names', protect, async (req, res) => {
     res.json({ message: `✅ Sync completed. ${updated} name(s) recovered from Redis.`, updated });
   } catch (err) {
     console.error('[ADMIN] sync-names error:', err.message);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Une erreur interne est survenue' });
   }
 });
 
@@ -352,7 +361,8 @@ router.patch('/conversations/:id/name', protect, async (req, res) => {
     );
     res.json({ message: `Name updated to "${name.trim()}"` });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[ADMIN] Update name error:', err.message);
+    res.status(500).json({ error: 'Une erreur interne est survenue' });
   }
 });
 
@@ -365,7 +375,8 @@ router.get('/nurturing/stats', protect, async (req, res) => {
     const stats = await getNurturingStats();
     res.json(stats);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[ADMIN] Nurturing stats error:', err.message);
+    res.status(500).json({ error: 'Une erreur interne est survenue' });
   }
 });
 
@@ -379,8 +390,33 @@ router.post('/nurturing/trigger', protect, async (req, res) => {
     const result = await runNurturingJob(limit);
     res.json(result);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[ADMIN] Nurturing trigger error:', err.message);
+    res.status(500).json({ error: 'Une erreur interne est survenue' });
   }
+});
+
+/**
+ * GET /api/admin/documents/:id
+ * Securely serves an uploaded student document (protected by admin authentication)
+ * Searches in private UPLOADS_DIR and legacy public/uploads locations.
+ */
+router.get('/documents/:id', protect, (req, res) => {
+  const filename = path.basename(req.params.id); // Protects against path traversal
+  const uploadsDir = process.env.UPLOADS_DIR || path.join(__dirname, '../../uploads/preinscriptions');
+
+  const possiblePaths = [
+    path.join(uploadsDir, filename),
+    path.join(__dirname, '../../public/uploads/preinscriptions', filename),
+    path.join(__dirname, '../../public/uploads', filename),
+  ];
+
+  for (const filePath of possiblePaths) {
+    if (fs.existsSync(filePath)) {
+      return res.sendFile(path.resolve(filePath));
+    }
+  }
+
+  return res.status(404).json({ error: 'Document introuvable' });
 });
 
 module.exports = router;

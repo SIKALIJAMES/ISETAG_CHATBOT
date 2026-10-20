@@ -1,7 +1,8 @@
-﻿const fs = require('fs');
+const fs = require('fs');
 const path = require('path');
 const whatsapp = require('./whatsapp');
 const messenger = require('./messenger');
+const { hasMediaBeenSent, addSentMedia } = require('./session');
 
 // Base public URL of your Railway deployment
 const BASE_URL = process.env.APP_URL || 'https://isetagchatbot-production.up.railway.app';
@@ -13,155 +14,175 @@ const MEDIA_DIR = path.join(__dirname, '../../public/media');
 const MEDIA = {
   tarif_bts_gestion_fr: {
     type: 'document',
-    file: 'Fiche tarifaire BTS – Gestion.pdf',
-    caption: '💼 Fiche tarifaire BTS — Commerce & Gestion (toutes filières)\n🌐 Site web : https://www.isetag.cm',
+    file: 'Fiche_tarifaire_BTS_Gestion_2026-2027.pdf',
+    caption: '💼 Fiche tarifaire BTS — Commerce & Gestion 2026-2027 (toutes filières)\n🌐 Site web : https://www.isetag-univ.net',
   },
   tarif_bts_gestion_en: {
     type: 'document',
-    file: 'pricing sheet HND (Management and Commercial).pdf',
-    caption: '💼 HND Pricing Sheet — Management & Commercial (all fields)\n🌐 Website: https://www.isetag.cm',
+    file: 'HND_Fee_Schedule_Management_2026-2027.pdf',
+    caption: '💼 HND Fee Schedule — Management & Commercial 2026-2027 (all fields)\n🌐 Website: https://www.isetag-univ.net',
   },
   tarif_bts_tech_fr: {
     type: 'document',
-    file: 'Fiche tarifaire BTS – Ingénierie et TIC.pdf',
-    caption: '🏭 Fiche tarifaire BTS — Ingénierie & TIC (toutes filières)\n🌐 Site web : https://www.isetag.cm',
+    file: 'Fiche_tarifaire_BTS_Ingenierie_2026-2027.pdf',
+    caption: '🏭 Fiche tarifaire BTS — Ingénierie & TIC 2026-2027 (toutes filières)\n🌐 Site web : https://www.isetag-univ.net',
   },
   tarif_bts_tech_en: {
     type: 'document',
-    file: 'pricing sheet HND (engeneering and technology).pdf',
-    caption: '🏭 HND Pricing Sheet — Engineering & Technology (all fields)\n🌐 Website: https://www.isetag.cm',
+    file: 'HND_Fee_Schedule_Engineering_2026-2027.pdf',
+    caption: '🏭 HND Fee Schedule — Engineering & Technology 2026-2027 (all fields)\n🌐 Website: https://www.isetag-univ.net',
   },
   tarif_licence_fr: {
     type: 'document',
-    file: 'Fiche tarifaire License.pdf',
-    caption: '🎓 Fiche tarifaire Licence Professionnelle (cours du soir)\n🌐 Site web : https://www.isetag.cm',
+    file: 'Fiche_Cycle_Licence_2026-2027.pdf',
+    caption: '🎓 Fiche tarifaire Licence Professionnelle 2026-2027 (cours du soir)\n🌐 Site web : https://www.isetag-univ.net',
+  },
+  tarif_licence_en: {
+    type: 'document',
+    file: 'Bachelors_Degree_Programs_2026-2027.pdf',
+    caption: '🎓 Bachelor\'s Degree Programs & Fee Schedule 2026-2027 (Evening classes)\n🌐 Website: https://www.isetag-univ.net',
   },
   tarif_master_fr: {
     type: 'document',
-    file: 'Fiche tarifaire Master.pdf',
-    caption: '🎓 Fiche tarifaire Master Professionnel (cours du soir)\n🌐 Site web : https://www.isetag.cm',
+    file: 'Fiche_Cycle_Master_2026-2027.pdf',
+    caption: '🎓 Fiche tarifaire Master Professionnel 2026-2027 (cours du soir)\n🌐 Site web : https://www.isetag-univ.net',
+  },
+  tarif_master_en: {
+    type: 'document',
+    file: 'Masters_Degree_Programs_2026-2027.pdf',
+    caption: '🎓 Master\'s Degree Programs & Fee Schedule 2026-2027 (Evening classes)\n🌐 Website: https://www.isetag-univ.net',
+  },
+  tarif_formation_pro_fr: {
+    type: 'document',
+    file: 'Fiche_Formation_Professionnelle_2026-2027.pdf',
+    caption: '🛠️ Modalités de paiement — Formation Professionnelle 2026-2027\n• 26 spécialités pratiques (BTP, Mécanique, Informatique, Électricité, Maritime, Gestion)\n• Remise de 10% en cas de paiement intégral à l\'inscription !\n🌐 Site web : https://www.isetag-univ.net',
+  },
+  tarif_formation_pro_en: {
+    type: 'document',
+    file: 'Professional_Training_Fee_Schedule_2026-2027.pdf',
+    caption: '🛠️ Professional Training Fee Schedule 2026-2027\n• 26 practical fields (Civil Eng, Mechanics, IT, Electrical, Maritime, Management)\n• 10% discount on full upfront payment!\n🌐 Website: https://www.isetag-univ.net',
   },
   flyer_fr: {
     type: 'document',
     file: 'flyer_general_français.pdf',
-    caption: '📋 Brochure ISETAG — Toutes les formations\n🌐 Visitez notre site : https://www.isetag.cm',
+    caption: '📋 Brochure ISETAG — Toutes les formations\n🌐 Visitez notre site : https://www.isetag-univ.net',
   },
   flyer_en: {
     type: 'document',
     file: 'flyer_general_anglais.pdf',
-    caption: '📋 ISETAG Brochure — All Programs\n🌐 Visit our website: https://www.isetag.cm',
+    caption: '📋 ISETAG Brochure — All Programs\n🌐 Visit our website: https://www.isetag-univ.net',
   },
   residence: {
     type: 'image',
     file: 'residence.jpeg',
-    caption: '🏠 *Résidence universitaire ISETAG (Campus Yassa)*\n• Plus de 250 chambres meublées et sécurisées\n• Tarif officiel : *22 000 FCFA / mois*\n• Eau, électricité et Wi-Fi haut débit inclus !\n🌐 Plus d\'infos : https://www.isetag.cm',
+    caption: '🏠 *Résidence universitaire ISETAG (Campus Yassa)*\n• Plus de 250 chambres meublées et sécurisées\n• Tarif officiel : *22 000 FCFA / mois*\n• Eau, électricité et Wi-Fi haut débit inclus !\n🌐 Plus d\'infos : https://www.isetag-univ.net',
   },
   bus: {
     type: 'image',
     file: 'bus_isetag.jpeg',
-    caption: '🚌 *Transport gratuit ISETAG (Douala)*\n• Minibus de ramassage gratuits pour nos étudiants\n• Desservent les grands carrefours de Douala jusqu\'au campus de Yassa.\n🌐 Plus d\'infos : https://www.isetag.cm',
+    caption: '🚌 *Transport gratuit ISETAG (Douala)*\n• Ligne 1 : Campus Yassa ↔ Rond-point ELF (arrêt bus après le rond-point, dessert chaque arrêt et carrefour)\n• Ligne 2 : Campus Yassa ↔ Station TotalEnergies Nkolbong\n• Service 100% gratuit pour tous les étudiants ISETAG.\n🌐 Plus d\'infos : https://www.isetag-univ.net',
   },
   campus: {
     type: 'image',
     file: 'campus_isetag.jpeg',
-    caption: '🏛️ *Campus ISETAG (Yassa, Douala)*\n• Situé à 100m de Tradex Yassa (vers l\'Hôpital Gynéco-Obstétrique)\n• Cadre moderne, sécurisé et propice aux études d\'excellence.\n🌐 Site web : https://www.isetag.cm',
+    caption: '🏛️ *Campus ISETAG (Yassa, Douala)*\n• Situé à 100m de Tradex Yassa (vers l\'Hôpital Gynéco-Obstétrique)\n• Cadre moderne, sécurisé et propice aux études d\'excellence.\n🌐 Site web : https://www.isetag-univ.net',
   },
   maritime_photo: {
     type: 'image',
     file: 'maritime_port.jpeg',
-    caption: '⚓ *Filière Maritime & Portuaire — ISETAG*\n• Double diplomation (Licence Pro) + certification internationale STCW 95\n• Uniformes et cours d\'anglais & chinois offerts\n• Stages garantis et mobilité internationale (Ghana / Chine)\n🌐 Plus d\'infos : https://www.isetag.cm',
+    caption: '⚓ *Filière Maritime & Portuaire — ISETAG*\n• Double diplomation (Licence Pro) + certification internationale STCW 95\n• Uniformes et cours d\'anglais & chinois offerts\n• Stages garantis et mobilité internationale (Ghana / Chine)\n🌐 Plus d\'infos : https://www.isetag-univ.net',
   },
   electricite: {
     type: 'image',
     file: 'atelier_electricite.jpeg',
-    caption: '⚡ *Atelier de Génie Électrique & Énergies Renouvelables*\n• Bancs d\'essais, alternateurs triphasés et instrumentation moderne\n• Formation pratique orientée vers les besoins de l\'industrie.\n🌐 Site web : https://www.isetag.cm',
+    caption: '⚡ *Atelier de Génie Électrique & Énergies Renouvelables*\n• Bancs d\'essais, alternateurs triphasés et instrumentation moderne\n• Formation pratique orientée vers les besoins de l\'industrie.\n🌐 Site web : https://www.isetag-univ.net',
   },
   bois: {
     type: 'image',
     file: 'atelier_bois.jpeg',
-    caption: '🪵 *Atelier Pratique de Menuiserie & Ébénisterie*\n• Équipements industriels de découpe et de transformation du bois\n• Savoir-faire technique et compétences professionnelles d\'élite.\n🌐 Site web : https://www.isetag.cm',
+    caption: '🪵 *Atelier Pratique de Menuiserie & Ébénisterie*\n• Équipements industriels de découpe et de transformation du bois\n• Savoir-faire technique et compétences professionnelles d\'élite.\n🌐 Site web : https://www.isetag-univ.net',
   },
   bibliotheque: {
     type: 'image',
     file: 'bibliotheque.jpeg',
-    caption: '📚 *Bibliothèque & Cadre d\'Études ISETAG*\n• Espace de lecture calme, riche en ouvrages spécialisés et Wi-Fi haut débit\n• Environnement studieux et encadrement d\'excellence.\n🌐 Plus d\'infos : https://www.isetag.cm',
+    caption: '📚 *Bibliothèque & Cadre d\'Études ISETAG*\n• Espace de lecture calme, riche en ouvrages spécialisés et Wi-Fi haut débit\n• Environnement studieux et encadrement d\'excellence.\n🌐 Plus d\'infos : https://www.isetag-univ.net',
   },
   etranger: {
     type: 'image',
     file: 'etudier_etranger.jpeg',
-    caption: '🌍 *Programme Étudier à l\'Étranger — ISETAG*\n• Partenariats universitaires : Allemagne, Tunisie, Espagne, Ghana, Chine\n• 1 à 2 ans au Cameroun puis poursuite à l\'international avec accompagnement Visa !\n🌐 Plus d\'infos : https://www.isetag.cm',
+    caption: '🌍 *Programme Étudier à l\'Étranger — ISETAG*\n• Partenariats universitaires : Allemagne, Tunisie, Espagne, Ghana, Chine\n• 1 à 2 ans au Cameroun puis poursuite à l\'international avec accompagnement Visa !\n🌐 Plus d\'infos : https://www.isetag-univ.net',
   },
 
   // ── NOUVEAUX ASSETS (images_brutes_1) ──────────────────────────────────────
   mecanique_auto: {
     type: 'image',
     file: 'atelier_mecanique_automobile.jpeg',
-    caption: '🔧 *Atelier de Mécanique Automobile — ISETAG*\n• Plusieurs véhicules en maintenance simultanée\n• Combinaisons professionnelles, outillage complet et encadrement expert\n• Filières : BTS Mécanique Automobile & Mécatronique.\n🌐 Plus d\'infos : https://www.isetag.cm',
+    caption: '🔧 *Atelier de Mécanique Automobile — ISETAG*\n• Plusieurs véhicules en maintenance simultanée\n• Combinaisons professionnelles, outillage complet et encadrement expert\n• Filières : BTS Mécanique Automobile & Mécatronique.\n🌐 Plus d\'infos : https://www.isetag-univ.net',
   },
   mecanique_bus: {
     type: 'image',
     file: 'atelier_mecanique_pratique_bus.jpeg',
-    caption: '🔧🚌 *Pratique sur Bus — Mécanique Automobile ISETAG*\n• Travaux pratiques directement sur minibus en conditions réelles\n• Étudiants encadrés en combinaison ISETAG officielle.\n🌐 Plus d\'infos : https://www.isetag.cm',
+    caption: '🔧🚌 *Pratique sur Bus — Mécanique Automobile ISETAG*\n• Travaux pratiques directement sur minibus en conditions réelles\n• Étudiants encadrés en combinaison ISETAG officielle.\n🌐 Plus d\'infos : https://www.isetag-univ.net',
   },
   informatique: {
     type: 'image',
     file: 'salle_informatique.jpeg',
-    caption: '💻 *Salle Informatique ISETAG — Équipements Modernes*\n• Postes fixes + portables, réseau haut-débit, climatisation\n• Formations : IGL, IWD, MSI, Infographie, Télécoms.\n🌐 Plus d\'infos : https://www.isetag.cm',
+    caption: '💻 *Salle Informatique ISETAG — Équipements Modernes*\n• Postes fixes + portables, réseau haut-débit, climatisation\n• Formations : IGL, IWD, MSI, Infographie & Web Design, Télécoms.\n🌐 Plus d\'infos : https://www.isetag-univ.net',
   },
   genie_electrique: {
     type: 'image',
     file: 'atelier_genie_electrique.jpeg',
-    caption: '⚡ *Atelier Génie Électrique & Électronique — ISETAG*\n• Bancs d\'essai électriques, moteurs, câblage industriel\n• Filières : BTS Électrotechnique, Électronique & Automatisme.\n🌐 Plus d\'infos : https://www.isetag.cm',
+    caption: '⚡ *Atelier Génie Électrique & Électronique — ISETAG*\n• Bancs d\'essai électriques, moteurs, câblage industriel\n• Filières : BTS Électrotechnique, Électronique & Automatisme.\n🌐 Plus d\'infos : https://www.isetag-univ.net',
   },
   froid_clim: {
     type: 'image',
     file: 'atelier_froid_climatisation.jpeg',
-    caption: '❄️ *Filière Froid & Climatisation — ISETAG*\n• Maintenance d\'unités de climatisation industrielle en conditions réelles\n• Compresseurs, serpentins, ventilateurs : pratique totale !\n🌐 Plus d\'infos : https://www.isetag.cm',
+    caption: '❄️ *Filière Froid & Climatisation — ISETAG*\n• Maintenance d\'unités de climatisation industrielle en conditions réelles\n• Compresseurs, serpentins, ventilateurs : pratique totale !\n🌐 Plus d\'infos : https://www.isetag-univ.net',
   },
   genie_civil: {
     type: 'image',
     file: 'atelier_genie_civil.jpeg',
-    caption: '🏗️ *Atelier Génie Civil & Topographie — ISETAG*\n• Maquettes de ponts, plans architecturaux, théodolites et niveaux\n• BTS Bâtiment & Travaux Publics : formation complète terrain + bureau.\n🌐 Plus d\'infos : https://www.isetag.cm',
+    caption: '🏗️ *Atelier Génie Civil & Topographie — ISETAG*\n• Maquettes de ponts, plans architecturaux, théodolites et niveaux\n• BTS Bâtiment & Travaux Publics : formation complète terrain + bureau.\n🌐 Plus d\'infos : https://www.isetag-univ.net',
   },
   biblio_isetag: {
     type: 'image',
     file: 'bibliotheque_isetag.jpeg',
-    caption: '📚 *Bibliothèque ISETAG — Espaces de Lecture & Recherche*\n• Ouvrages spécialisés toutes filières, Wi-Fi haut débit\n• Étudiants en uniforme officiel dans un cadre studieux d\'excellence.\n🌐 Plus d\'infos : https://www.isetag.cm',
+    caption: '📚 *Bibliothèque ISETAG — Espaces de Lecture & Recherche*\n• Ouvrages spécialisés toutes filières, Wi-Fi haut débit\n• Étudiants en uniforme officiel dans un cadre studieux d\'excellence.\n🌐 Plus d\'infos : https://www.isetag-univ.net',
   },
   salle_classe: {
     type: 'image',
     file: 'salle_classe_isetag.jpeg',
-    caption: '🎓 *Salles de Cours ISETAG — Discipline & Excellence*\n• Uniformes officiels (blanc + casquette de marin) pour tous les étudiants\n• Ambiance académique sérieuse et cadre d\'apprentissage motivant.\n🌐 Plus d\'infos : https://www.isetag.cm',
+    caption: '🎓 *Salles de Cours ISETAG — Discipline & Excellence*\n• Uniformes officiels (blanc + casquette de marin) pour tous les étudiants\n• Ambiance académique sérieuse et cadre d\'apprentissage motivant.\n🌐 Plus d\'infos : https://www.isetag-univ.net',
   },
   campus_facade: {
     type: 'image',
     file: 'campus_facade_isetag.jpeg',
-    caption: '🏛️ *Campus ISETAG — Façade Principale (Yassa, Douala)*\n• Logo ISETAG visible à l\'entrée, bâtiments modernes multi-niveaux\n• Situé à 100m de Tradex Yassa, vers l\'Hôpital Gynéco-Obstétrique.\n🌐 Site web : https://www.isetag.cm',
+    caption: '🏛️ *Campus ISETAG — Façade Principale (Yassa, Douala)*\n• Logo ISETAG visible à l\'entrée, bâtiments modernes multi-niveaux\n• Situé à 100m de Tradex Yassa, vers l\'Hôpital Gynéco-Obstétrique.\n🌐 Site web : https://www.isetag-univ.net',
   },
   mecatronique_moteur: {
     type: 'image',
     file: 'atelier_mecatronique_moteur.jpeg',
-    caption: '⚙️ *Atelier Mécatronique — Moteurs Sectionnés ISETAG*\n• Travaux sur moteurs thermiques en coupe : pistons, cylindres, boîte de vitesses\n• Apprentissage complet par la pratique en atelier équipé.\n🌐 Plus d\'infos : https://www.isetag.cm',
+    caption: '⚙️ *Atelier Mécatronique — Moteurs Sectionnés ISETAG*\n• Travaux sur moteurs thermiques en coupe : pistons, cylindres, boîte de vitesses\n• Apprentissage complet par la pratique en atelier équipé.\n🌐 Plus d\'infos : https://www.isetag-univ.net',
   },
   plomberie: {
     type: 'image',
     file: 'atelier_plomberie_fluides.jpeg',
-    caption: '🚿 *Atelier Plomberie & Fluides — ISETAG*\n• Installation sanitaire complète : lavabo, toilettes, pompe à pression\n• Filières : BTS Installation Sanitaire & Maintenance des Systèmes Fluidiques.\n🌐 Plus d\'infos : https://www.isetag.cm',
+    caption: '🚿 *Atelier Plomberie & Fluides — ISETAG*\n• Installation sanitaire complète : lavabo, toilettes, pompe à pression\n• Filières : BTS Installation Sanitaire & Maintenance des Systèmes Fluidiques.\n🌐 Plus d\'infos : https://www.isetag-univ.net',
   },
   maritime_port_1: {
     type: 'image',
     file: 'maritime_etudiants_port_1.jpeg',
-    caption: '⚓ *Étudiants Maritimes ISETAG au Port de Douala*\n• Uniformes marins officiels (veste blanche + casquette de capitaine) offerts\n• Stage au Port Autonome de Douala (PAD) avec grues et navires réels !\n• Double diplôme Licence + Certification Internationale STCW 95.\n🌐 Plus d\'infos : https://www.isetag.cm',
+    caption: '⚓ *Étudiants Maritimes ISETAG au Port de Douala*\n• Uniformes marins officiels (veste blanche + casquette de capitaine) offerts\n• Stage au Port Autonome de Douala (PAD) avec grues et navires réels !\n• Double diplôme Licence + Certification Internationale STCW 95.\n🌐 Plus d\'infos : https://www.isetag-univ.net',
   },
   maritime_port_2: {
     type: 'image',
     file: 'maritime_etudiants_port_2.jpeg',
-    caption: '⚓ *Formation Maritime ISETAG — Immersion au Port de Douala*\n• Étudiants et enseignants sur le quai du port, navire "SPAR GEMINI" en arrière-plan\n• Stages garantis : PAD, PAK (Kribi), MSC, Kloe Shipping et plus.\n🌐 Plus d\'infos : https://www.isetag.cm',
+    caption: '⚓ *Formation Maritime ISETAG — Immersion au Port de Douala*\n• Étudiants et enseignants sur le quai du port, navire "SPAR GEMINI" en arrière-plan\n• Stages garantis : PAD, PAK (Kribi), MSC, Kloe Shipping et plus.\n🌐 Plus d\'infos : https://www.isetag-univ.net',
   },
   maritime_port_3: {
     type: 'image',
     file: 'maritime_etudiants_port_3.jpeg',
-    caption: '⚓ *Sciences Portuaires & Maritimes — ISETAG Douala*\n• Groupe d\'étudiants en uniforme marin sur le quai du Port Autonome de Douala\n• Filières : Navigation Maritime, Électromécanique Navale, Logistique Portuaire, Pêches.\n🌐 Plus d\'infos : https://www.isetag.cm',
+    caption: '⚓ *Sciences Portuaires & Maritimes — ISETAG Douala*\n• Groupe d\'étudiants en uniforme marin sur le quai du Port Autonome de Douala\n• Filières : Navigation Maritime, Électromécanique Navale, Logistique Portuaire, Pêches.\n🌐 Plus d\'infos : https://www.isetag-univ.net',
   },
 };
 
@@ -221,19 +242,25 @@ function matchesAny(text, terms) {
 // DETECTION — KEY RULES:
 //   • Fee-trigger: check ONLY userText (not AI reply, it often mentions "frais" on its own)
 //   • Domain: check userText + aiResponse (AI may echo back the confirmed speciality name)
-//   • Residence: send if AI reply mentions résidence/chambre (means bot brought it up)
-//     OR if user explicitly asked about it
+//   • Residence: send if user explicitly asked about it
 //   • Flyer: only if user explicitly asks for a brochure
+//   • Media suppression: if user explicitly says they don't want to see it or already saw it
 // ─────────────────────────────────────────────────────────────────────────────
 function detectMediaKeys(userText, aiResponse, lang) {
   const isEn = lang === 'en';
   const keys = [];
 
+  // ── 0. REFUS / STOP MÉDIAS EXPLICITE ──────────────────────────────
+  // If the user says they do not want to see/receive photos, bus, or that they already saw them
+  const userRefusesMedia = /ne veux (plus|pas) (voir|recevoir)|arr[êe]te d'envoyer|pas (besoin )?d'image|stop (image|photo|bus)|d[eé]j[aà] vu|d[eé]j[aà] re[çc]u/i.test(userText);
+  if (userRefusesMedia) {
+    return [];
+  }
+
   // ── 1. RÉSIDENCE ────────────────────────────────────────────────────
-  // Send image if the USER asked OR if the BOT introduced the topic
+  // Send image ONLY if user explicitly asked about housing/residence/rooms
   const residenceInUser = /r[eé]sidence|chambre|logement|dortoir|h[eé]berg|hostel|housing|room|accommodation|cit[eé] univ/i.test(userText);
-  const residenceInBot  = /r[eé]sidence|chambre|logement|cit[eé] univ|hostel|dormitory/i.test(aiResponse);
-  if (residenceInUser || residenceInBot) {
+  if (residenceInUser) {
     keys.push('residence');
   }
 
@@ -278,13 +305,16 @@ function detectMediaKeys(userText, aiResponse, lang) {
       const userGestion = matchesAny(userText, GESTION_TERMS);
       const userTech    = matchesAny(userText, TECH_TERMS);
 
+      const isFormationPro = /formation professionnelle|formation certifiante|certifi|m[eé]tier express|formation courte|professional training|vocational|certification/i.test(domainContext);
       const isLicence = /licence|license|bachelor/i.test(domainContext);
       const isMaster  = /master/i.test(domainContext);
 
-      if (isLicence && !isEn) {
-        keys.push('tarif_licence_fr');
-      } else if (isMaster && !isEn) {
-        keys.push('tarif_master_fr');
+      if (isFormationPro) {
+        keys.push(isEn ? 'tarif_formation_pro_en' : 'tarif_formation_pro_fr');
+      } else if (isLicence) {
+        keys.push(isEn ? 'tarif_licence_en' : 'tarif_licence_fr');
+      } else if (isMaster) {
+        keys.push(isEn ? 'tarif_master_en' : 'tarif_master_fr');
       } else {
         if (userGestion || (isGestion && !userTech)) {
           keys.push(isEn ? 'tarif_bts_gestion_en' : 'tarif_bts_gestion_fr');
@@ -305,9 +335,9 @@ function detectMediaKeys(userText, aiResponse, lang) {
   }
 
   // ── 4. BUS & TRANSPORT ─────────────────────────────────────────────
-  const userAsksBus = /bus|transport|navette|ramassage|minibus|d[eé]placement/i.test(userText);
-  const botMentionsBus = /bus gratuit|ramassage gratuit|navette/i.test(aiResponse);
-  if (userAsksBus || botMentionsBus) {
+  // Send bus photo ONLY if USER specifically asks about the bus / transport
+  const userAsksBus = /bus|transport|navette|ramassage|minibus|d[eé]placement|itin[eé]raire/i.test(userText);
+  if (userAsksBus) {
     keys.push('bus');
   }
 
@@ -412,9 +442,29 @@ async function sendContextualMedia(phone, userText, aiResponse, lang) {
   const isMessenger = phone.startsWith('messenger:');
   const recipientId = isMessenger ? phone.split(':')[1] : phone;
 
-  console.log(`[MEDIA] 📎 Sending ${keys.length} media file(s) to ...${recipientId.slice(-4)} (${isMessenger ? 'Messenger' : 'WhatsApp'}): [${keys.join(', ')}]`);
+  // Check if the prospect is explicitly asking to resend / receive the file again
+  const isExplicitResend = /(renvoi|re-?envoi|envoi.*(encore|nouveau)|renvoyer|revoir|peux-tu me renvoyer|send.*again|resend)/i.test(userText);
 
+  // Filter out any media key that was already sent, unless user explicitly asked to resend
+  const keysToSend = [];
   for (const key of keys) {
+    if (isExplicitResend) {
+      keysToSend.push(key);
+    } else {
+      const alreadySent = await hasMediaBeenSent(recipientId, key);
+      if (alreadySent) {
+        console.log(`[MEDIA] ⏭️ Skipping "${key}" — already sent to ...${recipientId.slice(-4)}`);
+      } else {
+        keysToSend.push(key);
+      }
+    }
+  }
+
+  if (keysToSend.length === 0) return;
+
+  console.log(`[MEDIA] 📎 Sending ${keysToSend.length} media file(s) to ...${recipientId.slice(-4)} (${isMessenger ? 'Messenger' : 'WhatsApp'}): [${keysToSend.join(', ')}]`);
+
+  for (const key of keysToSend) {
     const media = MEDIA[key];
     if (!media) continue;
 
@@ -440,13 +490,13 @@ async function sendContextualMedia(phone, userText, aiResponse, lang) {
           await whatsapp.sendDocumentMessage(recipientId, url, media.file, media.caption);
         }
       }
-      console.log(`[MEDIA] ✅ Sent: ${media.file}`);
+      await addSentMedia(recipientId, key);
+      console.log(`[MEDIA] ✅ Sent & recorded: ${media.file} (${key})`);
     } catch (err) {
       console.error(`[MEDIA] ❌ Failed to send ${media.file}:`, err.message);
     }
     await new Promise(r => setTimeout(r, 600));
   }
 }
-
 
 module.exports = { sendContextualMedia };

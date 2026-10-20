@@ -16,7 +16,7 @@ L'ISETAG propose 6 grands cycles : BTS, HND, Licences Professionnelles / Bachelo
 
 CYCLE BTS (BAC+2, Jour & Soir) :
 - Commerce / Gestion / Droit : Commerce International, Marketing Commerce Vente, Assurance, Banque et Finance, Gestion des Projets, Gestion de la Qualité, Collectivités Territoriales, Ressources Humaines, Comptabilité et Gestion des Entreprises, Gestion Logistique & Transport, Assistant Manager, Communication des Entreprises, Douane et Transit, Gestion Fiscale.
-- TIC : Génie Logiciel, Infographie & Web Design, Informatique Industrielle et Automatisme, Maintenance Informatique, E-commerce et Marketing Numérique, Télécommunication, Réseaux et Sécurité.
+- TIC : Génie Logiciel, Infographie & Web Design (IWD — spécialité unique combinant infographie, graphisme et web design), Informatique Industrielle et Automatisme (IIA), Maintenance Informatique (MSI), E-commerce et Marketing Numérique, Télécommunication, Réseaux et Sécurité.
 - Industrie & Technologie : Froid et Climatisation, Génie Civil (Bâtiment, Travaux Publics, Géomètre Topographe, Urbanisme), Fluides et Installation Sanitaire, Électrotechnique, Énergie Renouvelable, Maintenance Électronique, Chaudronnerie et Soudure, Construction Métallique, Contrôle Instrumentation, Maintenance Industrielle, Maintenance Biomédicale, Après-vente Automobile, Mécatronique, Menuiserie-Ébénisterie.
 
 CYCLE HND (ANGLOPHONE, Day & Evening) :
@@ -28,6 +28,7 @@ CYCLE HND (ANGLOPHONE, Day & Evening) :
 CYCLE LICENCE PROFESSIONNELLE / BACHELOR & MASTER (Cours du soir) :
 Spécialités : Marketing Manager Opérationnel, Contrôle et Audit, Banque & Conseiller Clientèle, Gestion RH, Gestion Qualité (QHSE), Communication Publicité, Transport Logistique, Comptabilité et Finance, Entrepreneuriat.
 Spécialités Tech : Bâtiments et Construction Industrielle, Travaux Publics (TPO), Génie Automobile et Mécatronique (ISM / IA), Génie Mécanique, Génie Électrique et Systèmes Intelligents, Génie Logiciel, Réseaux Hydrauliques.
+Cursus LMD : BTS = 2 ans (avec 2 mois de stage par an), Licence Pro = 3 ans (Bac+3 / 1 an post-BTS), Master = 5 ans (Bac+5 / 2 ans post-Licence).
 
 DOMAINE MARITIME ET PORTUAIRE (4 ANS) :
 Double diplomation : Licence Professionnelle + Certification Internationale STCW 95.
@@ -49,7 +50,7 @@ Formule : 1 à 2 ans au Cameroun, puis poursuite à l'étranger avec accompagnem
 - Étude de dossier : 100% GRATUITE pour BTS, HND, Licence et Certifiant.
 - Frais d'étude de dossier Maritime uniquement : 10 000 FCFA.
 - Frais d'inscription BTS/HND : 30 000 FCFA (payés en personne après acceptation du dossier).
-- Frais d'inscription Licence/Master : 55 000 FCFA.
+- Frais d'inscription Licence/Master : 55 000 FCFA (attention : 55 000 FCFA pour Licence et Master, et 30 000 FCFA pour BTS).
 - Scolarité BTS Jour Technologie : 395 000 FCFA (tranches : 200k, 150k, 45k).
 - Scolarité BTS Soir Technologie : 285 000 FCFA (tranches : 150k, 100k, 35k).
 - Scolarité BTS Jour Commerce : 315 000 FCFA (tranches : 150k, 100k, 65k).
@@ -57,11 +58,14 @@ Formule : 1 à 2 ans au Cameroun, puis poursuite à l'étranger avec accompagnem
 - Scolarité Licence Soir : 550 000 FCFA (Tech) / 500 000 FCFA (Commerce).
 - Scolarité Master Soir : 700 000 FCFA (Tech) / 675 000 FCFA (Gestion).
 - Scolarité Maritime (4 ans) : 755 000 FCFA / an (Nationaux) / 1 005 000 FCFA (Étrangers).
+- Formation Professionnelle (Année 2026-2027) : Frais d'inscription 15 000 – 25 000 FCFA. Scolarités de 270 000 à 450 000 FCFA selon la spécialité (payable en 3 tranches). Remise de 10% en cas de paiement intégral à l'inscription !
 Modalités : Paiement en 3 tranches (Rentrée, 30 novembre, 28 février) via FIGEC microfinance.
 
 4. VIE SUR LE CAMPUS, LOGEMENT, BOURSES & TRANSPORTS
 - Résidence universitaire (Campus Yassa) : Plus de 250 chambres meublées et sécurisées. Tarif officiel : EXACTEMENT 22 000 FCFA / mois (eau, électricité et Wi-Fi haut débit fibre optique inclus).
-- Minibus gratuits : Ramassage gratuit des étudiants reliant différents carrefours de Douala au campus de Yassa.
+- Minibus gratuits : Service de ramassage 100% gratuit avec 2 lignes :
+  * Ligne 1 : Campus Yassa ↔ Rond-point ELF (arrêt bus situé après le rond-point ELF, arrêt à chaque carrefour et arrêt de bus jusqu'au campus).
+  * Ligne 2 : Campus Yassa ↔ Station TotalEnergies Nkolbong.
 - Bourses offertes par les partenaires : De 30 000 FCFA à 100 000 FCFA pour les 100 premiers inscrits !
 - Bourse linguistique de 50 000 FCFA pour les nouveaux bacheliers.
 - Stages professionnels : Plus de 300 stages garantis chez plus de 50 entreprises partenaires (Sinotruk, CEL'OR, TRANSIMEX, PAD, PAK, SOTRABUS, UBA, FIGEC, MSC, Kloe Shipping...).
