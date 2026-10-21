@@ -184,6 +184,43 @@ const MEDIA = {
     file: 'maritime_etudiants_port_3.jpeg',
     caption: '⚓ *Sciences Portuaires & Maritimes — ISETAG Douala*\n• Groupe d\'étudiants en uniforme marin sur le quai du Port Autonome de Douala\n• Filières : Navigation Maritime, Électromécanique Navale, Logistique Portuaire, Pêches.\n🌐 Plus d\'infos : https://www.isetag-univ.net',
   },
+
+  // ── ASSETS SHOOTING OFFICIEL FBS PICTURES ──────────────────────────────────
+  salle_classe_cours: {
+    type: 'image',
+    file: 'salle_classe_maritime_cours.jpeg',
+    caption: '⚓🎓 *Cours & Ambiance Académique — ISETAG Douala*\n• Étudiants en uniforme officiel complet (tenue blanche + casquette d\'officier marinier)\n• Interaction dynamique en classe et encadrement pédagogique d\'excellence.\n🌐 Plus d\'infos : https://www.isetag-univ.net',
+  },
+  etudiante_elec: {
+    type: 'image',
+    file: 'etudiante_genie_electrique.jpeg',
+    caption: '⚡ *Travaux Pratiques en Génie Électrique — ISETAG*\n• Manipulations directes sur bancs d\'essai, câblage et pupitres de commande\n• Les filières techniques et industrielles sont ouvertes et accueillent de brillantes étudiantes !\n🌐 Plus d\'infos : https://www.isetag-univ.net',
+  },
+  mecanique_injection: {
+    type: 'image',
+    file: 'etudiante_mecanique_injection.jpeg',
+    caption: '🔧💻 *Diagnostic & Injection Électronique — ISETAG*\n• Travaux pratiques sur banc didactique d\'injection et calculateurs modernes\n• BTS Mécanique Automobile & Mécatronique.\n🌐 Plus d\'infos : https://www.isetag-univ.net',
+  },
+  mecanique_reparation: {
+    type: 'image',
+    file: 'atelier_mecanique_reparation_voiture.jpeg',
+    caption: '🔧🚗 *Maintenance Directe sur Véhicules — ISETAG*\n• Travaux pratiques réels sur berlines et moteurs en atelier\n• BTS Maintenance Après-Vente Automobile & Mécatronique.\n🌐 Plus d\'infos : https://www.isetag-univ.net',
+  },
+  etudiante_menuiserie: {
+    type: 'image',
+    file: 'etudiante_atelier_menuiserie.jpeg',
+    caption: '🪵⚙️ *Usinage & Transformation du Bois — ISETAG*\n• Travail sur machines-outils professionnelles en atelier BTP\n• BTS Menuiserie & Ébénisterie industrielle.\n🌐 Plus d\'infos : https://www.isetag-univ.net',
+  },
+  campus_bus_ensemble: {
+    type: 'image',
+    file: 'campus_avec_bus_isetag.jpeg',
+    caption: '🏛️🚌 *Campus ISETAG Yassa & Service de Transport Gratuit*\n• Bâtiments modernes et bus officiel assurant le ramassage quotidien des étudiants\n• Lignes gratuites depuis Rond-point ELF et Nkolbong.\n🌐 Plus d\'infos : https://www.isetag-univ.net',
+  },
+  residence_exterieur: {
+    type: 'image',
+    file: 'residence_batiment_exterieur.jpeg',
+    caption: '🏢 *Résidence Universitaire ISETAG (Extérieur)*\n• Immeuble résidentiel moderne situé à proximité immédiate du campus Yassa\n• Plus de 250 chambres à 22 000 FCFA/mois (eau, élec, Wi-Fi inclus).\n🌐 Plus d\'infos : https://www.isetag-univ.net',
+  },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -262,6 +299,9 @@ function detectMediaKeys(userText, aiResponse, lang) {
   const residenceInUser = /r[eé]sidence|chambre|logement|dortoir|h[eé]berg|hostel|housing|room|accommodation|cit[eé] univ/i.test(userText);
   if (residenceInUser) {
     keys.push('residence');
+    if (/b[aâ]timent|ext[eé]rieur|immeuble|campus|taille|complexe/i.test(userText)) {
+      keys.push('residence_exterieur');
+    }
   }
 
   // ── 2. FLYER GÉNÉRAL ───────────────────────────────────────────────
@@ -337,30 +377,34 @@ function detectMediaKeys(userText, aiResponse, lang) {
   // ── 4. BUS & TRANSPORT ─────────────────────────────────────────────
   // Send bus photo ONLY if USER specifically asks about the bus / transport
   const userAsksBus = /bus|transport|navette|ramassage|minibus|d[eé]placement|itin[eé]raire/i.test(userText);
-  if (userAsksBus) {
-    keys.push('bus');
-  }
-
-  // ── 5. CAMPUS & LOCALISATION ───────────────────────────────────────
   const userAsksCampus = /o[uù] se trouve|localisation|situation|adresse|campus|b[aâ]timent|ressemble|visiter|o[uù] est (l'|cette )?[eé]cole|situe[^\w]|yassa/i.test(userText);
-  if (userAsksCampus) {
-    keys.push('campus');
+
+  if (userAsksBus && userAsksCampus) {
+    keys.push('campus_bus_ensemble');
+  } else if (userAsksBus) {
+    keys.push('bus');
+  } else if (userAsksCampus) {
+    keys.push('campus_facade');
   }
 
-  // -- 6. MARITIME PHOTOS (vraies photos du port avec etudiants en uniforme) --
+  // -- 5. MARITIME PHOTOS --
   const userAsksMaritime = /maritime|portuaire|navigation|stcw|bateau|navire|quai|sciences portuaires|glpm|nautique/i.test(userText);
   if (userAsksMaritime && !residenceInUser && !userAsksBus) {
     keys.push('maritime_port_1');
     keys.push('maritime_port_2');
   }
 
-  // ── 7. ATELIER ÉLECTRICITÉ & ÉNERGIES ───────────────────────────────
+  // ── 6. ATELIER ÉLECTRICITÉ & ÉNERGIES & MIXITÉ FÉMININE ────────────
   const userAsksElec = /[eé]lectrotechnique|[eé]lectricit[eé]|[eé]nergie renouvelable|solaire|banc d'essai/i.test(userText);
-  if (userAsksElec) {
+  const userAsksFemmesTech = /fille|femme|mixit[eé]|f[eé]minin|genre/i.test(userText);
+
+  if (userAsksFemmesTech && (userAsksElec || /technique|industriel|ing[eé]nie/i.test(userText))) {
+    keys.push('etudiante_elec');
+  } else if (userAsksElec) {
     keys.push('electricite');
   }
 
-  // -- 7b. PLOMBERIE & FLUIDES --
+  // -- 7. PLOMBERIE & FLUIDES --
   const userAsksPlomberie = /plomberie|fluides|sanitaire|installation sanitaire|robinetterie|tuyauterie/i.test(userText);
   if (userAsksPlomberie) {
     keys.push('plomberie');
@@ -370,13 +414,14 @@ function detectMediaKeys(userText, aiResponse, lang) {
   const userAsksBois = /menuiserie|[eé]b[eé]nisterie|bois|charpente/i.test(userText);
   if (userAsksBois) {
     keys.push('bois');
+    keys.push('etudiante_menuiserie');
   }
 
   // ── 9. BIBLIOTHÈQUE & CADRE DE TRAVAIL ─────────────────────────────
   const userAsksBiblio = /biblioth[eè]que|salle de lecture|cadre d'[eé]tude/i.test(userText);
   if (userAsksBiblio) {
     keys.push('bibliotheque');
-    keys.push('biblio_isetag'); // photo réelle avec étudiants
+    keys.push('biblio_isetag');
   }
 
   // ── 10. ÉTUDES À L'ÉTRANGER ────────────────────────────────────────
@@ -386,10 +431,16 @@ function detectMediaKeys(userText, aiResponse, lang) {
   }
 
   // ── 11. MÉCANIQUE AUTOMOBILE & MÉCATRONIQUE ─────────────────────────
-  const userAsksMecaAuto = /m[eé]canique automobile|m[eé]catronique|mav|mka|atelier m[eé]ca|r[eé]paration auto|moteur/i.test(userText);
+  const userAsksMecaAuto = /m[eé]canique automobile|m[eé]catronique|mav|mka|atelier m[eé]ca|r[eé]paration auto|moteur|injection|diagnostic auto/i.test(userText);
   if (userAsksMecaAuto) {
-    keys.push('mecanique_auto');
-    keys.push('mecatronique_moteur');
+    if (userAsksFemmesTech || /injection|diagnostic|ordinateur|banc d'essai/i.test(userText)) {
+      keys.push('mecanique_injection');
+    } else if (/voiture|r[eé]paration|garage|panne/i.test(userText)) {
+      keys.push('mecanique_reparation');
+    } else {
+      keys.push('mecanique_auto');
+      keys.push('mecatronique_moteur');
+    }
   }
 
   // ── 12. INFORMATIQUE & MULTIMÉDIA ──────────────────────────────────
@@ -417,9 +468,9 @@ function detectMediaKeys(userText, aiResponse, lang) {
   }
 
   // ── 16. SALLE DE CLASSE & VIE ACADÉMIQUE ───────────────────────────
-  const userAsksSalle = /salle de classe|uniforme|vie [eé]tudiante|ambiance|cours magistral/i.test(userText);
+  const userAsksSalle = /salle de classe|uniforme|vie [eé]tudiante|ambiance|cours magistral|tenue/i.test(userText);
   if (userAsksSalle) {
-    keys.push('salle_classe');
+    keys.push('salle_classe_cours');
   }
 
   // ── 17. CAMPUS FAÇADE / LOCALISATION PRÉCISE ───────────────────────
