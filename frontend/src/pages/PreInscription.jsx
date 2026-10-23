@@ -247,7 +247,7 @@ export default function PreInscription() {
               <div>📱 <span className="text-white font-medium">+237 676 079 849</span></div>
               <div>📱 <span className="text-white font-medium">+237 690 609 511</span></div>
               <div>📱 <span className="text-white font-medium">+237 659 855 800</span></div>
-              <div>🌐 <a href="https://www.isetag.cm" className="text-yellow-400 hover:underline">www.isetag.cm</a></div>
+              <div>🌐 <a href="https://www.isetag-univ.net" target="_blank" rel="noreferrer" className="text-yellow-400 hover:underline">www.isetag-univ.net</a></div>
             </div>
           </div>
           <a
@@ -487,7 +487,7 @@ export default function PreInscription() {
         <div className="border-t border-white/5 mt-12 pt-8 text-center text-xs text-slate-500 space-y-1">
           <div className="font-semibold text-slate-400">ISETAG — Institut Supérieur Évangélique des Technologies Appliquées et de Gestion</div>
           <div>Entre Tradex Yassa et l'Hôpital Gynéco-Obstétrique de Douala</div>
-          <div>+237 676 079 849 · +237 690 609 511 · <a href="https://www.isetag.cm" className="text-yellow-400/70 hover:text-yellow-400">www.isetag.cm</a></div>
+          <div>+237 676 079 849 · +237 690 609 511 · <a href="https://www.isetag-univ.net" target="_blank" rel="noreferrer" className="text-yellow-400/70 hover:text-yellow-400">www.isetag-univ.net</a></div>
         </div>
       </main>
     </div>

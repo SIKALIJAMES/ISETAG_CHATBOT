@@ -16,7 +16,7 @@
 - **Tutelle académique** : Sous la tutelle de l'Université de Douala (notamment FSEGA pour la gestion) et agréé par le MINESUP
 - **Localisation** : Douala, Cameroun — Situé à Yassa, à 100 mètres de la station Tradex Yassa en direction de l'Hôpital Gynéco-Obstétrique et Pédiatrique de Douala (HGOPED). Accessible à 100–200 FCFA en taxi ou moto-taxi.
 - **Adresse postale** : P.O. Box 11237, Douala-Cameroun
-- **Sites web officiels** : `www.isetag-univ.net` / `www.isetag.cm`
+- **Site web officiel unique** : `www.isetag-univ.net` (Le seul et unique site web officiel de l'ISETAG)
 - **Email officiel** : `info.isetag@gmail.com`
 - **Téléphones officiels** :
   - +237 659 855 800

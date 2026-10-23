@@ -6,7 +6,7 @@ ISETAG (Institut Supérieur Évangélique des Technologies Appliquées et de Ges
 Fondateur / Promoteur : Pasteur PAMEN Flaubert.
 Localisation : Yassa, Douala – Cameroun (à 100 mètres de TRADEX Yassa en direction de l'Hôpital Gynéco-Obstétrique et Pédiatrique de Douala).
 Adresse postale : P.O. Box 11237, Douala-Cameroun.
-Sites web officiels : www.isetag-univ.net / www.isetag.cm
+Sites web officiels : www.isetag-univ.net
 Standard & Admissions : +237 676 079 849 / +237 659 855 800 / +237 694 490 614 / +237 699 787 818
 Email officiel : info.isetag@gmail.com
 Arrêtés MINESUP N° 17/00048 & 15/09096/L/MINESUP. Statut: Établissement supérieur privé agrée sous tutelle académique de l'Université de Douala (FSEGA). Bilingue intégral (Sections francophone et anglophone).

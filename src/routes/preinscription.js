@@ -182,7 +182,7 @@ Votre pré-inscription à l'**ISETAG** (Institut Supérieur Évangélique des Te
 
 📞 *Secrétariat des admissions :*
 +237 676 079 849 / 690 609 511
-🌐 *Site web :* https://www.isetag.cm`;
+🌐 *Site web :* https://www.isetag-univ.net`;
 
         sendTextMessage(targetPhone, confirmationText)
           .then(() => console.log(`[PRE-INSCRIPTION] 📲 WhatsApp confirmation sent to ...${targetPhone.slice(-4)} (#${dossierCode})`))
