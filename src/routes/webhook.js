@@ -179,34 +179,40 @@ router.post('/whatsapp', verifyHmac, async (req, res) => {
       const activeOrientation = await getOrientation(phone);
 
       if (activeOrientation && activeOrientation.active) {
-        // User wants to cancel orientation
+        // User wants to cancel orientation or speaks of their chosen field / asks question
         if (orientationService.isAbortRequest(userText)) {
           await clearOrientation(phone);
-          const abortMsg = orientationService.abortMessage(storedLang);
-          await sendTextMessage(phone, abortMsg);
-          await recordInteraction(phone, userText, abortMsg, storedLang, convData, prospectName);
-          console.log(`[WEBHOOK] 🛑 Orientation cancelled by ...${phone.slice(-4)}`);
+          console.log(`[WEBHOOK] 🛑 Orientation cancelled/interrupted by ...${phone.slice(-4)}`);
+
+          if (orientationService.shouldProcessNormally(userText)) {
+            console.log(`[WEBHOOK] 🔄 User stated a choice or asked a question, routing to AI agent...`);
+            // Fall through to Step C (normal AI agent processing)
+          } else {
+            const abortMsg = orientationService.abortMessage(storedLang);
+            await sendTextMessage(phone, abortMsg);
+            await recordInteraction(phone, userText, abortMsg, storedLang, convData, prospectName);
+            return;
+          }
+        } else {
+          const sessionObj = { orientation: activeOrientation };
+          const { text: orientText, done } = orientationService.advanceOrientation(sessionObj, userText, storedLang);
+
+          if (done) {
+            await clearOrientation(phone);
+            console.log(`[WEBHOOK] 🎓 Orientation completed for ...${phone.slice(-4)}`);
+          } else {
+            await setOrientation(phone, sessionObj.orientation);
+            console.log(`[WEBHOOK] 🎓 Orientation step ${sessionObj.orientation.stepIndex}/${orientationService.STEPS.length} for ...${phone.slice(-4)}`);
+          }
+
+          await sendTextMessage(phone, orientText);
+          await recordInteraction(phone, userText, orientText, storedLang, convData, prospectName);
+
+          if (done) {
+            await sendContextualMedia(phone, userText, orientText, storedLang);
+          }
           return;
         }
-
-        const sessionObj = { orientation: activeOrientation };
-        const { text: orientText, done } = orientationService.advanceOrientation(sessionObj, userText, storedLang);
-
-        if (done) {
-          await clearOrientation(phone);
-          console.log(`[WEBHOOK] 🎓 Orientation completed for ...${phone.slice(-4)}`);
-        } else {
-          await setOrientation(phone, sessionObj.orientation);
-          console.log(`[WEBHOOK] 🎓 Orientation step ${sessionObj.orientation.stepIndex}/${orientationService.STEPS.length} for ...${phone.slice(-4)}`);
-        }
-
-        await sendTextMessage(phone, orientText);
-        await recordInteraction(phone, userText, orientText, storedLang, convData, prospectName);
-
-        if (done) {
-          await sendContextualMedia(phone, userText, orientText, storedLang);
-        }
-        return;
       }
 
       // ── Step B: Check if undecided student: start orientation quiz ────

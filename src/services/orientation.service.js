@@ -77,33 +77,68 @@ const STEPS = [
 //  ORIENTATION DETECTION
 //  Detects when the user says they don't know what to study
 // ──────────────────────────────────────────────
-const UNDECIDED_TRIGGERS_FR = [
-  'je ne sais pas', 'je sais pas', 'pas sure', 'pas sûr', 'pas sûre',
-  'indécis', 'indecis', 'pas décidé', 'pas decide', 'hesit', 'hésit',
-  'quelle filière', 'quelle filiere', 'quel domaine choisir', 'quoi choisir',
-  'aide moi choisir', 'aide moi à choisir', 'je ne sais pas quoi faire',
-  'pas encore décidé', 'perdu', 'lost', 'orientat', 'conseil',
-  'je ne sais pas quelle', 'm\'orienter', 'm orienter', 'choisir ma filiere',
-  'choisir une filiere', 'choisir filiere', 'quelle formation', 'laquelle choisir',
+const EXPLICIT_UNDECIDED_PHRASES_FR = [
+  'je ne sais pas quoi choisir',
+  'je ne sais pas quelle filiere choisir',
+  'je sais pas quoi choisir',
+  'je sais pas quelle filiere',
+  'aide moi a choisir ma filiere',
+  'aidez moi a choisir ma filiere',
+  'aide moi a choisir une filiere',
+  'aidez moi a choisir une filiere',
+  'aidez moi a morienter',
+  'aide moi a morienter',
+  'je cherche mon orientation',
+  'je suis indecis',
+  'je suis perdue',
+  'je suis perdu',
+  'j hesite entre',
+  'je hesite entre',
+  'faire le test d orientation',
+  'test d orientation',
+  'questionnaire d orientation',
+  'quelle filiere me correspond',
+  'quelle filiere est faite pour moi',
 ];
-const UNDECIDED_TRIGGERS_EN = [
-  'don\'t know', 'dont know', 'not sure', 'undecided', 'no idea',
-  'which course', 'which program', 'which field', 'help me choose',
-  'what to study', 'what should i study', 'confused', 'lost',
-  'orientation', 'guidance', 'advise me', 'not decided',
+
+const EXPLICIT_UNDECIDED_PHRASES_EN = [
+  'i don\'t know what to choose',
+  'i dont know what to choose',
+  'i don\'t know which course',
+  'help me choose a program',
+  'help me choose a course',
+  'i am undecided',
+  'i am confused what to study',
+  'career orientation test',
+  'orientation questionnaire',
+  'which course suits me',
 ];
 
 /**
- * Returns true if the user's message suggests they don't know what to study.
+ * Returns true if the user's message suggests they don't know what to study and specifically request orientation.
  * @param {string} text
  * @returns {boolean}
  */
 function isUndecided(text) {
   if (!text) return false;
   const lower = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  // Negative guard: If the user already mentions a field or asks standard questions (fees, admission, etc.), DO NOT trigger questionnaire
+  const specificSignals = [
+    'genie logiciel', 'informatique', 'marketing', 'commerce', 'mecanique', 'maritime',
+    'btp', 'douane', 'gestion', 'comptabilite', 'banque', 'droit', 'sante', 'biomedical',
+    'froid', 'climatisation', 'electricite', 'topographe', 'iwd', 'igl', 'iia',
+    'combien', 'frais', 'cout', 'prix', 'scolarite', 'admission', 'dossier', 'inscription',
+    'preinscription', 'localisation', 'ou se trouve', 'adresse', 'rentree', 'cours du soir',
+    'connais ma filiere', 'deja choisi', 'pas besoin', 'je veux faire'
+  ];
+  if (specificSignals.some(s => lower.includes(s))) {
+    return false;
+  }
+
   return (
-    UNDECIDED_TRIGGERS_FR.some(t => lower.includes(t)) ||
-    UNDECIDED_TRIGGERS_EN.some(t => lower.includes(t))
+    EXPLICIT_UNDECIDED_PHRASES_FR.some(t => lower.includes(t)) ||
+    EXPLICIT_UNDECIDED_PHRASES_EN.some(t => lower.includes(t))
   );
 }
 
@@ -376,17 +411,42 @@ function generateRecommendation(answers, lang) {
 // ──────────────────────────────────────────────
 //  ABORT MESSAGE (if user wants to stop)
 // ──────────────────────────────────────────────
-const ABORT_TRIGGERS = ['stop', 'annuler', 'cancel', 'quitter', 'quit', 'exit', 'arreter', 'arrete', 'non merci'];
+const ABORT_PHRASES = [
+  'stop', 'annuler', 'cancel', 'quitter', 'quit', 'exit', 'arreter', 'arrete', 'non merci',
+  'je connais ma filiere', 'je connais ma filière', 'je connais deja', 'je sais deja',
+  'pas besoin', 'pas de questionnaire', 'je n ai pas besoin', 'je nai pas besoin', "je n'ai pas besoin",
+  'laisse tomber', 'laisser', 'pas la peine', 'inutile', 'laisse', 'laissez',
+  'je veux faire', 'mon choix est', 'je prefere', 'je préfère', 'je choisis', 'je souhaite faire',
+  'non je connais', 'c est bon', 'cest bon', 'non pas ca', 'non c est bon', 'non je'
+];
 
 function isAbortRequest(text) {
-  const lower = text.toLowerCase().trim();
-  return ABORT_TRIGGERS.some(t => lower.includes(t));
+  if (!text) return false;
+  const lower = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return ABORT_PHRASES.some(t => lower.includes(t));
+}
+
+/**
+ * Checks if the user message contains a clear domain/choice or question that should immediately be handled by the AI agent
+ */
+function shouldProcessNormally(text) {
+  if (!text) return false;
+  const lower = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  const meaningfulKeywords = [
+    'genie logiciel', 'informatique', 'commerce', 'marketing', 'mecanique', 'maritime',
+    'btp', 'douane', 'gestion', 'banque', 'droit', 'electricite', 'frais', 'cout', 'prix',
+    'scolarite', 'admission', 'inscription', 'preinscription', 'combien', 'comment', 'ou',
+    'je veux faire', 'je souhaite', 'mon choix', 'je prefere'
+  ];
+
+  return meaningfulKeywords.some(k => lower.includes(k));
 }
 
 function abortMessage(lang) {
   return lang === 'en'
-    ? '🔄 Orientation cancelled. No worries — feel free to ask me anything about ISETAG programs whenever you\'re ready!'
-    : '🔄 Orientation annulée. Pas de problème — tu peux me poser toute question sur les filières ISETAG quand tu veux !';
+    ? '🔄 Orientation questionnaire cancelled. Feel free to ask me anything about ISETAG programs, tuition fees, or admissions whenever you\'re ready!'
+    : '🔄 Questionnaire d\'orientation annulé. Pas de souci ! Pose-moi directement tes questions sur les filières ISETAG, les frais de scolarité ou les inscriptions 😊';
 }
 
 // ──────────────────────────────────────────────
@@ -401,6 +461,7 @@ module.exports = {
   STEPS,
   isUndecided,
   isAbortRequest,
+  shouldProcessNormally,
   startOrientation,
   advanceOrientation,
   abortMessage,

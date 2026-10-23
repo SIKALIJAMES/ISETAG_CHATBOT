@@ -184,31 +184,37 @@ router.post('/messenger', verifyHmac, async (req, res) => {
       if (activeOrientation && activeOrientation.active) {
         if (orientationService.isAbortRequest(userText)) {
           await clearOrientation(dbIdentifier);
-          const abortMsg = orientationService.abortMessage(storedLang);
-          await sendTextMessage(senderPsid, abortMsg);
-          await recordInteraction(dbIdentifier, userText, abortMsg, storedLang, convData, prospectName);
-          console.log(`[MESSENGER] 🛑 Orientation cancelled by ...${senderPsid.slice(-4)}`);
+          console.log(`[MESSENGER] 🛑 Orientation cancelled/interrupted by ...${senderPsid.slice(-4)}`);
+
+          if (orientationService.shouldProcessNormally(userText)) {
+            console.log(`[MESSENGER] 🔄 User stated a choice or asked a question, routing to AI agent...`);
+            // Fall through to Step C (normal AI agent processing)
+          } else {
+            const abortMsg = orientationService.abortMessage(storedLang);
+            await sendTextMessage(senderPsid, abortMsg);
+            await recordInteraction(dbIdentifier, userText, abortMsg, storedLang, convData, prospectName);
+            return;
+          }
+        } else {
+          const sessionObj = { orientation: activeOrientation };
+          const { text: orientText, done } = orientationService.advanceOrientation(sessionObj, userText, storedLang);
+
+          if (done) {
+            await clearOrientation(dbIdentifier);
+            console.log(`[MESSENGER] 🎓 Orientation completed for ...${senderPsid.slice(-4)}`);
+          } else {
+            await setOrientation(dbIdentifier, sessionObj.orientation);
+            console.log(`[MESSENGER] 🎓 Orientation step ${sessionObj.orientation.stepIndex}/${orientationService.STEPS.length} for ...${senderPsid.slice(-4)}`);
+          }
+
+          await sendTextMessage(senderPsid, orientText);
+          await recordInteraction(dbIdentifier, userText, orientText, storedLang, convData, prospectName);
+
+          if (done) {
+            await sendContextualMedia(dbIdentifier, userText, orientText, storedLang);
+          }
           return;
         }
-
-        const sessionObj = { orientation: activeOrientation };
-        const { text: orientText, done } = orientationService.advanceOrientation(sessionObj, userText, storedLang);
-
-        if (done) {
-          await clearOrientation(dbIdentifier);
-          console.log(`[MESSENGER] 🎓 Orientation completed for ...${senderPsid.slice(-4)}`);
-        } else {
-          await setOrientation(dbIdentifier, sessionObj.orientation);
-          console.log(`[MESSENGER] 🎓 Orientation step ${sessionObj.orientation.stepIndex}/${orientationService.STEPS.length} for ...${senderPsid.slice(-4)}`);
-        }
-
-        await sendTextMessage(senderPsid, orientText);
-        await recordInteraction(dbIdentifier, userText, orientText, storedLang, convData, prospectName);
-
-        if (done) {
-          await sendContextualMedia(dbIdentifier, userText, orientText, storedLang);
-        }
-        return;
       }
 
       // ── Step B: Check if undecided student: start orientation quiz ────
