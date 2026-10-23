@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Lock, Mail, ArrowRight, Eye, EyeOff, ShieldCheck, AlertTriangle, Clock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -7,6 +7,7 @@ const LOCK_STORAGE_KEY = 'isetag_lock_until';
 
 const Login = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const reason = searchParams.get('reason');
 
   const { login } = useAuth();
@@ -58,7 +59,7 @@ const Login = () => {
     try {
       await login(email, password);
       sessionStorage.removeItem(LOCK_STORAGE_KEY);
-      window.location.href = '/';
+      navigate('/', { replace: true });
     } catch (err) {
       const res = err.response;
       const data = res?.data;

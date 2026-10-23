@@ -33,7 +33,9 @@ export function recordActivity() {
 
 export function getLastActivity() {
   const stored = localStorage.getItem(LAST_ACTIVITY_KEY);
-  return stored ? parseInt(stored, 10) : Date.now();
+  if (!stored) return Date.now();
+  const parsed = parseInt(stored, 10);
+  return isNaN(parsed) ? Date.now() : parsed;
 }
 
 export function isSessionExpired() {
@@ -41,11 +43,16 @@ export function isSessionExpired() {
   if (!token) return true;
 
   const lastActive = getLastActivity();
+  if (lastActive > Date.now()) {
+    recordActivity();
+    return false;
+  }
+
   if (Date.now() - lastActive > INACTIVITY_TIMEOUT_MS) {
     return true;
   }
 
-  // Also check JWT exp claim if present
+  // Safe JWT exp verification
   try {
     const base64Url = token.split('.')[1];
     if (base64Url) {
@@ -62,39 +69,12 @@ export function isSessionExpired() {
       }
     }
   } catch (e) {
-    // Malformed token
+    // If decoding fails, don't auto-expire; let the backend verify
+    return false;
   }
 
   return false;
 }
-
-// ── Global Axios interceptors (affects all direct axios calls in pages) ──
-axios.interceptors.request.use((config) => {
-  const token = getToken();
-  if (token && !config.headers.Authorization) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  recordActivity();
-  return config;
-});
-
-axios.interceptors.response.use(
-  (response) => {
-    recordActivity();
-    return response;
-  },
-  (error) => {
-    if (
-      error.response?.status === 401 &&
-      !window.location.pathname.startsWith('/login') &&
-      !window.location.pathname.startsWith('/preinscription')
-    ) {
-      clearToken();
-      window.location.href = '/login?reason=expired';
-    }
-    return Promise.reject(error);
-  }
-);
 
 // ── Dedicated API client instance ──
 const api = axios.create({
@@ -102,6 +82,45 @@ const api = axios.create({
   withCredentials: true,
   headers: { 'Content-Type': 'application/json' },
 });
+
+// Configure interceptor function for any axios instance (both default axios and custom api)
+const setupInterceptors = (instance) => {
+  instance.interceptors.request.use((config) => {
+    const token = getToken();
+    if (token) {
+      config.headers = config.headers || {};
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    recordActivity();
+    return config;
+  });
+
+  instance.interceptors.response.use(
+    (response) => {
+      recordActivity();
+      return response;
+    },
+    (error) => {
+      const url = error.config?.url || '';
+      const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/verify');
+
+      if (
+        error.response?.status === 401 &&
+        !isAuthEndpoint &&
+        !window.location.pathname.startsWith('/login') &&
+        !window.location.pathname.startsWith('/preinscription')
+      ) {
+        clearToken();
+        window.location.href = '/login?reason=expired';
+      }
+      return Promise.reject(error);
+    }
+  );
+};
+
+// Apply to BOTH global axios AND the api instance
+setupInterceptors(axios);
+setupInterceptors(api);
 
 export const authAPI = {
   login: (email, password) => api.post('/auth/login', { email, password }),

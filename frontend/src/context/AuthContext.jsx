@@ -20,8 +20,6 @@ export function AuthProvider({ children }) {
   const [showWarning, setShowWarning] = useState(false);
   const [warningSeconds, setWarningSeconds] = useState(60);
 
-  const warningTimerRef = useRef(null);
-
   // Logout handler
   const logout = useCallback((reason = null) => {
     clearToken();
@@ -47,7 +45,7 @@ export function AuthProvider({ children }) {
     setWarningSeconds(60);
   }, []);
 
-  // Verify token on mount if authenticated
+  // Verify token on mount if a token is present
   useEffect(() => {
     const token = getToken();
     if (!token || isSessionExpired()) {
@@ -60,13 +58,23 @@ export function AuthProvider({ children }) {
     authAPI
       .verify()
       .then((res) => {
-        setUser(res.data.user);
+        if (res.data?.user) {
+          setUser(res.data.user);
+        }
         setIsAuthenticated(true);
         recordActivity();
       })
-      .catch(() => {
-        clearToken();
-        setIsAuthenticated(false);
+      .catch((err) => {
+        // Only invalidate if the backend specifically responds with 401 Unauthorized
+        if (err.response?.status === 401) {
+          console.warn('[AUTH] Token rejected by server (401), logging out.');
+          clearToken();
+          setIsAuthenticated(false);
+        } else {
+          // If 404 (route not yet deployed) or network timeout, do NOT log out the user
+          console.warn('[AUTH] Verify response was not 401, preserving session:', err.message);
+          setIsAuthenticated(true);
+        }
       })
       .finally(() => {
         setLoading(false);
@@ -81,7 +89,6 @@ export function AuthProvider({ children }) {
 
     // Reset activity on any user interaction
     const handleUserActivity = () => {
-      // If warning modal is not active, record activity quietly
       if (!showWarning) {
         recordActivity();
       }
@@ -90,7 +97,7 @@ export function AuthProvider({ children }) {
     const events = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart'];
     events.forEach((ev) => window.addEventListener(ev, handleUserActivity, { passive: true }));
 
-    // Heartbeat check every 2 seconds
+    // Heartbeat check every 3 seconds
     const interval = setInterval(() => {
       const token = getToken();
       if (!token) {
@@ -114,7 +121,7 @@ export function AuthProvider({ children }) {
       } else {
         if (showWarning) setShowWarning(false);
       }
-    }, 2000);
+    }, 3000);
 
     // Visibility change handler: user leaves tab or closes laptop
     const handleVisibilityChange = () => {
@@ -139,9 +146,9 @@ export function AuthProvider({ children }) {
     const res = await authAPI.login(email, password);
     const { token, user: userData } = res.data;
     setToken(token);
+    recordActivity();
     setUser(userData);
     setIsAuthenticated(true);
-    recordActivity();
     return userData;
   };
 
