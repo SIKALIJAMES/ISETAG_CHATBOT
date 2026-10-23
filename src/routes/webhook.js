@@ -108,6 +108,12 @@ router.post('/whatsapp', verifyHmac, async (req, res) => {
         }
       }
 
+      // ── Safety Guard: Ignore any group messages ──────────────────────
+      if (message.group_id || message.chat_type === 'group' || (message.from && message.from.includes('@g.us'))) {
+        console.log('[WEBHOOK] ⏩ Ignored group message (bot operates in 1-to-1 private chat only).');
+        return;
+      }
+
       const phone = message.from;
       let userText = '';
 

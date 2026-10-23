@@ -4,9 +4,21 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const rateLimit = require('express-rate-limit');
 const { query } = require('../config/database');
 const { protect } = require('../middleware/auth');
 const { sendTextMessage } = require('../services/whatsapp');
+
+// Limit pre-inscription submissions to prevent spam / storage exhaustion
+const submissionLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: 'Trop de soumissions de dossiers depuis votre adresse IP. Veuillez patienter 15 minutes.'
+  }
+});
 
 // ─────────────────────────────────────────────
 //  Phone Normalizer (Cameroon E.164 without +)
@@ -77,7 +89,7 @@ function docPath(files, field) {
 //  POST /api/preinscription
 //  Public — Submit a pre-registration form
 // ─────────────────────────────────────────────
-router.post('/', (req, res) => {
+router.post('/', submissionLimiter, (req, res) => {
   uploadFields(req, res, async (err) => {
     if (err instanceof multer.MulterError) {
       return res.status(400).json({ error: `Erreur de téléchargement: ${err.message}` });

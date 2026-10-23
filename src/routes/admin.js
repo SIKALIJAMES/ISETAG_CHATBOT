@@ -7,7 +7,10 @@ const { protect } = require('../middleware/auth');
 const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 15 * 1024 * 1024 } // 15MB max file size to prevent OOM
+});
 const pdf = require('pdf-parse');
 const whatsapp = require('../services/whatsapp');
 const messenger = require('../services/messenger');
