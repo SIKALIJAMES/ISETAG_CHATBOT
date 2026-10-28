@@ -20,6 +20,7 @@ const orientationService = require('../services/orientation.service');
 const { query } = require('../config/database');
 const { sendContextualMedia } = require('../services/media-sender');
 const { verifyHmac } = require('../middleware/hmac');
+const { handleFacebookCommentEvent } = require('../services/facebook-comments.service');
 
 // Track consecutive AI errors per page-scoped user ID
 const noMatchCount = {};
@@ -95,8 +96,19 @@ router.post('/messenger', verifyHmac, async (req, res) => {
   setImmediate(async () => {
     try {
       const entry = req.body.entry?.[0];
-      const messagingEvent = entry?.messaging?.[0];
+      if (!entry) return;
 
+      // ── Facebook Page Comments (Feed changes) ──────────────────────
+      if (entry.changes && Array.isArray(entry.changes)) {
+        for (const change of entry.changes) {
+          if (change.field === 'feed' && change.value) {
+            await handleFacebookCommentEvent(change.value, entry.id);
+          }
+        }
+      }
+
+      // ── Classic Messenger Direct Messages ──────────────────────────
+      const messagingEvent = entry.messaging?.[0];
       if (!messagingEvent || !messagingEvent.message) return;
 
       // ── Anti-Duplicate / Webhook Idempotency Check ──────────────────

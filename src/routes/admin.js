@@ -422,5 +422,30 @@ router.get('/documents/:id', protect, (req, res) => {
   return res.status(404).json({ error: 'Document introuvable' });
 });
 
+/**
+ * GET /api/admin/facebook-comments
+ * Retrieve logged Facebook comments, with optional category filter (e.g. 'reclamation')
+ */
+router.get('/facebook-comments', protect, async (req, res) => {
+  try {
+    const { category, limit = 50 } = req.query;
+    let sql = 'SELECT id, comment_id, post_id, category, status, complaint_text, created_at, processed_at FROM comment_events';
+    const params = [];
+
+    if (category) {
+      params.push(category);
+      sql += ' WHERE category = $1';
+    }
+
+    sql += ' ORDER BY created_at DESC LIMIT ' + (parseInt(limit) || 50);
+
+    const result = await query(sql, params);
+    res.json({ comments: result.rows });
+  } catch (err) {
+    console.error('[ADMIN] Fetch facebook comments error:', err.message);
+    res.status(500).json({ error: 'Une erreur interne est survenue' });
+  }
+});
+
 module.exports = router;
 
