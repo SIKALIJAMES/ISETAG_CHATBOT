@@ -249,28 +249,58 @@ ${context ? `\n## KNOWLEDGE BASE (use this for precise answers):\n${context}` : 
     }
     messages.push({ role: 'user', content: userText });
 
-    // Call Groq API (active production model: openai/gpt-oss-120b)
-    const groqModel = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
-    console.log(`[AI-AGENT] Calling Groq (${groqModel})...`);
+    let rawResponse = '';
 
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: groqModel,
-        messages,
-        max_tokens: 700,
-        temperature: 0.6,
-      })
-    });
+    // 1. Try Groq API
+    if (process.env.GROQ_API_KEY) {
+      try {
+        const groqModel = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
+        console.log(`[AI-AGENT] Calling Groq (${groqModel})...`);
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model: groqModel,
+            messages,
+            max_tokens: 700,
+            temperature: 0.6,
+          })
+        });
+        const data = await response.json();
+        if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+        rawResponse = data.choices?.[0]?.message?.content || '';
+      } catch (groqErr) {
+        console.warn('[AI-AGENT] Groq failed, switching to OpenAI fallback:', groqErr.message);
+      }
+    }
 
-    const data = await response.json();
-    if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+    // 2. Fallback to OpenAI if Groq fails or is not available
+    if (!rawResponse && process.env.OPENAI_API_KEY) {
+      console.log('[AI-AGENT] Calling OpenAI fallback (gpt-4o-mini)...');
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages,
+          max_tokens: 700,
+          temperature: 0.6,
+        })
+      });
+      const data = await response.json();
+      if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+      rawResponse = data.choices?.[0]?.message?.content || '';
+    }
 
-    const rawResponse = data.choices?.[0]?.message?.content || '';
+    if (!rawResponse) {
+      throw new Error('All AI providers failed to generate a response');
+    }
 
     // Extract <NAME_DETECTED> tag
     const nameMatch = rawResponse.match(/<NAME_DETECTED>(.*?)<\/NAME_DETECTED>/i);
