@@ -2,6 +2,8 @@
 const fetch = require('node-fetch');
 
 const WA_BASE_URL = 'https://graph.facebook.com/v20.0';
+const DEFAULT_PHONE_ID = '1206352955885297';
+const DEFAULT_WA_TOKEN = 'EAAeRpXkaZBy4BSzvl7R1XWQ4rmbCsTeNEfOmZB9ZAbxwzgsc4FlsesSdoZA26DDTXoKJBigrHqLypXAYVsIfZBcmi1T9byr6Rbl9ZBdiFr1vZAYtj7ykW4rib7YAVy4wtNH57AUUH8pRLXpvxtWCIx7XCZBo0WHWwC6TPhKFN3Wby6cZBljnQlasbZAFNVIwFZB4ULLbQZDZD';
 
 /**
  * Clean markdown and format text properly for WhatsApp:
@@ -44,8 +46,8 @@ function formatForWhatsApp(text) {
  * Send a text message via WhatsApp Cloud API
  */
 async function sendTextMessage(to, text) {
-  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
-  const token = process.env.WHATSAPP_TOKEN;
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_PHONE_ID;
+  const token = process.env.WHATSAPP_TOKEN || DEFAULT_WA_TOKEN;
 
   if (!phoneNumberId || !token) {
     console.error('[WHATSAPP] Missing credentials');
@@ -84,8 +86,8 @@ async function sendTextMessage(to, text) {
  * Upload an audio buffer to Meta and send it as a voice note
  */
 async function sendAudioMessage(to, audioBuffer) {
-  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
-  const token = process.env.WHATSAPP_TOKEN;
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_PHONE_ID;
+  const token = process.env.WHATSAPP_TOKEN || DEFAULT_WA_TOKEN;
 
   if (!phoneNumberId || !token) {
     console.error('[WHATSAPP] Missing credentials for audio send');
@@ -159,8 +161,8 @@ async function sendAudioMessage(to, audioBuffer) {
  * Send an image from a public URL
  */
 async function sendImageMessage(to, imageUrl, caption = '') {
-  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
-  const token = process.env.WHATSAPP_TOKEN;
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_PHONE_ID;
+  const token = process.env.WHATSAPP_TOKEN || DEFAULT_WA_TOKEN;
   if (!phoneNumberId || !token) return;
   try {
     const response = await fetch(`${WA_BASE_URL}/${phoneNumberId}/messages`, {
@@ -186,8 +188,8 @@ async function sendImageMessage(to, imageUrl, caption = '') {
  * Send a document (PDF) from a public URL
  */
 async function sendDocumentMessage(to, docUrl, filename, caption = '') {
-  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
-  const token = process.env.WHATSAPP_TOKEN;
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID || DEFAULT_PHONE_ID;
+  const token = process.env.WHATSAPP_TOKEN || DEFAULT_WA_TOKEN;
   if (!phoneNumberId || !token) return;
   try {
     const response = await fetch(`${WA_BASE_URL}/${phoneNumberId}/messages`, {

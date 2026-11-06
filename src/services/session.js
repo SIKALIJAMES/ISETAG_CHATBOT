@@ -11,15 +11,34 @@ const LANG_TTL    = 604800;    // 7 jours pour la langue (persiste les redéploi
 const NAME_TTL    = 2592000;   // 30 jours pour le prénom du prospect
 
 /**
- * Get last 15 messages from Redis (oldest first)
+ * Get last 15 messages from Redis, falling back to PostgreSQL if Redis fails
  */
 async function getHistory(phone) {
   const key = `session:${phone}`;
   try {
     const history = await redis.lrange(key, 0, 14);
-    return (history || []).reverse();
+    if (history && history.length > 0) {
+      return history.reverse();
+    }
   } catch (err) {
-    console.error('[REDIS] Get history error:', err.message);
+    console.warn('[REDIS] Get history error, falling back to PostgreSQL:', err.message);
+  }
+
+  // Fallback to PostgreSQL
+  try {
+    const { query } = require('../config/database');
+    const res = await query(
+      `SELECT m.role, m.content 
+       FROM messages m 
+       JOIN conversations c ON m.conversation_id = c.id 
+       WHERE c.user_phone = $1 
+       ORDER BY m.sent_at DESC 
+       LIMIT 15`,
+      [phone]
+    );
+    return (res.rows || []).reverse();
+  } catch (dbErr) {
+    console.error('[DB] Fallback getHistory error:', dbErr.message);
     return [];
   }
 }
@@ -68,9 +87,22 @@ async function setLang(phone, lang) {
  */
 async function getName(phone) {
   try {
-    return await redis.get(`name:${phone}`) || null;
+    const name = await redis.get(`name:${phone}`);
+    if (name) return name;
   } catch (err) {
-    console.error('[REDIS] getName error:', err.message);
+    console.warn('[REDIS] getName error, falling back to PostgreSQL:', err.message);
+  }
+
+  // Fallback to PostgreSQL
+  try {
+    const { query } = require('../config/database');
+    const res = await query(
+      'SELECT prospect_name FROM conversations WHERE user_phone = $1 LIMIT 1',
+      [phone]
+    );
+    return res.rows[0]?.prospect_name || null;
+  } catch (dbErr) {
+    console.error('[DB] Fallback getName error:', dbErr.message);
     return null;
   }
 }

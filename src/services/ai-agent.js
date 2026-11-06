@@ -94,10 +94,10 @@ async function processMessage(phone, userText, storedLang, history = [], prospec
     if (isGreeting) {
       if (prospectName) {
         greetingRule = `- The user has sent a greeting. You already know their name: **${prospectName}**.
-- Greet them warmly using their name:
-  * In French: "Bonjour ${prospectName} ! Je suis ${botName}, l'assistant virtuel de l'ISETAG 🎓. Que puis-je faire pour toi aujourd'hui ? (Filières, frais de scolarité, cité U, pré-inscription...)"
-  * In English: "Hello ${prospectName}! I am ${botName}, the virtual assistant for ISETAG 🎓. How can I help you today? (Programs, tuition fees, campus housing, pre-registration...)"
-- Mention that if they hesitate on a program, they can type « orientation ». Keep it short and friendly.`;
+- Greet them naturally using their name:
+  * In French: "Bonjour ${prospectName} ! Comment puis-je t'aider aujourd'hui ?"
+  * In English: "Hello ${prospectName}! How can I help you today?"
+- DO NOT re-introduce yourself ("Je suis Isa..."). DO NOT ask for their name again. Keep it natural.`;
       } else {
         greetingRule = `- The user has sent a greeting and their name is not yet known.
 - Respond with this exact friendly presentation:
@@ -119,9 +119,14 @@ async function processMessage(phone, userText, storedLang, history = [], prospec
 - Answer their question clearly and directly.
 - At the very end of your response, politely ask for their first name so you can address them properly.`;
     } else if (prospectName) {
-      greetingRule = `- This is an ONGOING conversation. The prospect's name is: **${prospectName}**. Use their name naturally. DO NOT repeat the welcome introduction or "Bonjour".`;
+      greetingRule = `- This is an ONGOING conversation. The prospect's name is: **${prospectName}**.
+- Address them by name naturally when appropriate.
+- DO NOT say "Bonjour" or "Bonjour ! Je suis ${botName}..." again! Dive directly into answering the question.
+- NEVER ask for their name again.`;
     } else {
-      greetingRule = `- This is an ONGOING conversation. You do NOT yet know their name. If they just shared it, extract it with <NAME_DETECTED>. Otherwise, weave in a polite request for their first name at the end.`;
+      greetingRule = `- This is an ONGOING conversation.
+- DO NOT say "Bonjour ! Je suis ${botName}..." at the beginning of your reply! Dive directly into answering.
+- If they just shared their name in this message or previous ones, extract it with <NAME_DETECTED>. DO NOT nag or ask for their name in every single message.`;
     }
 
     const preinscriptionUrl = (process.env.APP_URL || 'https://isetagchatbot-production.up.railway.app') + '/preinscription';
