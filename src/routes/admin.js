@@ -201,7 +201,7 @@ router.get('/conversations/:id/messages', protect, async (req, res) => {
   const { id } = req.params;
   try {
     const result = await query(
-      'SELECT * FROM messages WHERE conversation_id = $1 ORDER BY created_at ASC',
+      'SELECT id, conversation_id, role, content, sent_at as created_at FROM messages WHERE conversation_id = $1 ORDER BY sent_at ASC, id ASC',
       [id]
     );
     res.json(result.rows);
