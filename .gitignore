@@ -1,10 +1,9 @@
 node_modules/
 .env
 *.log
-dist/
+/dist/
 .DS_Store
 frontend/node_modules/
-frontend/dist/
 ~$*
 images_brutes/
 images_brutes_1/

@@ -171,7 +171,7 @@ async function runMegaTest() {
   // File d'attente concurrente
   let studentCursor = 0;
 
-  async function worker(workerId) {
+  async function worker(workerId) { 
     while (studentCursor < TOTAL_PROSPECTS) {
       const currentIndex = studentCursor++;
       if (currentIndex >= TOTAL_PROSPECTS) break;

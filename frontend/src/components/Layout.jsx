@@ -20,20 +20,20 @@ const Layout = () => {
 
   const menu = [
     { name: 'Tableau de bord', path: '/', icon: LayoutDashboard },
-    { name: 'Base de Connaissance', path: '/knowledge', icon: Database },
+    { name: 'Base documentaire', path: '/knowledge', icon: Database },
     { name: 'Conversations', path: '/conversations', icon: MessageSquare },
     { name: 'Pré-inscriptions', path: '/preinscriptions', icon: ClipboardList },
   ];
 
   return (
-    <div className="flex min-h-screen bg-slate-50 dark:bg-[#111315] text-slate-900 dark:text-slate-100 transition-colors duration-200">
+    <div className="flex min-h-screen bg-slate-50 dark:bg-[#0B0E14] text-slate-900 dark:text-slate-100 transition-colors duration-150">
       
-      {/* ── Sidebar Pro ─────────────────────────────────── */}
-      <aside className="w-64 fixed h-full flex flex-col p-5 z-20 bg-white dark:bg-[#16181b] border-r border-slate-200/80 dark:border-slate-800/80">
+      {/* ── Sidebar Gauche ──────────────────────────────── */}
+      <aside className="w-64 fixed h-full flex flex-col p-4 z-20 bg-white dark:bg-[#101319] border-r border-slate-200 dark:border-slate-800">
         
-        {/* Logo & Titre Institutionnel */}
-        <div className="flex items-center gap-3 px-2 mb-8">
-          <div className="w-10 h-10 rounded-xl p-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 flex items-center justify-center flex-shrink-0">
+        {/* Identité Institutionnelle */}
+        <div className="flex items-center gap-3 px-2 py-3 mb-6 border-b border-slate-100 dark:border-slate-800/60 pb-5">
+          <div className="w-10 h-10 rounded-lg p-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center flex-shrink-0 shadow-xs">
             <img
               src="/Logo.png"
               alt="ISETAG"
@@ -44,16 +44,16 @@ const Layout = () => {
             />
           </div>
           <div className="min-w-0">
-            <h2 className="font-extrabold text-lg text-slate-900 dark:text-white leading-none tracking-tight">
+            <h1 className="font-bold text-base text-slate-900 dark:text-white leading-tight tracking-tight">
               ISETAG
-            </h2>
-            <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500 mt-1">
-              Portail Administratif
+            </h1>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+              Espace Administratif
             </p>
           </div>
         </div>
 
-        {/* Navigation Pro */}
+        {/* Menu Principal */}
         <nav className="flex-1 space-y-1">
           {menu.map((item) => {
             const isActive = location.pathname === item.path;
@@ -61,59 +61,66 @@ const Layout = () => {
               <Link
                 key={item.name}
                 to={item.path}
-                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 ${
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-150 ${
                   isActive
-                    ? 'bg-[#EAE74A]/20 dark:bg-[#EAE74A]/10 text-slate-900 dark:text-[#EAE74A] border border-[#EAE74A]/40'
-                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white'
+                    ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/50'
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
-                <item.icon size={18} className={isActive ? 'text-slate-900 dark:text-[#EAE74A]' : 'text-slate-400'} />
+                <item.icon
+                  size={16}
+                  className={isActive ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-400'}
+                />
                 <span className="flex-1">{item.name}</span>
-                {isActive && <ChevronRight size={14} className="opacity-70" />}
+                {isActive && <ChevronRight size={13} className="opacity-60 text-emerald-700 dark:text-emerald-400" />}
               </Link>
             );
           })}
         </nav>
 
-        {/* Footer Sidebar : Switch Thème + Profil Admin + Déconnexion */}
-        <div className="pt-4 border-t border-slate-100 dark:border-slate-800/80 space-y-3">
+        {/* Bas de Sidebar */}
+        <div className="pt-4 border-t border-slate-200/80 dark:border-slate-800 space-y-2.5">
           
-          {/* Bouton Dark / Light Mode */}
+          {/* Switch Mode Sombre / Clair */}
           <button
             onClick={toggleTheme}
-            className="flex items-center justify-between w-full px-3 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors"
+            className="flex items-center justify-between w-full px-3 py-2 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors"
           >
             <span className="flex items-center gap-2">
               {theme === 'dark' ? <Sun size={15} className="text-amber-400" /> : <Moon size={15} className="text-slate-500" />}
               <span>{theme === 'dark' ? 'Mode Clair' : 'Mode Sombre'}</span>
             </span>
-            <span className="text-[10px] uppercase font-bold text-slate-400">{theme}</span>
+            <span className="text-[10px] uppercase font-bold text-slate-400">
+              {theme === 'dark' ? 'Dark' : 'Light'}
+            </span>
           </button>
 
-          {/* Profil */}
+          {/* Profil Utilisateur Connecté */}
           {user?.email && (
-            <div className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800 flex items-center justify-between">
+            <div className="px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
               <div className="min-w-0 pr-2">
-                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{user.email}</p>
-                <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1 mt-0.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
+                  {user.email}
+                </p>
+                <p className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium flex items-center gap-1.5 mt-0.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
                   Connecté
                 </p>
               </div>
               <button
                 onClick={() => logout('manual')}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+                className="p-1.5 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
                 title="Se déconnecter"
               >
-                <LogOut size={16} />
+                <LogOut size={15} />
               </button>
             </div>
           )}
         </div>
       </aside>
 
-      {/* ── Main Content ──────────────────────────────── */}
-      <main className="ml-64 flex-1 min-h-screen p-8 bg-slate-50 dark:bg-[#111315]">
+      {/* ── Contenu Principal ───────────────────────────── */}
+      <main className="ml-64 flex-1 min-h-screen p-8 bg-slate-50 dark:bg-[#0B0E14]">
         <Outlet />
       </main>
     </div>

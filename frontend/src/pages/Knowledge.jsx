@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Upload, FileText, Search, Database, Trash2, Edit, Plus } from 'lucide-react';
+import { Upload, FileText, Database, Trash2, Edit3, Plus, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
 
 const Knowledge = () => {
-  const [file, setFile]           = useState(null);
-  const [rawText, setRawText]     = useState('');
-  const [title, setTitle]         = useState('');
+  const [file, setFile] = useState(null);
+  const [rawText, setRawText] = useState('');
+  const [title, setTitle] = useState('');
   const [uploading, setUploading] = useState(false);
-  const [message, setMessage]     = useState('');
-  const [sources, setSources]     = useState([]);
-  const [dragOver, setDragOver]   = useState(false);
+  const [statusMsg, setStatusMsg] = useState({ type: '', text: '' });
+  const [sources, setSources] = useState([]);
+  const [dragOver, setDragOver] = useState(false);
 
   const fetchSources = async () => {
     try {
@@ -17,256 +17,258 @@ const Knowledge = () => {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setSources(res.data);
-    } catch (err) { console.error('Failed to fetch knowledge sources:', err.message); }
+    } catch (err) {
+      console.error('Failed to fetch knowledge:', err.message);
+    }
   };
 
-  React.useEffect(() => { fetchSources(); }, []);
+  useEffect(() => {
+    fetchSources();
+  }, []);
 
   const handleUpload = async (e) => {
     e.preventDefault();
     if (!file) return;
     setUploading(true);
+    setStatusMsg({ type: '', text: '' });
     const formData = new FormData();
     formData.append('file', file);
     formData.append('category', 'general');
+
     try {
       await axios.post('/api/admin/knowledge/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${localStorage.getItem('token')}` }
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
       });
-      setMessage('✅ Document vectorisé avec succès !');
+      setStatusMsg({ type: 'success', text: 'Document importé et vectorisé avec succès.' });
       setFile(null);
       fetchSources();
-    } catch (err) { setMessage('❌ Échec du téléchargement : ' + err.message);
-    } finally { setUploading(false); }
+    } catch (err) {
+      setStatusMsg({ type: 'error', text: 'Échec de l\'importation : ' + err.message });
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleTextSubmit = async (e) => {
     e.preventDefault();
-    if (!rawText) return;
+    if (!rawText.trim()) return;
     setUploading(true);
+    setStatusMsg({ type: '', text: '' });
+
     try {
       await axios.post('/api/admin/knowledge/text', {
-        text: rawText, title: title || 'Entrée manuelle', category: 'general'
-      }, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
-      setMessage('✅ Texte stocké et vectorisé !');
-      setRawText(''); setTitle('');
-      fetchSources();
-    } catch (err) { setMessage('❌ Échec : ' + err.message);
-    } finally { setUploading(false); }
-  };
-
-  const handleClearKnowledge = async () => {
-    if (!window.confirm('⚠️ Vider toute la base de connaissances ? Cette action est irréversible.')) return;
-    setUploading(true);
-    try {
-      await axios.delete('/api/admin/knowledge', {
+        text: rawText,
+        title: title || 'Fiche d\'information',
+        category: 'general'
+      }, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
-      setMessage('🗑️ Base vidée. Le bot repart à zéro.');
+      setStatusMsg({ type: 'success', text: 'Information enregistrée dans la mémoire du chatbot.' });
+      setRawText('');
+      setTitle('');
       fetchSources();
-    } catch (err) { setMessage('❌ Erreur : ' + err.message);
-    } finally { setUploading(false); }
+    } catch (err) {
+      setStatusMsg({ type: 'error', text: 'Erreur d\'enregistrement : ' + err.message });
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleDeleteSource = async (sourceName) => {
-    if (!window.confirm(`⚠️ Supprimer "${sourceName}" de la mémoire ?`)) return;
-    setUploading(true);
+    if (!window.confirm(`Supprimer définitivement "${sourceName}" de la mémoire du bot ?`)) return;
     try {
       await axios.delete(`/api/admin/knowledge/source?source=${encodeURIComponent(sourceName)}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
-      setMessage(`🗑️ "${sourceName}" supprimé !`);
       fetchSources();
-    } catch (err) { setMessage('❌ Erreur : ' + err.message);
-    } finally { setUploading(false); }
+    } catch (err) {
+      alert('Erreur lors de la suppression : ' + err.message);
+    }
   };
 
   const handleEditSource = async (sourceName) => {
-    setUploading(true);
     try {
       const res = await axios.get(`/api/admin/knowledge/content?source=${encodeURIComponent(sourceName)}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setTitle(res.data.source);
       setRawText(res.data.text);
-      setMessage(`✏️ "${sourceName}" chargé dans l'éditeur.`);
-      window.scrollTo({ top: 400, behavior: 'smooth' });
-    } catch (err) { setMessage('❌ Erreur : ' + err.message);
-    } finally { setUploading(false); }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+      alert('Erreur lors de la récupération : ' + err.message);
+    }
   };
 
   return (
-    <div className="p-8 max-w-5xl mx-auto animate-fade-up">
-
-      {/* Header */}
-      <header className="mb-10">
-        <div className="flex items-center gap-4">
-          <div className="p-3.5 rounded-2xl" style={{ background: 'rgba(234,231,74,0.1)', border: '1px solid rgba(234,231,74,0.2)' }}>
-            <Database size={28} style={{ color: 'var(--isetag-yellow)' }} />
-          </div>
-          <div>
-            <h1 className="text-3xl font-extrabold text-brand">Base de Connaissances</h1>
-            <p className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>
-              Enrichissez la mémoire du chatbot avec vos documents ISETAG
-            </p>
-          </div>
-        </div>
-      </header>
-
-      {/* Upload panels */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
-
-        {/* File Upload */}
-        <div className="glass rounded-3xl p-8 flex flex-col">
-          <h2 className="text-base font-bold text-white flex items-center gap-2 mb-6">
-            <Upload size={18} style={{ color: 'var(--isetag-yellow)' }} />
-            Importer un Document
-          </h2>
-          <form onSubmit={handleUpload} className="space-y-5 flex-1 flex flex-col">
-            <label
-              className="flex-1 flex flex-col items-center justify-center p-8 rounded-2xl cursor-pointer transition-all duration-200"
-              style={{
-                border: `2px dashed ${dragOver ? 'var(--isetag-yellow)' : 'rgba(255,255,255,0.1)'}`,
-                background: dragOver ? 'rgba(234,231,74,0.05)' : 'rgba(255,255,255,0.02)',
-              }}
-              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-              onDragLeave={() => setDragOver(false)}
-              onDrop={(e) => {
-                e.preventDefault(); setDragOver(false);
-                const dropped = e.dataTransfer.files[0];
-                if (dropped) setFile(dropped);
-              }}
-            >
-              <div className="p-4 rounded-2xl mb-3" style={{ background: 'rgba(234,231,74,0.08)' }}>
-                <Upload size={28} style={{ color: 'var(--isetag-yellow)' }} />
-              </div>
-              <p className="text-sm font-semibold text-white/60">
-                {file ? file.name : 'Glissez ou cliquez pour sélectionner'}
-              </p>
-              <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.25)' }}>PDF, TXT acceptés</p>
-              <input type="file" className="hidden"
-                onChange={(e) => setFile(e.target.files[0])} accept=".pdf,.txt" />
-            </label>
-            <button type="submit" disabled={!file || uploading}
-              className="btn-yellow w-full py-4 text-sm flex items-center justify-center gap-2 disabled:opacity-40">
-              {uploading
-                ? <><span className="w-4 h-4 border-2 border-isetag-black/30 border-t-isetag-black rounded-full animate-spin" /> Traitement...</>
-                : <><Plus size={16} /> Importer & Vectoriser</>
-              }
-            </button>
-          </form>
-        </div>
-
-        {/* Raw Text */}
-        <div className="glass rounded-3xl p-8 flex flex-col">
-          <h2 className="text-base font-bold text-white flex items-center gap-2 mb-6">
-            <FileText size={18} style={{ color: 'var(--isetag-green)' }} />
-            Saisir du Texte Brut
-          </h2>
-          <form onSubmit={handleTextSubmit} className="space-y-4 flex-1 flex flex-col">
-            <input
-              type="text"
-              placeholder="Titre (ex: Frais de scolarité 2026)"
-              className="input-dark"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-            <textarea
-              placeholder="Collez ici toutes les informations à mémoriser..."
-              className="input-dark flex-1 resize-none min-h-[180px]"
-              value={rawText}
-              onChange={(e) => setRawText(e.target.value)}
-            />
-            <button type="submit" disabled={!rawText || uploading}
-              className="btn-green w-full py-4 text-sm flex items-center justify-center gap-2 disabled:opacity-40">
-              {uploading
-                ? <><span className="w-4 h-4 border-2 border-isetag-black/30 border-t-isetag-black rounded-full animate-spin" /> Traitement...</>
-                : <><Plus size={16} /> Sauvegarder & Vectoriser</>
-              }
-            </button>
-          </form>
-        </div>
+    <div className="max-w-5xl mx-auto space-y-6">
+      
+      {/* En-tête */}
+      <div className="pb-2 border-b border-slate-200 dark:border-slate-800">
+        <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+          Base Documentaire & Informations Officielles
+        </h1>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          Documents officiels (brochures, frais, filières) utilisés par le chatbot pour renseigner les candidats
+        </p>
       </div>
 
-      {/* Feedback message */}
-      {message && (
-        <div className="mb-8 px-5 py-4 rounded-2xl text-sm font-medium text-center"
-          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--isetag-border)', color: 'rgba(255,255,255,0.75)' }}>
-          {message}
+      {/* Message Statut */}
+      {statusMsg.text && (
+        <div className={`p-3 rounded-lg text-xs font-medium flex items-center gap-2 border ${
+          statusMsg.type === 'success'
+            ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+            : 'bg-rose-50 dark:bg-rose-950/30 text-rose-800 dark:text-rose-300 border-rose-200 dark:border-rose-800'
+        }`}>
+          {statusMsg.type === 'success' ? <CheckCircle2 size={15} /> : <AlertCircle size={15} />}
+          <span>{statusMsg.text}</span>
         </div>
       )}
 
-      {/* Knowledge source list */}
-      <div className="mb-10">
-        <h3 className="text-lg font-bold text-white flex items-center gap-2 mb-5">
-          <Search size={20} style={{ color: 'var(--isetag-green)' }} />
-          Mémoire Actuelle
-          {sources.length > 0 && (
-            <span className="badge-green ml-2">{sources.length} source(s)</span>
-          )}
-        </h3>
+      {/* Cartes d'Ajout */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        
+        {/* Formulaire 1 : Import Fichier */}
+        <div className="p-5 rounded-xl bg-white dark:bg-[#151921] border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col justify-between">
+          <div>
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
+              <Upload size={14} className="text-emerald-600 dark:text-emerald-400" />
+              <span>Importer un Document (PDF / TXT)</span>
+            </h2>
 
-        {sources.length === 0 ? (
-          <div className="glass rounded-3xl p-10 text-center">
-            <FileText size={48} className="mx-auto mb-4 opacity-20 text-white" />
-            <p className="text-sm" style={{ color: 'rgba(255,255,255,0.3)' }}>
-              Aucun document dans la mémoire. Le cerveau du bot est vide.
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {sources.map((src, index) => (
-              <div key={index} className="glass p-5 rounded-2xl flex items-center justify-between transition-all hover:border-white/15"
-                style={{ borderColor: 'var(--isetag-border)' }}>
-                <div className="flex items-center gap-3 overflow-hidden">
-                  <div className="p-2.5 rounded-xl flex-shrink-0"
-                    style={{ background: 'rgba(234,231,74,0.08)', border: '1px solid rgba(234,231,74,0.15)' }}>
-                    <FileText size={18} style={{ color: 'var(--isetag-yellow)' }} />
-                  </div>
-                  <div className="overflow-hidden">
-                    <h4 className="font-bold text-white text-sm truncate" title={src.source}>{src.source}</h4>
-                    <p className="text-xs truncate" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                      {src.chunks} morceaux · {src.category}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-2 flex-shrink-0">
-                  <button onClick={() => handleEditSource(src.source)} disabled={uploading}
-                    className="p-2.5 rounded-xl transition-all active:scale-95"
-                    style={{ background: 'rgba(167,139,250,0.1)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.2)' }}
-                    title="Modifier">
-                    <Edit size={15} />
-                  </button>
-                  <button onClick={() => handleDeleteSource(src.source)} disabled={uploading}
-                    className="p-2.5 rounded-xl transition-all active:scale-95"
-                    style={{ background: 'rgba(248,113,113,0.1)', color: '#f87171', border: '1px solid rgba(248,113,113,0.2)' }}
-                    title="Supprimer">
-                    <Trash2 size={15} />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+            <form onSubmit={handleUpload} className="space-y-3">
+              <label
+                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setDragOver(false);
+                  if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
+                }}
+                className={`flex flex-col items-center justify-center p-6 rounded-lg border-2 border-dashed cursor-pointer transition-colors ${
+                  dragOver
+                    ? 'border-emerald-600 bg-emerald-50/50 dark:bg-emerald-950/20'
+                    : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#101319] hover:bg-slate-100/50 dark:hover:bg-slate-800/40'
+                }`}
+              >
+                <Upload size={22} className="text-slate-400 mb-2" />
+                <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 text-center">
+                  {file ? file.name : 'Cliquez ou glissez un fichier ici'}
+                </span>
+                <span className="text-[11px] text-slate-400 mt-0.5">PDF ou fichier texte officiel</span>
+                <input
+                  type="file"
+                  accept=".pdf,.txt"
+                  className="hidden"
+                  onChange={(e) => setFile(e.target.files[0])}
+                />
+              </label>
 
-      {/* Danger Zone */}
-      <div className="glass rounded-3xl p-8 text-center" style={{ border: '1px solid rgba(248,113,113,0.2)', background: 'rgba(248,113,113,0.04)' }}>
-        <div className="flex justify-center mb-3">
-          <div className="p-3 rounded-2xl" style={{ background: 'rgba(248,113,113,0.1)' }}>
-            <Trash2 size={22} style={{ color: '#f87171' }} />
+              <button
+                type="submit"
+                disabled={!file || uploading}
+                className="w-full btn-primary-isetag py-2 text-xs flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                <Plus size={14} />
+                <span>{uploading ? 'Indexation en cours...' : 'Ajouter à la base documentaire'}</span>
+              </button>
+            </form>
           </div>
         </div>
-        <h3 className="text-base font-bold mb-2" style={{ color: '#f87171' }}>Zone Dangereuse</h3>
-        <p className="text-sm mb-6 max-w-md mx-auto" style={{ color: 'rgba(255,255,255,0.35)' }}>
-          Si le bot dit des informations incorrectes, videz sa mémoire et recommencez avec des documents propres.
-        </p>
-        <button onClick={handleClearKnowledge} disabled={uploading}
-          className="px-6 py-3 rounded-xl font-bold text-sm transition-all active:scale-95 disabled:opacity-40"
-          style={{ background: '#f87171', color: 'white' }}>
-          {uploading ? 'Nettoyage...' : '🗑️ Vider toute la mémoire du bot'}
-        </button>
+
+        {/* Formulaire 2 : Fiche Manuelle */}
+        <div className="p-5 rounded-xl bg-white dark:bg-[#151921] border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col justify-between">
+          <form onSubmit={handleTextSubmit} className="space-y-3">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
+              <FileText size={14} className="text-amber-600 dark:text-amber-400" />
+              <span>Saisir une Information Directe</span>
+            </h2>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Titre de la fiche (ex: Frais de scolarité Génie Logiciel 2026)"
+              className="w-full px-3 py-1.5 rounded-lg text-xs border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#101319] text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+            />
+            <textarea
+              rows={4}
+              value={rawText}
+              onChange={(e) => setRawText(e.target.value)}
+              placeholder="Collez ici les informations officielles, frais, conditions d'admission..."
+              className="w-full px-3 py-2 rounded-lg text-xs border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#101319] text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 resize-none"
+            />
+            <button
+              type="submit"
+              disabled={!rawText.trim() || uploading}
+              className="w-full btn-green-isetag py-2 text-xs flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              <Plus size={14} />
+              <span>{uploading ? 'Enregistrement...' : 'Enregistrer cette fiche'}</span>
+            </button>
+          </form>
+        </div>
+
       </div>
+
+      {/* Liste des Documents Enregistrés */}
+      <div className="p-5 rounded-xl bg-white dark:bg-[#151921] border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Database size={16} className="text-slate-400" />
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+              Documents et Fiches Actives ({sources.length})
+            </h3>
+          </div>
+          <button
+            onClick={fetchSources}
+            className="p-1 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            title="Actualiser"
+          >
+            <RefreshCw size={13} />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+          {sources.map((s, idx) => (
+            <div
+              key={idx}
+              className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#101319] flex items-center justify-between gap-3 group hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
+            >
+              <div className="min-w-0 flex items-center gap-2.5">
+                <FileText size={15} className="text-slate-400 flex-shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
+                    {s.source}
+                  </p>
+                  <p className="text-[10px] text-slate-400 font-medium">
+                    {s.chunk_count} section(s) vectorisée(s)
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1 opacity-70 group-hover:opacity-100">
+                <button
+                  onClick={() => handleEditSource(s.source)}
+                  className="p-1 rounded-md text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors"
+                  title="Modifier"
+                >
+                  <Edit3 size={13} />
+                </button>
+                <button
+                  onClick={() => handleDeleteSource(s.source)}
+                  className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+                  title="Supprimer"
+                >
+                  <Trash2 size={13} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
     </div>
   );
 };
