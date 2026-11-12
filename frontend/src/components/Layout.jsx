@@ -7,156 +7,113 @@ import {
   LogOut,
   ChevronRight,
   ClipboardList,
-  Lock,
-  ShieldCheck,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 const Layout = () => {
   const location = useLocation();
-  const { user, logout, lockSession } = useAuth();
+  const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   const menu = [
-    { name: 'Tableau de bord', path: '/', icon: LayoutDashboard, desc: 'Statistiques globales' },
-    { name: 'Base de Connaissance', path: '/knowledge', icon: Database, desc: 'Documents & FAQ' },
-    { name: 'Conversations', path: '/conversations', icon: MessageSquare, desc: 'Discussions live' },
-    { name: 'Pré-inscriptions', path: '/preinscriptions', icon: ClipboardList, desc: 'Dossiers reçus en ligne' },
+    { name: 'Tableau de bord', path: '/', icon: LayoutDashboard },
+    { name: 'Base de Connaissance', path: '/knowledge', icon: Database },
+    { name: 'Conversations', path: '/conversations', icon: MessageSquare },
+    { name: 'Pré-inscriptions', path: '/preinscriptions', icon: ClipboardList },
   ];
 
   return (
-    <div className="flex min-h-screen" style={{ background: 'var(--isetag-black)' }}>
-      {/* ── Sidebar ───────────────────────────────────── */}
-      <aside
-        className="w-72 fixed h-full flex flex-col p-6 z-20"
-        style={{ background: 'var(--isetag-dark)', borderRight: '1px solid var(--isetag-border)' }}
-      >
-        {/* Branding */}
-        <div className="flex items-center gap-3 px-3 mb-8">
-          <div
-            className="w-12 h-12 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0"
-            style={{ background: 'linear-gradient(135deg, var(--isetag-yellow), var(--isetag-green))' }}
-          >
+    <div className="flex min-h-screen bg-slate-50 dark:bg-[#111315] text-slate-900 dark:text-slate-100 transition-colors duration-200">
+      
+      {/* ── Sidebar Pro ─────────────────────────────────── */}
+      <aside className="w-64 fixed h-full flex flex-col p-5 z-20 bg-white dark:bg-[#16181b] border-r border-slate-200/80 dark:border-slate-800/80">
+        
+        {/* Logo & Titre Institutionnel */}
+        <div className="flex items-center gap-3 px-2 mb-8">
+          <div className="w-10 h-10 rounded-xl p-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 flex items-center justify-center flex-shrink-0">
             <img
               src="/Logo.png"
               alt="ISETAG"
-              className="w-full h-full object-contain p-1"
+              className="w-full h-full object-contain"
               onError={(e) => {
                 e.target.style.display = 'none';
-                e.target.nextSibling.style.display = 'block';
               }}
             />
-            <span className="hidden text-isetag-black font-black text-lg">IS</span>
           </div>
           <div className="min-w-0">
-            <h2 className="font-black text-xl text-brand leading-none">ISETAG</h2>
-            <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
-              Admin Dashboard
+            <h2 className="font-extrabold text-lg text-slate-900 dark:text-white leading-none tracking-tight">
+              ISETAG
+            </h2>
+            <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500 mt-1">
+              Portail Administratif
             </p>
           </div>
         </div>
 
-        {/* User Card */}
-        {user?.email && (
-          <div
-            className="px-3.5 py-2.5 rounded-xl mb-6 flex items-center gap-2.5 border"
-            style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.06)' }}
-          >
-            <div className="w-7 h-7 rounded-lg bg-amber-400/15 text-amber-400 flex items-center justify-center text-xs font-bold flex-shrink-0">
-              {user.email.charAt(0).toUpperCase()}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold text-white/90 truncate">{user.email}</p>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <ShieldCheck size={11} className="text-emerald-400 flex-shrink-0" />
-                <span className="text-[10px] text-white/40 font-medium">Session sécurisée</span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Navigation */}
-        <nav className="flex-1 space-y-1 overflow-y-auto">
+        {/* Navigation Pro */}
+        <nav className="flex-1 space-y-1">
           {menu.map((item) => {
             const isActive = location.pathname === item.path;
             return (
               <Link
                 key={item.name}
                 to={item.path}
-                className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-200 group ${
-                  isActive ? 'nav-active' : 'hover:bg-white/5 text-white/50'
+                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 ${
+                  isActive
+                    ? 'bg-[#EAE74A]/20 dark:bg-[#EAE74A]/10 text-slate-900 dark:text-[#EAE74A] border border-[#EAE74A]/40'
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
-                <item.icon
-                  size={20}
-                  style={{ color: isActive ? 'var(--isetag-yellow)' : undefined }}
-                />
-                <div className="flex-1 min-w-0">
-                  <p
-                    className={`text-sm font-semibold ${isActive ? '' : 'group-hover:text-white/80'}`}
-                    style={{ color: isActive ? 'var(--isetag-yellow)' : undefined }}
-                  >
-                    {item.name}
-                  </p>
-                  <p className="text-[10px] truncate" style={{ color: 'rgba(255,255,255,0.28)' }}>
-                    {item.desc}
-                  </p>
-                </div>
-                {isActive && <ChevronRight size={14} style={{ color: 'var(--isetag-yellow)' }} />}
+                <item.icon size={18} className={isActive ? 'text-slate-900 dark:text-[#EAE74A]' : 'text-slate-400'} />
+                <span className="flex-1">{item.name}</span>
+                {isActive && <ChevronRight size={14} className="opacity-70" />}
               </Link>
             );
           })}
         </nav>
 
-        {/* Divider */}
-        <div className="my-3" style={{ borderTop: '1px solid var(--isetag-border)' }} />
+        {/* Footer Sidebar : Switch Thème + Profil Admin + Déconnexion */}
+        <div className="pt-4 border-t border-slate-100 dark:border-slate-800/80 space-y-3">
+          
+          {/* Bouton Dark / Light Mode */}
+          <button
+            onClick={toggleTheme}
+            className="flex items-center justify-between w-full px-3 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors"
+          >
+            <span className="flex items-center gap-2">
+              {theme === 'dark' ? <Sun size={15} className="text-amber-400" /> : <Moon size={15} className="text-slate-500" />}
+              <span>{theme === 'dark' ? 'Mode Clair' : 'Mode Sombre'}</span>
+            </span>
+            <span className="text-[10px] uppercase font-bold text-slate-400">{theme}</span>
+          </button>
 
-        {/* Status indicator */}
-        <div
-          className="px-4 py-2.5 rounded-2xl mb-3 flex items-center gap-3"
-          style={{ background: 'rgba(93,203,106,0.08)', border: '1px solid rgba(93,203,106,0.2)' }}
-        >
-          <span
-            className="w-2.5 h-2.5 rounded-full flex-shrink-0 animate-pulse"
-            style={{ background: 'var(--isetag-green)' }}
-          />
-          <div>
-            <p className="text-xs font-bold" style={{ color: 'var(--isetag-green)' }}>
-              Chatbot en ligne
-            </p>
-            <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
-              Inactivité max: 15 min
-            </p>
-          </div>
+          {/* Profil */}
+          {user?.email && (
+            <div className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800 flex items-center justify-between">
+              <div className="min-w-0 pr-2">
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{user.email}</p>
+                <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1 mt-0.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  Connecté
+                </p>
+              </div>
+              <button
+                onClick={() => logout('manual')}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+                title="Se déconnecter"
+              >
+                <LogOut size={16} />
+              </button>
+            </div>
+          )}
         </div>
-
-        {/* Lock Session Action */}
-        <button
-          onClick={lockSession}
-          className="flex items-center gap-3 px-4 py-2.5 rounded-xl w-full text-left transition-all hover:bg-amber-500/10 mb-1.5 group"
-          style={{ color: 'rgba(245,158,11,0.7)' }}
-          title="Verrouiller la session pour quitter temporairement l'écran"
-        >
-          <Lock size={16} />
-          <span className="text-xs font-semibold group-hover:text-amber-400 transition-colors">
-            Verrouiller l'écran
-          </span>
-        </button>
-
-        {/* Logout */}
-        <button
-          onClick={() => logout('manual')}
-          className="flex items-center gap-3 px-4 py-2.5 rounded-xl w-full text-left transition-all hover:bg-red-500/10 group"
-          style={{ color: 'rgba(248,113,113,0.7)' }}
-        >
-          <LogOut size={16} />
-          <span className="text-xs font-semibold group-hover:text-red-400 transition-colors">
-            Déconnexion
-          </span>
-        </button>
       </aside>
 
       {/* ── Main Content ──────────────────────────────── */}
-      <main className="ml-72 flex-1 min-h-screen" style={{ background: 'var(--isetag-black)' }}>
+      <main className="ml-64 flex-1 min-h-screen p-8 bg-slate-50 dark:bg-[#111315]">
         <Outlet />
       </main>
     </div>

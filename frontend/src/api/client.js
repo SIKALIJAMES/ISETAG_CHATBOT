@@ -4,10 +4,9 @@ export const TOKEN_KEY = 'token';
 export const LEGACY_KEY = 'isetag_token';
 export const LAST_ACTIVITY_KEY = 'isetag_last_activity';
 
-// 15 minutes of inactivity triggers auto-logout
-export const INACTIVITY_TIMEOUT_MS = 15 * 60 * 1000;
-// Warning appears 60 seconds before lockout (at 14 minutes)
-export const INACTIVITY_WARNING_MS = 14 * 60 * 1000;
+// Session persistante confortable (7 jours)
+export const INACTIVITY_TIMEOUT_MS = 7 * 24 * 60 * 60 * 1000;
+export const INACTIVITY_WARNING_MS = 7 * 24 * 60 * 60 * 1000;
 
 export function getToken() {
   return localStorage.getItem(TOKEN_KEY) || localStorage.getItem(LEGACY_KEY);
