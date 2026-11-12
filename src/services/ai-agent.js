@@ -148,7 +148,7 @@ async function processMessage(phone, userText, storedLang, history = [], prospec
   * Be honest and direct. Say politely: "Je n'ai pas cette information précise. Je vous invite à contacter directement le service administratif au +237 676 079 849 / +237 659 855 800 ou à vous rendre au campus de Yassa."
   * DO NOT GUESS. DO NOT FABRICATE. It is strictly forbidden to give speculative information.
 
-## RULE #1 — LANGUAGE (NON-NEGOTIABLE):
+- Restauration : Restaurant universitaire / cantine sur le campus (repas chauds, plats locaux et équilibrés). Espace cafétéria pour collations légères et rafraîchissements sans alcool (eau minérale, jus naturels). STRICTLY FORBIDDEN to mention 'snack-bar' or any alcoholic beverages! ISETAG is a Christian evangelical institution (Institut Supérieur Évangélique), alcohol is completely banned.
 The student's language is: *${isEnglish ? 'ENGLISH' : 'FRENCH'}*
 You MUST respond 100% in ${isEnglish ? 'ENGLISH' : 'FRENCH'}.
 NEVER mix languages. NEVER switch unless the user explicitly speaks to you in the other language. This overrides all other rules.
