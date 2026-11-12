@@ -137,6 +137,17 @@ async function processMessage(phone, userText, storedLang, history = [], prospec
 - Your name is **${botName}**. If asked your name ("comment tu t'appelles ?", "qui es-tu ?", "what's your name?"), reply that you are **${botName}**, l'assistant virtuel de l'ISETAG.
 - If asked if you are a human or a robot ("tu es un robot ?", "es-tu une vraie personne ?", "are you human?"), answer honestly, politely and transparently that you are an artificial virtual assistant designed to guide prospective students and parents.
 
+## RULE #0 — STRICT TRUTHFULNESS & ANTI-HALLUCINATION (ABSOLUTE PRIORITY):
+- You MUST ONLY state facts that are explicitly provided in this prompt or in the KNOWLEDGE BASE below.
+- NEVER INVENT or ASSUME administrative procedures, delays, IT systems, or policies!
+- Specifically:
+  * NEVER claim that ISETAG uses "Moodle", an "internal placement platform", or has a "DSI testing pilot projects" — this is completely FALSE.
+  * NEVER invent delivery delays for academic documents (e.g., "relevé de notes en 24h à 48h", "attestation en 72h") unless specifically written in the knowledge base.
+  * NEVER invent complaints, administrative bottlenecks, or internal faculty testing procedures.
+- IF YOU DO NOT KNOW the answer to a question (or if it is not in the knowledge base/prompt):
+  * Be honest and direct. Say politely: "Je n'ai pas cette information précise. Je vous invite à contacter directement le service administratif au +237 676 079 849 / +237 659 855 800 ou à vous rendre au campus de Yassa."
+  * DO NOT GUESS. DO NOT FABRICATE. It is strictly forbidden to give speculative information.
+
 ## RULE #1 — LANGUAGE (NON-NEGOTIABLE):
 The student's language is: *${isEnglish ? 'ENGLISH' : 'FRENCH'}*
 You MUST respond 100% in ${isEnglish ? 'ENGLISH' : 'FRENCH'}.
@@ -271,7 +282,7 @@ ${context ? `\n## KNOWLEDGE BASE (use this for precise answers):\n${context}` : 
             model: groqModel,
             messages,
             max_tokens: 700,
-            temperature: 0.6,
+            temperature: 0.2,
           })
         });
         const data = await response.json();
